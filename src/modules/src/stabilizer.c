@@ -54,6 +54,14 @@ static sensorData_t sensorData;
 static state_t state;
 static control_t control;
 
+//test
+//NSchoofs - Motormount Rettung
+float VerkackWinkel = 45.0;
+float GainedControlWinkel = 10.0;
+//uint32_t tickDurationOfEmergencyTimeout = 2000;
+//uint32_t ticksTimedOut;
+
+
 static void stabilizerTask(void* param);
 
 void stabilizerInit(StateEstimatorType estimator)
@@ -134,6 +142,14 @@ static void stabilizerTask(void* param)
     stateController(&control, &setpoint, &sensorData, &state, tick);
 
     checkEmergencyStopTimeout();
+
+	//NSchoofs - Motormount Rettung
+	if (state.attitude.roll >= VerkackWinkel || state.attitude.pitch >= VerkackWinkel) {
+		stabilizerSetEmergencyStop();
+	}
+	else if (state.attitude.roll <= GainedCrontrolWinkel && state.attitude.pitch <= GainedControlWinkel){
+		stabilizerResetEmergencyStop();
+	}
 
     if (emergencyStop) {
       powerStop();

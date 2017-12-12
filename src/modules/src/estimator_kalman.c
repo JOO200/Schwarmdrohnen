@@ -378,6 +378,7 @@ void estimatorKalman(state_t *state, sensorData_t *sensors, control_t *control, 
     gyroAccumulatorCount++;
   }
 
+  //Kalman - MIST ?
   if (sensorsReadMag(&sensors->mag)) {
       // Currently the magnetometer doesn't play a part in the estimation
   }

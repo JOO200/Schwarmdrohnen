@@ -36,7 +36,6 @@
 // Define to decrease the nRF51 Tx power to reduce interference
 #define PLATFORM_NRF51_TX_POWER_DBM (-12)
 
-// TODO: Implement!
 int platformInit(void)
 {
   //Low level init: Clock and Interrupt controller
