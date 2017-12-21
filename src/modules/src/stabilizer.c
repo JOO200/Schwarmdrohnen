@@ -54,7 +54,6 @@ static sensorData_t sensorData;
 static state_t state;
 static control_t control;
 
-//test
 //NSchoofs - Motormount Rettung
 float VerkackWinkel = 45.0;
 float GainedControlWinkel = 10.0;
