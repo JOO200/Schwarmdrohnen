@@ -42,6 +42,9 @@
 /* ST includes */
 #include "stm32fxxx.h"
 
+/* ai_swarm include*/
+#include "ai_task.h"
+
 int main() 
 {
   //Initialize the platform.
@@ -49,6 +52,7 @@ int main()
 
   //Launch the system task that will initialize and start everything
   systemLaunch();
+  ai_launch();					//startet ai_swarm Task
 
   //Start the FreeRTOS scheduler
   vTaskStartScheduler();
