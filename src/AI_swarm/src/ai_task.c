@@ -11,7 +11,7 @@
 
 void ai_launch(void)
 {
-	xTaskCreate(ai_Task, AI_TASK_NAME,		//defines nich einfügen sobal bekannt
+	xTaskCreate(ai_Task, AI_TASK_NAME,		
 		AI_TASK_STACKSIZE, NULL,
 		AI_TASK_PRIO, NULL);
 }
