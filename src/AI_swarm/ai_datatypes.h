@@ -1,4 +1,5 @@
 #include "ai_config.h"
+#include "stddef.h"	//für z.B. NULL muss dies includiert werden
 
 
 //Struct, welches Abstandsdaten mit Bezug auf eine gennannte Drohne enthält
@@ -9,11 +10,15 @@ typedef struct {
 }st_distances_t;				
 
 //Rolle der Drohne
-typedef enum {
+typedef enum e_role_t {
 	MASTER,
 	SLAVE,
 	UNDEFINED = 0
 } e_role_t;
+
+e_role_t my_ai_role = UNDEFINED;
+
+
 
 
 //----------------------------------- DWM1000 Interface -------------------------------------

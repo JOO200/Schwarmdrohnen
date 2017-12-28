@@ -1,12 +1,13 @@
 #include "ai_task.h"
+#include "ai_datatypes.h"
+
+
+#include "worker.h"
 
 /* FreeRtos includes */
 #include "FreeRTOS.h"
 #include "task.h"
 
-#define AI_TASK_NAME "ai_task"
-#define AI_TASK_STACKSIZE 1024  //kp was genug/zu viel - MIST
-#define AI_TASK_PRIO 40			//hier einfaches aber evtl. schlechtes tuning möglich - MIST
 
 
 //wird in initphase von main in main.c aufgerufen, bevor scheduler gestartet wird
@@ -20,11 +21,29 @@ void ai_launch(void)
 //hier unsere main
 //wird ausgeführt von FreeRTOS-Scheduler sobald dieser das für sinnvoll hält (und natürlich,nachdem dieser in "main.c" gestartet wurde)
 void ai_Task(void * arg) {
-	//... lokale Vars, function calls
+	//... lokale Vars, init
+
+	initAi_Swarm();
 
 	while (1) {
 		//... repetetives
 	}
+	vTaskDelete(NULL); //wäre schlecht, wenn das hier aufgerufen wird...
+}
+
+bool initAi_Swarm() {
+	//Rolle eigendlich geringster Name im Netzwerk --> erst Netzwerk nötig
+	if (UWB_NAME == 0) {
+		my_ai_role = MASTER;
+	}
+	else
+	{
+		my_ai_role = SLAVE;
+	}
+
+	//UWB_Deck
+
+	//...
 }
 
 
