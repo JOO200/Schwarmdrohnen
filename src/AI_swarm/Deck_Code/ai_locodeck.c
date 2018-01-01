@@ -53,19 +53,19 @@
 #include "configblock.h"
 
 #include "ai_locodeck.h"
-#include "lpsTdma.h"
+#include "ai_lpsTdma.h"
 
 #if LPS_TDOA_ENABLE			//Time Distance Of Arrival
-  #include "lpsTdoaTag.h"
+  #include "ai_lpsTdoaTag.h"
 #else
-  #include "lpsTwrTag.h"
+  #include "ai_lpsTwrTag.h"
 #endif
 
 
 #define CS_PIN DECK_GPIO_IO1
 
 // LOCO deck alternative IRQ and RESET pins(IO_2, IO_3) instead of default (RX1, TX1), leaving UART1 free for use
-// Anpassung Platine!!!!
+
 #ifdef LOCODECK_USE_ALT_PINS
     #define GPIO_PIN_IRQ 	GPIO_Pin_5
 	#define GPIO_PIN_RESET 	GPIO_Pin_4
@@ -92,7 +92,7 @@
 #endif
 
 
-#define ANTENNA_OFFSET 154.6   // In meter, Sinn? Eventuell Sicherheitswert?
+#define ANTENNA_OFFSET 154.6   // In meter. // Sinn? Eventuell Sicherheitswert?
 
 // The drone position can be set using parameters
 // As an option you can set a static position in this file and set
@@ -120,7 +120,7 @@ static lpsAlgoOptions_t algoOptions = {
     0xbccf000000000007,
 #endif
   },
-  .antennaDelay = (ANTENNA_OFFSET*LOCODECK_TS_FREQ)/ SPEED_OF_LIGHT,	// In radio tick, siehe ai_locodeck.h. Sinn?
+  .antennaDelay = (ANTENNA_OFFSET*LOCODECK_TS_FREQ)/ SPEED_OF_LIGHT,	// In radio tick // siehe ai_locodeck.h. Sinn?
   .rangingFailedThreshold = 4,
 
   .combineddronePositionOk = false,

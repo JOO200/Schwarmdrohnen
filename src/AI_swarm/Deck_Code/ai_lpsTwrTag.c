@@ -28,8 +28,8 @@
 #include <string.h>
 #include <math.h>
 
-#include "lpsTwrTag.h"
-#include "lpsTdma.h"
+#include "ai_lpsTwrTag.h"
+#include "ai_lpsTdma.h"
 
 #include "FreeRTOS.h"
 #include "task.h"

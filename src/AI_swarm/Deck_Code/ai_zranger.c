@@ -36,7 +36,7 @@
 #include "param.h"
 
 #include "i2cdev.h"
-#include "zranger.h"
+#include "ai_zranger.h"
 #include "vl53l0x.h"
 
 #include "stabilizer_types.h"

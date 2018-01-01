@@ -45,7 +45,7 @@
 #include "fatfs_sd.h"
 
 #include "deck.h"
-#include "usddeck.h"
+#include "ai_usddeck.h"
 #include "deck_spi.h"
 #include "system.h"
 #include "sensors.h"

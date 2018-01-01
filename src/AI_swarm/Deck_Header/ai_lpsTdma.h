@@ -27,7 +27,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
- * lpsTdma.h: Generic TDMA utility defines for LPS algorithms
+ * ai_lpsTdma.h: Generic TDMA utility defines for LPS algorithms
  */
 #ifndef __LPS_TDMA_H__
 #define __LPS_TDMA_H__

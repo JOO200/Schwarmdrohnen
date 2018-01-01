@@ -21,7 +21,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  *
- * zranger.h: Z-Ranger deck driver
+ * ai_zranger.h: Z-Ranger deck driver
  */
 
 #ifndef _ZRANGER_H_

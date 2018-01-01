@@ -4,7 +4,7 @@
 #include "ai_locodeck.h"
 #include "libdw1000.h"
 
-#include "mac.h"
+#include "ai_mac.h"
 
 #define LPS_TWR_POLL 0x01   // Poll is initiated by the tag
 #define LPS_TWR_ANSWER 0x02

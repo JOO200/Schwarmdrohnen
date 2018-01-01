@@ -24,7 +24,7 @@
  * ledring12.c: RGB Ring 12 Leds effects/driver
  */
 
-#include "ledring12.h"
+//#include "ai_ledring.h"
 
 #include <stdint.h>
 #include <math.h>
@@ -37,7 +37,7 @@
 #include "FreeRTOS.h"
 #include "timers.h"
 
-#include "ledring12.h"
+#include "ai_ledring.h"
 #include "ws2812.h"
 #include "worker.h"
 #include "param.h"

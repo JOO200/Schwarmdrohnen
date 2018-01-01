@@ -4,7 +4,7 @@
 #include "ai_locodeck.h"
 #include "libdw1000.h"
 
-#include "mac.h"
+#include "ai_mac.h"
 
 extern uwbAlgorithm_t uwbTdoaTagAlgorithm;
 

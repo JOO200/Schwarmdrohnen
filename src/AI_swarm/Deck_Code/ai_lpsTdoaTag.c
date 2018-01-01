@@ -29,7 +29,7 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "log.h"
-#include "lpsTdoaTag.h"
+#include "ai_lpsTdoaTag.h"
 
 #include "stabilizer_types.h"
 #include "cfassert.h"
