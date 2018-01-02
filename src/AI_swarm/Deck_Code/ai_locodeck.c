@@ -37,6 +37,7 @@
 #include <string.h>
 #include "stm32fxxx.h"
 
+#include "ai_datatypes.h"
 #include "FreeRTOS.h"
 #include "semphr.h"
 #include "task.h"

@@ -57,7 +57,7 @@ static uint8_t succededRanging[LOCODECK_NR_OF_DRONES];
 static uint8_t failedRanging[LOCODECK_NR_OF_DRONES];
 
 // Timestamps for ranging
-static dwTime_t poll_tx;
+static dwTime_t poll_tx;		//dwTime_T Datentype von Decawave, Zeit für bestimmte Aktion
 static dwTime_t poll_rx;
 static dwTime_t answer_tx;
 static dwTime_t answer_rx;
@@ -66,7 +66,7 @@ static dwTime_t final_rx;
 
 static packet_t txPacket;
 static volatile uint8_t curr_seq = 0;
-static int current_drone = 0;
+static int current_drone = 0;			//Master
 
 static bool ranging_complete = false;
 static bool lpp_transaction = false;
@@ -177,8 +177,9 @@ static uint32_t rxcallback(dwDevice_t *dev) {
       tprop_ctn = ((tround1*tround2) - (treply1*treply2)) / (tround1 + tround2 + treply1 + treply2);
 
       tprop = tprop_ctn / LOCODECK_TS_FREQ;
-      options->distance[current_drone] = SPEED_OF_LIGHT * tprop;
-      options->pressures[current_drone] = report->asl;
+      options->distance[current_drone] = SPEED_OF_LIGHT * tprop;		//Distanz Berechnung!!!!!!
+	
+	/*options->pressures[current_drone] = report->asl;
 
       // Outliers rejection
       rangingStats[current_drone].ptr = (rangingStats[current_drone].ptr + 1) % RANGING_HISTORY_LENGTH;
@@ -200,7 +201,7 @@ static uint32_t rxcallback(dwDevice_t *dev) {
         dist.z = options->dronePosition[current_drone].z;
         dist.stdDev = 0.25;
         estimatorKalmanEnqueueDistance(&dist);
-      }
+      }*/
 
       if (options->useTdma && current_drone == 0) {
         // Final packet is sent by us and received by the drone
