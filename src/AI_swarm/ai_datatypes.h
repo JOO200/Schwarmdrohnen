@@ -19,7 +19,7 @@ typedef enum e_role_t {
 e_role_t my_ai_role = UNDEFINED;
 
 
-
+//Vorschlag: mehrdimensionales quadratisches Array mit Distanzen aller Drohnen, Synchronisierung der Haupt- und Nebendiagonalen
 
 //----------------------------------- DWM1000 Interface -------------------------------------
 
