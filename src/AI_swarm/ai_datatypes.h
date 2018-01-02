@@ -6,7 +6,7 @@
 typedef struct {				
 	int sender;					//Drohne auf die sich die Distanzen beziehen
 	float dist_to_master;		//Entfernung zu Masterdrohne
-	float dist_to[MAX_DRONES];
+	float dist_to [MAX_DRONES];
 }st_distances_t;				
 
 //Rolle der Drohne
@@ -20,6 +20,12 @@ e_role_t my_ai_role = UNDEFINED;
 
 
 //Vorschlag: mehrdimensionales quadratisches Array mit Distanzen aller Drohnen, Synchronisierung der Haupt- und Nebendiagonalen
+typedef struct st_distances_t {
+	float distaceTable [MAX_DRONES] [MAX_DRONES],
+	time_t timestamp [MAX_DRONES] [MAX_DRONES],
+	//history, ...
+
+} st_distaces_t;
 
 //----------------------------------- DWM1000 Interface -------------------------------------
 

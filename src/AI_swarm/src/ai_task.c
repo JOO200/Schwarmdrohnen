@@ -22,16 +22,39 @@ void ai_launch(void)
 //wird ausgeführt von FreeRTOS-Scheduler sobald dieser das für sinnvoll hält (und natürlich,nachdem dieser in "main.c" gestartet wurde)
 void ai_Task(void * arg) {
 	//... lokale Vars, init
-
+	st_distances_t tableDistances;
 	initAi_Swarm();
 
 	while (1) {
 		//... repetetives
+	
+		//distanzen aktualisieren
+		workerSchedule(getDistances, &tableDistances;)
+
+		//position neu berechnen
+		workerSchedule(calculatePosition, &tableDistances);
 	}
 	vTaskDelete(NULL); //wäre schlecht, wenn das hier aufgerufen wird...
 }
 
+//eventuell müssen args als void *
+void getDistances(st_distances_t * data) {
+	//hier call der deckinterface.distances 
+
+}
+
+
+//eventuell müssen args als void *
+void calculatePosition(tableDistances * data)
+{
+	//hier call der positionsberechnung
+}
+
 bool initAi_Swarm() {
+	//UWB_Deck für Josy und Janüüüühk
+	//hier euer init-shizzle
+
+
 	//Rolle eigendlich geringster Name im Netzwerk --> erst Netzwerk nötig
 	if (UWB_NAME == 0) {
 		my_ai_role = MASTER;
@@ -41,7 +64,7 @@ bool initAi_Swarm() {
 		my_ai_role = SLAVE;
 	}
 
-	//UWB_Deck
+	
 
 	//...
 }
