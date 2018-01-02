@@ -23,16 +23,29 @@ void ai_launch(void)
 void ai_Task(void * arg) {
 	//... lokale Vars, init
 	st_distances_t tableDistances;
+
+	
 	initAi_Swarm();
+
+	if (my_ai_role == SLAVE) {
+		//slave inits
+	}
 
 	while (1) {
 		//... repetetives
 	
-		//distanzen aktualisieren
-		workerSchedule(getDistances, &tableDistances;)
+		if (my_ai_role == SLAVE) {
+			//distanzen aktualisieren
+			workerSchedule(getDistances, &tableDistances;)
 
-		//position neu berechnen
-		workerSchedule(calculatePosition, &tableDistances);
+			//position neu berechnen
+			workerSchedule(calculatePosition, &tableDistances);
+		}	
+		else
+		{
+			//pennen
+			vTaskDelete(NULL); //braucht Taskt nicht^^ - zumindes vor on the fly änderungen
+		}
 	}
 	vTaskDelete(NULL); //wäre schlecht, wenn das hier aufgerufen wird...
 }
