@@ -29,10 +29,10 @@ typedef struct {
   uint8_t answerTx[5];
   uint8_t finalRx[5];
 
-  float pressure;
-  float temperature;
+ // float pressure;
+ // float temperature;
   float asl;
-  uint8_t pressure_ok;
+ // uint8_t pressure_ok;
 } __attribute__((packed)) lpsTwrTagReportPayload_t;
 
 

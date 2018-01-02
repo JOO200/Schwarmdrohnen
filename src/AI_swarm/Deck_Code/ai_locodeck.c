@@ -30,6 +30,10 @@
  * locodeck.c: Dwm1000 deck driver.
  */
 
+// TDMA = Time Division Multiple Access
+// LPP = Loco Positioning Protocol
+// LPS = Loco Positioning System
+
 #define DEBUG_MODULE "DWM"
 
 #include <stdint.h>

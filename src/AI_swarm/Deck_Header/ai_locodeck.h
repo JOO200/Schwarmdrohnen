@@ -41,6 +41,7 @@
 
 #include "libdw1000.h"
 #include "stabilizer_types.h"
+#include <FreeRTOS.h>
 
 #define SPEED_OF_LIGHT 299792458.0
 // Timestamp counter frequency
@@ -71,7 +72,7 @@ typedef struct {
   const int rangingFailedThreshold;
 
   locoAddress_t tagAddress;
-  const locoAddress_t droneAddress[LOCODECK_NR_OF_DRONES];		//Drohnenadresse
+  const locoAddress_t droneAddress[LOCODECK_NR_OF_DRONES];		//Drohnenadresse, Aufruf in der .c prüfen
 
   // The status of drones. A bit field (bit 0 - drone 0, bit 1 - drone 1 and so on)
   // where a set bit indicates that an drone reentry has been detected
@@ -81,19 +82,19 @@ typedef struct {
 
    //TWR data
  
-  point_t dronePosition[LOCODECK_NR_OF_DRONES];			
-  bool combineddronePositionOk;
+ // point_t dronePosition[LOCODECK_NR_OF_DRONES];			
+ // bool combineddronePositionOk;
 
   float distance[LOCODECK_NR_OF_DRONES];
-  //float pressures[LOCODECK_NR_OF_DRONES];					//Druck für uns nicht relevant? --> Z-Ranger
-  int failedRanging[LOCODECK_NR_OF_DRONES];
+ // float pressures[LOCODECK_NR_OF_DRONES];					//Druck für uns nicht relevant? --> Z-Ranger
+ // int failedRanging[LOCODECK_NR_OF_DRONES];
 
   // TWR-TDMA options, Time Division Multiple Access
   bool useTdma;
   int tdmaSlot;
 } lpsAlgoOptions_t;
 
-point_t* locodeckGetdronePosition(uint8_t drone);
+// point_t* locodeckGetdronePosition(uint8_t drone);
 
 // Callback for one uwb algorithm
 typedef struct uwbAlgorithm_s {
@@ -101,19 +102,17 @@ typedef struct uwbAlgorithm_s {
   uint32_t (*onEvent)(dwDevice_t *dev, uwbEvent_t event);
 } uwbAlgorithm_t;
 
-#include <FreeRTOS.h>
-
 #define MAX_TIMEOUT portMAX_DELAY
 
 // Send a short configuration packet to the LPS system
 // Returns true if packet will be send, false instead
 bool lpsSendLppShort(uint8_t destId, void* data, size_t length);
 
-typedef struct {
+/*typedef struct {
   uint8_t dest;
   uint8_t length;
   uint8_t data[30];
-} lpsLppShortPacket_t;
+} lpsLppShortPacket_t;*/
 
 // Poll if there is a LPS short configuration packet to send
 // Return true if the packet data has been filled in shortPacket
@@ -129,10 +128,10 @@ void lpsHandleLppShortPacket(uint8_t srcId, uint8_t *data, int length);
 
 #define LPP_SHORT_dronePOS 0x01
 
-struct lppShortdronePos_s {
+/*struct lppShortdronePos_s {
   float x;
   float y;
   float z;
-} __attribute__((packed));
+} __attribute__((packed));*/
 
 #endif // __LOCODECK_H__

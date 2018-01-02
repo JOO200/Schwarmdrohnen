@@ -24,6 +24,10 @@
  */
 /* uwb_twr_drone.c: Uwb two way ranging drone implementation */
 
+// TDMA = Time Division Multiple Access
+// LPP = Loco Positioning Protocol
+// LPS = Loco Positioning System
+
 
 #include <string.h>
 #include <math.h>
@@ -66,7 +70,7 @@ static dwTime_t final_rx;
 
 static packet_t txPacket;
 static volatile uint8_t curr_seq = 0;
-static int current_drone = 0;			//Master
+int current_drone = 0;			//0=Master, VARIABEL MACHEN!
 
 static bool ranging_complete = false;
 static bool lpp_transaction = false;
@@ -179,29 +183,6 @@ static uint32_t rxcallback(dwDevice_t *dev) {
       tprop = tprop_ctn / LOCODECK_TS_FREQ;
       options->distance[current_drone] = SPEED_OF_LIGHT * tprop;		//Distanz Berechnung!!!!!!
 	
-	/*options->pressures[current_drone] = report->asl;
-
-      // Outliers rejection
-      rangingStats[current_drone].ptr = (rangingStats[current_drone].ptr + 1) % RANGING_HISTORY_LENGTH;
-      float32_t mean;
-      float32_t stddev;
-
-      arm_std_f32(rangingStats[current_drone].history, RANGING_HISTORY_LENGTH, &stddev);
-      arm_mean_f32(rangingStats[current_drone].history, RANGING_HISTORY_LENGTH, &mean);
-      float32_t diff = fabsf(mean - options->distance[current_drone]);
-
-      rangingStats[current_drone].history[rangingStats[current_drone].ptr] = options->distance[current_drone];
-
-      if ((options->combineddronePositionOk || options->dronePosition[current_drone].timestamp) &&
-          (diff < (OUTLIER_TH*stddev))) {
-        distanceMeasurement_t dist;
-        dist.distance = options->distance[current_drone];
-        dist.x = options->dronePosition[current_drone].x;
-        dist.y = options->dronePosition[current_drone].y;
-        dist.z = options->dronePosition[current_drone].z;
-        dist.stdDev = 0.25;
-        estimatorKalmanEnqueueDistance(&dist);
-      }*/
 
       if (options->useTdma && current_drone == 0) {
         // Final packet is sent by us and received by the drone
@@ -211,7 +192,7 @@ static uint32_t rxcallback(dwDevice_t *dev) {
         tdmaSynchronized = true;
       }
 
-      ranging_complete = true;
+      //ranging_complete = true;			// Psitionierung entfernt
 
       return 0;
       break;
@@ -240,7 +221,7 @@ static dwTime_t transmitTimeForSlot(int slot)
   return transmitTime;
 }
 
-void initiateRanging(dwDevice_t *dev)
+/*void initiateRanging(dwDevice_t *dev)
 {
   if (!options->useTdma || tdmaSynchronized) {
     if (options->useTdma) {
@@ -275,9 +256,9 @@ void initiateRanging(dwDevice_t *dev)
 
   dwWaitForResponse(dev, true);
   dwStartTransmit(dev);
-}
+}*/
 
-void sendLppShort(dwDevice_t *dev, lpsLppShortPacket_t *packet)
+void sendLppShort(dwDevice_t *dev, lpsLppShortPacket_t *packet)		
 {
   dwIdle(dev);
 
@@ -295,7 +276,7 @@ void sendLppShort(dwDevice_t *dev, lpsLppShortPacket_t *packet)
   dwStartTransmit(dev);
 }
 
-static uint32_t twrTagOnEvent(dwDevice_t *dev, uwbEvent_t event)
+static uint32_t twrTagOnEvent(dwDevice_t *dev, uwbEvent_t event)		// Antwort auf Event, Thema Ranging Complete
 {
   static uint32_t statisticStartTick = 0;
 
@@ -397,7 +378,7 @@ static void twrTagInit(dwDevice_t *dev, lpsAlgoOptions_t* algoOptions)
   tdmaSynchronized = false;
 
   memset(options->distance, 0, sizeof(options->distance));
-  memset(options->pressures, 0, sizeof(options->pressures));
+  //memset(options->pressures, 0, sizeof(options->pressures));
   memset(options->failedRanging, 0, sizeof(options->failedRanging));
 }
 
