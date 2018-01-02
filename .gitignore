@@ -6,6 +6,7 @@ bin/*
 .project
 .settings/*
 .vscode/*
+.vs/*
 *~
 tools/make/config.mk
 cflie.*

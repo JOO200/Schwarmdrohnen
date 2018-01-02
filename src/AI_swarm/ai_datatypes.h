@@ -22,6 +22,5 @@ e_role_t my_ai_role = UNDEFINED;
 
 
 //----------------------------------- DWM1000 Interface -------------------------------------
-//test ob i recht hab
 
 

@@ -71,8 +71,17 @@ void powerStop()
   motorsSetRatio(MOTOR_M4, 0);
 }
 
-void powerDistribution(const control_t *control)
+void powerDistribution(const control_t *control) {
+	powerDistribution(control, false);
+}
+
+void powerDistribution(const control_t *control, bool fromai)
 {
+	if (fromai) {
+	//hier spezialbehandlung regler
+	}
+
+
   #ifdef QUAD_FORMATION_X
     int16_t r = control->roll / 2.0f;
     int16_t p = control->pitch / 2.0f;
