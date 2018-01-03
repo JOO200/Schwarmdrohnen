@@ -56,8 +56,8 @@ typedef enum uwbEvent_e {
   eventReceiveFailed,
 } uwbEvent_t;
 
-#ifndef LOCODECK_NR_OF_DRONES
-#define LOCODECK_NR_OF_DRONES 4
+#ifndef NR_OF_DRONES
+#define NR_OF_DRONES 4		//Festlegung der Anz der Teilnehmer
 #endif
 
 typedef uint64_t locoAddress_t;
@@ -72,7 +72,7 @@ typedef struct {
   const int rangingFailedThreshold;
 
   locoAddress_t tagAddress;
-  const locoAddress_t droneAddress[LOCODECK_NR_OF_DRONES];		//Drohnenadresse, Aufruf in der .c prüfen
+  const locoAddress_t droneAddress[NR_OF_DRONES];		//Drohnenadresse, Aufruf in der .c prüfen
 
   // The status of drones. A bit field (bit 0 - drone 0, bit 1 - drone 1 and so on)
   // where a set bit indicates that an drone reentry has been detected
@@ -82,12 +82,12 @@ typedef struct {
 
    //TWR data
  
- // point_t dronePosition[LOCODECK_NR_OF_DRONES];			
+ // point_t dronePosition[NR_OF_DRONES];			
  // bool combineddronePositionOk;
 
-  float distance[LOCODECK_NR_OF_DRONES];
- // float pressures[LOCODECK_NR_OF_DRONES];					//Druck für uns nicht relevant? --> Z-Ranger
- // int failedRanging[LOCODECK_NR_OF_DRONES];
+  float distance[NR_OF_DRONES];
+ // float pressures[NR_OF_DRONES];					//Druck für uns nicht relevant? --> Z-Ranger
+ // int failedRanging[NR_OF_DRONES];
 
   // TWR-TDMA options, Time Division Multiple Access
   bool useTdma;

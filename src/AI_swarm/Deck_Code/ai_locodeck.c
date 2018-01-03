@@ -112,23 +112,23 @@ static lpsAlgoOptions_t algoOptions = {
     0xbccf000000000003,
     /*0xbccf000000000004,
     0xbccf000000000005,					Anzahl der Drohnen angepasst*/	
-#if LOCODECK_NR_OF_DRONES > 4
+#if NR_OF_DRONES > 4
     0xbccf000000000004,
 #endif
-#if LOCODECK_NR_OF_DRONES > 5
+#if NR_OF_DRONES > 5
 	0xbccf000000000005,
 #endif
-#if LOCODECK_NR_OF_DRONES > 6
+#if NR_OF_DRONES > 6
 	0xbccf000000000006,
 #endif
-#if LOCODECK_NR_OF_DRONES > 7
+#if NR_OF_DRONES > 7
     0xbccf000000000007,
 #endif
   },
   .antennaDelay = (ANTENNA_OFFSET*LOCODECK_TS_FREQ)/ SPEED_OF_LIGHT,	// In radio tick // siehe ai_locodeck.h. Sinn?
-  .rangingFailedThreshold = 4,
+  //.rangingFailedThreshold = 4,
 
-  .combineddronePositionOk = false,
+  //.combineddronePositionOk = false,
 
 #ifdef LPS_TDMA_ENABLE
   .useTdma = true,
@@ -156,10 +156,10 @@ static lpsAlgoOptions_t algoOptions = {
 // Nicht notwendig, da keine fixe Startposition verwendet wird.
 };
 
-point_t* locodeckGetdronePosition(uint8_t drone)
+/*point_t* locodeckGetdronePosition(uint8_t drone)
 {
   return &algoOptions.dronePosition[drone];
-}
+}*/
 
 #if LPS_TDOA_ENABLE
 static uwbAlgorithm_t *algorithm = &uwbTdoaTagAlgorithm;
@@ -168,7 +168,7 @@ static uwbAlgorithm_t *algorithm = &uwbTwrTagAlgorithm;
 #endif
 
 static bool isInit = false;
-static SemaphoreHandle_t irqSemaphore;			//keine weitere Benutzung der Semaphore Variable
+static SemaphoreHandle_t irqSemaphore;			
 static dwDevice_t dwm_device;
 static dwDevice_t *dwm = &dwm_device;
 
@@ -176,6 +176,7 @@ static QueueHandle_t lppShortQueue;
 
 static uint32_t timeout;
 
+//SPI
 static void txCallback(dwDevice_t *dev)
 {
   timeout = algorithm->onEvent(dev, eventPacketSent);
@@ -257,6 +258,7 @@ static uint8_t spiRxBuffer[196];
 static uint16_t spiSpeed = SPI_BAUDRATE_2MHZ;
 
 /************ Low level ops for libdw **********/
+//SPI!
 static void spiWrite(dwDevice_t* dev, const void *header, size_t headerLength,
                                       const void* data, size_t dataLength)
 {
@@ -324,8 +326,8 @@ static dwOps_t dwOps = {
   .delayms = delayms,
 }; 
 
-/*********** Deck driver initialization ***************/
-
+/*********** Deck driver initialization DW1000 ***************/
+// Initialisierung DWM 1000 für Client
 static void dwm1000Init(DeckInfo *info)
 {
   EXTI_InitTypeDef EXTI_InitStructure;
@@ -438,53 +440,53 @@ DECK_DRIVER(dwm1000_deck);
 //Ranging
 
 LOG_GROUP_START(ranging)
-#if (LOCODECK_NR_OF_DRONES > 0)
+#if (NR_OF_DRONES > 0)
 LOG_ADD(LOG_FLOAT, distance0, &algoOptions.distance[0])
 #endif
-#if (LOCODECK_NR_OF_DRONES > 1)
+#if (NR_OF_DRONES > 1)
 LOG_ADD(LOG_FLOAT, distance1, &algoOptions.distance[1])
 #endif
-#if (LOCODECK_NR_OF_DRONES > 2)
+#if (NR_OF_DRONES > 2)
 LOG_ADD(LOG_FLOAT, distance2, &algoOptions.distance[2])
 #endif
-#if (LOCODECK_NR_OF_DRONES > 3)
+#if (NR_OF_DRONES > 3)
 LOG_ADD(LOG_FLOAT, distance3, &algoOptions.distance[3])
 #endif
-#if (LOCODECK_NR_OF_DRONES > 4)
+#if (NR_OF_DRONES > 4)
 LOG_ADD(LOG_FLOAT, distance4, &algoOptions.distance[4])
 #endif
-#if (LOCODECK_NR_OF_DRONES > 5)
+#if (NR_OF_DRONES > 5)
 LOG_ADD(LOG_FLOAT, distance5, &algoOptions.distance[5])
 #endif
-#if (LOCODECK_NR_OF_DRONES > 6)
+#if (NR_OF_DRONES > 6)
 LOG_ADD(LOG_FLOAT, distance6, &algoOptions.distance[6])
 #endif
-#if (LOCODECK_NR_OF_DRONES > 7)
+#if (NR_OF_DRONES > 7)
 LOG_ADD(LOG_FLOAT, distance7, &algoOptions.distance[7])
 #endif
-
-#if (LOCODECK_NR_OF_DRONES > 0)
+/*
+#if (NR_OF_DRONES > 0)
 LOG_ADD(LOG_FLOAT, pressure0, &algoOptions.pressures[0])
 #endif
-#if (LOCODECK_NR_OF_DRONES > 1)
+#if (NR_OF_DRONES > 1)
 LOG_ADD(LOG_FLOAT, pressure1, &algoOptions.pressures[1])
 #endif
-#if (LOCODECK_NR_OF_DRONES > 2)
+#if (NR_OF_DRONES > 2)
 LOG_ADD(LOG_FLOAT, pressure2, &algoOptions.pressures[2])
 #endif
-#if (LOCODECK_NR_OF_DRONES > 3)
+#if (NR_OF_DRONES > 3)
 LOG_ADD(LOG_FLOAT, pressure3, &algoOptions.pressures[3])
 #endif
-#if (LOCODECK_NR_OF_DRONES > 4)
+#if (NR_OF_DRONES > 4)
 LOG_ADD(LOG_FLOAT, pressure4, &algoOptions.pressures[4])
 #endif
-#if (LOCODECK_NR_OF_DRONES > 5)
+#if (NR_OF_DRONES > 5)
 LOG_ADD(LOG_FLOAT, pressure5, &algoOptions.pressures[5])
 #endif
-#if (LOCODECK_NR_OF_DRONES > 6)
+#if (NR_OF_DRONES > 6)
 LOG_ADD(LOG_FLOAT, pressure6, &algoOptions.pressures[6])
 #endif
-#if (LOCODECK_NR_OF_DRONES > 7)
+#if (NR_OF_DRONES > 7)
 LOG_ADD(LOG_FLOAT, pressure7, &algoOptions.pressures[7])
 #endif
 
@@ -497,61 +499,61 @@ LOG_GROUP_STOP(loco)
 
 
 PARAM_GROUP_START(dronepos)
-#if (LOCODECK_NR_OF_DRONES > 0)
+#if (NR_OF_DRONES > 0)
 PARAM_ADD(PARAM_FLOAT, drone0x, &algoOptions.dronePosition[0].x)
 PARAM_ADD(PARAM_FLOAT, drone0y, &algoOptions.dronePosition[0].y)
 PARAM_ADD(PARAM_FLOAT, drone0z, &algoOptions.dronePosition[0].z)
 #endif
-#if (LOCODECK_NR_OF_DRONES > 1)
+#if (NR_OF_DRONES > 1)
 PARAM_ADD(PARAM_FLOAT, drone1x, &algoOptions.dronePosition[1].x)
 PARAM_ADD(PARAM_FLOAT, drone1y, &algoOptions.dronePosition[1].y)
 PARAM_ADD(PARAM_FLOAT, drone1z, &algoOptions.dronePosition[1].z)
 #endif
-#if (LOCODECK_NR_OF_DRONES > 2)
+#if (NR_OF_DRONES > 2)
 PARAM_ADD(PARAM_FLOAT, drone2x, &algoOptions.dronePosition[2].x)
 PARAM_ADD(PARAM_FLOAT, drone2y, &algoOptions.dronePosition[2].y)
 PARAM_ADD(PARAM_FLOAT, drone2z, &algoOptions.dronePosition[2].z)
 #endif
-#if (LOCODECK_NR_OF_DRONES > 3)
+#if (NR_OF_DRONES > 3)
 PARAM_ADD(PARAM_FLOAT, drone3x, &algoOptions.dronePosition[3].x)
 PARAM_ADD(PARAM_FLOAT, drone3y, &algoOptions.dronePosition[3].y)
 PARAM_ADD(PARAM_FLOAT, drone3z, &algoOptions.dronePosition[3].z)
 #endif
-#if (LOCODECK_NR_OF_DRONES > 4)
+#if (NR_OF_DRONES > 4)
 PARAM_ADD(PARAM_FLOAT, drone4x, &algoOptions.dronePosition[4].x)
 PARAM_ADD(PARAM_FLOAT, drone4y, &algoOptions.dronePosition[4].y)
 PARAM_ADD(PARAM_FLOAT, drone4z, &algoOptions.dronePosition[4].z)
 #endif
-#if (LOCODECK_NR_OF_DRONES > 5)
+#if (NR_OF_DRONES > 5)
 PARAM_ADD(PARAM_FLOAT, drone5x, &algoOptions.dronePosition[5].x)
 PARAM_ADD(PARAM_FLOAT, drone5y, &algoOptions.dronePosition[5].y)
 PARAM_ADD(PARAM_FLOAT, drone5z, &algoOptions.dronePosition[5].z)
 #endif
-#if (LOCODECK_NR_OF_DRONES > 6)
+#if (NR_OF_DRONES > 6)
 PARAM_ADD(PARAM_FLOAT, drone6x, &algoOptions.dronePosition[6].x)
 PARAM_ADD(PARAM_FLOAT, drone6y, &algoOptions.dronePosition[6].y)
 PARAM_ADD(PARAM_FLOAT, drone6z, &algoOptions.dronePosition[6].z)
 #endif
-#if (LOCODECK_NR_OF_DRONES > 7)
+#if (NR_OF_DRONES > 7)
 PARAM_ADD(PARAM_FLOAT, drone7x, &algoOptions.dronePosition[7].x)
 PARAM_ADD(PARAM_FLOAT, drone7y, &algoOptions.dronePosition[7].y)
 PARAM_ADD(PARAM_FLOAT, drone7z, &algoOptions.dronePosition[7].z)
 #endif
 PARAM_ADD(PARAM_UINT8, enable, &algoOptions.combineddronePositionOk)
 PARAM_GROUP_STOP(dronepos)
-
+*/
 PARAM_GROUP_START(deck)
 PARAM_ADD(PARAM_UINT8 | PARAM_RONLY, bcDWM1000, &isInit)
 PARAM_GROUP_STOP(deck)
 
 // Loco Posisioning Protocol (LPP) handling
 
-void lpsHandleLppShortPacket(uint8_t srcId, uint8_t *data, int length)
+/*void lpsHandleLppShortPacket(uint8_t srcId, uint8_t *data, int length)
 {
   uint8_t type = data[0];
 
   if (type == LPP_SHORT_dronePOS) {
-    if (srcId < LOCODECK_NR_OF_DRONES) {
+    if (srcId < NR_OF_DRONES) {
       struct lppShortdronePos_s *newpos = (struct lppShortdronePos_s*)&data[1];
       algoOptions.dronePosition[srcId].timestamp = xTaskGetTickCount();
       algoOptions.dronePosition[srcId].x = newpos->x;
@@ -559,4 +561,4 @@ void lpsHandleLppShortPacket(uint8_t srcId, uint8_t *data, int length)
       algoOptions.dronePosition[srcId].z = newpos->z;
     }
   }
-}
+}*/

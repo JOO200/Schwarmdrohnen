@@ -25,6 +25,7 @@
 /* uwb_twr_drone.c: Uwb two way ranging drone implementation */
 
 // TDMA = Time Division Multiple Access
+// TWR = Two Way Ranging
 // LPP = Loco Positioning Protocol
 // LPS = Loco Positioning System
 
@@ -48,17 +49,18 @@
 // Outlier rejection
 #define RANGING_HISTORY_LENGTH 32
 #define OUTLIER_TH 4
+
 static struct {
   float32_t history[RANGING_HISTORY_LENGTH];
   size_t ptr;
-} rangingStats[LOCODECK_NR_OF_DRONES];
+} rangingStats[NR_OF_DRONES];
 
 // Rangin statistics
-static uint8_t rangingPerSec[LOCODECK_NR_OF_DRONES];
-static uint8_t rangingSuccessRate[LOCODECK_NR_OF_DRONES];
+static uint8_t rangingPerSec[NR_OF_DRONES];
+static uint8_t rangingSuccessRate[NR_OF_DRONES];
 // Used to calculate above values
-static uint8_t succededRanging[LOCODECK_NR_OF_DRONES];
-static uint8_t failedRanging[LOCODECK_NR_OF_DRONES];
+static uint8_t succededRanging[NR_OF_DRONES];
+static uint8_t failedRanging[NR_OF_DRONES];
 
 // Timestamps for ranging
 static dwTime_t poll_tx;		//dwTime_T Datentype von Decawave, Zeit für bestimmte Aktion
@@ -132,7 +134,7 @@ static uint32_t rxcallback(dwDevice_t *dev) {
         if (rxPacket.payload[LPS_TWR_LPP_HEADER] == LPP_HEADER_SHORT_PACKET) {
           int srcId = -1;
 
-          for (int i=0; i<LOCODECK_NR_OF_DRONES; i++) {
+          for (int i=0; i<NR_OF_DRONES; i++) {
             if (rxPacket.sourceAddress == options->droneAddress[i]) {
               srcId = i;
               break;
@@ -230,7 +232,7 @@ static dwTime_t transmitTimeForSlot(int slot)
     }
 
     current_drone ++;
-    if (current_drone >= LOCODECK_NR_OF_DRONES) {
+    if (current_drone >= NR_OF_DRONES) {
       current_drone = 0;
     }
   } else {
@@ -318,7 +320,7 @@ static uint32_t twrTagOnEvent(dwDevice_t *dev, uwbEvent_t event)		// Antwort auf
       if (xTaskGetTickCount() > (statisticStartTick+1000)) {
         statisticStartTick = xTaskGetTickCount();
 
-        for (int i=0; i<LOCODECK_NR_OF_DRONES; i++) {
+        for (int i=0; i<NR_OF_DRONES; i++) {
           rangingPerSec[i] = failedRanging[i] + succededRanging[i];
           if (rangingPerSec[i] > 0) {
             rangingSuccessRate[i] = 100.0f*(float)succededRanging[i] / (float)rangingPerSec[i];
