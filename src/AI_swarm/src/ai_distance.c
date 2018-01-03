@@ -19,9 +19,16 @@ Momentan noch Nonsense, muss überdacht werden
 
 while (//array nicht voll)
 	{
-		distanceTable[curdisTab][Drone_NR][get_distance()];
+		//Anpassung der "Adress-Aufrufe". Wie können die einzelnen Drohnen als Ganzzahlen von 0-3 angesprochen werden?
+		//CurrentDrone_NR=0;
+		//VergleichsDrone_NR=0;
+
+		distanceTable[curdisTab][CurrentDrone_NR][VergleichsDrone_NR] =get_distance();
+
+//CurrentDrone_NR, VergleichsDrone_NR hochzählen
 	}
 
+//Umschalten der Tabllen Seiten nach jedem Dateneinlesen
 if (curdisTab == 0)
 {
 	curdisTab = 1;
