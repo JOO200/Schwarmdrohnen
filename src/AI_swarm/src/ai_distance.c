@@ -1,10 +1,11 @@
 /* Managen und einlesen der Distanz Tabellen
 
-Es gibt 2 Distanz-Tabelle, Seite 0 und Seite 1. curdisTab (Current Distance Table) gibt die Seitenzahl an.
-Beim einlesen der Distanzen muss curdisTab nach jedem Zyklus negiert werden.
+Es gibt 2 Distanz-Tabelle, Seite 0 und Seite 1. curDisTab (Current Distance Table) gibt die Seitenzahl an.
+Beim einlesen der Distanzen muss curDisTab nach jedem Zyklus negiert werden.
 Die jeweils nicht aktuelle Seite ist damit automatisch die History Page.
 
 Distanzberechnung über eigenen Thread?
+	-- workerSchedule habe ich mich schon drum gekümmert - Nicolai
 
 include für DEBUG_PRINT
 
@@ -23,19 +24,19 @@ while (//array nicht voll)
 		//CurrentDrone_NR=0;
 		//VergleichsDrone_NR=0;
 
-		distanceTable[curdisTab][CurrentDrone_NR][VergleichsDrone_NR] =get_distance();
+		distanceTable[curDisTab][CurrentDrone_NR][VergleichsDrone_NR] =get_distance();
 
 //CurrentDrone_NR, VergleichsDrone_NR hochzählen
 	}
 
 //Umschalten der Tabllen Seiten nach jedem Dateneinlesen
-if (curdisTab == 0)
+if (curDisTab == 0)
 {
-	curdisTab = 1;
+	curDisTab = 1;
 }
-else if (curdisTab == 1)
+else if (curDisTab == 1)
 {
-	curdisTab = 0;
+	curDisTab = 0;
 }
 
 /*switch (curdisTab)
