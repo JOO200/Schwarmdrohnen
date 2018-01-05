@@ -36,8 +36,8 @@ void ai_Task(void * arg) {
 	
 		if (my_ai_role == SLAVE) {
 			//distanzen aktualisieren
-			workerSchedule(getDistances, &tableDistances;)
-
+			workerSchedule(getDistances, &tableDistances);
+			
 			//position neu berechnen
 			workerSchedule(calculatePosition, &tableDistances);
 		}	
