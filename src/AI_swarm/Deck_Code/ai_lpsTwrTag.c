@@ -102,18 +102,20 @@ static void txcallback(dwDevice_t *dev)
 }
 
 
-static uint32_t rxcallback(dwDevice_t *dev) {
+static uint32_t rxcallback(dwDevice_t *dev)			//Beginn des Wichtigen Distanz Berechnungs Teils!!!!
+{
   dwTime_t arival = { .full=0 };
   int dataLength = dwGetDataLength(dev);
 
-  if (dataLength == 0) return 0;
+  if (dataLength == 0) return 0;		//if Fall für leere Empfangsdaten
 
   packet_t rxPacket;
   memset(&rxPacket, 0, MAC802154_HEADER_LENGTH);
 
-  dwGetData(dev, (uint8_t*)&rxPacket, dataLength);
+  dwGetData(dev, (uint8_t*)&rxPacket, dataLength);	//get Paket und befüllen
 
-  if (rxPacket.destAddress != options->tagAddress) {
+  if (rxPacket.destAddress != options->tagAddress) 
+  {
     dwNewReceive(dev);
     dwSetDefaults(dev);
     dwStartReceive(dev);
@@ -123,14 +125,17 @@ static uint32_t rxcallback(dwDevice_t *dev) {
   txPacket.destAddress = rxPacket.sourceAddress;
   txPacket.sourceAddress = rxPacket.destAddress;
 
-  switch(rxPacket.payload[LPS_TWR_TYPE]) {
+  switch(rxPacket.payload[LPS_TWR_TYPE]) 
+  {
     // Tag received messages
-    case LPS_TWR_ANSWER:
-      if (rxPacket.payload[LPS_TWR_SEQ] != curr_seq) {
+    case LPS_TWR_ANSWER:					//Loco Positioning System Two Way Ranging Answer
+      if (rxPacket.payload[LPS_TWR_SEQ] != curr_seq) 
+	  {
         return 0;
       }
 
-      if (dataLength - MAC802154_HEADER_LENGTH > 3) {
+      if (dataLength - MAC802154_HEADER_LENGTH > 3) 
+	  {
         if (rxPacket.payload[LPS_TWR_LPP_HEADER] == LPP_HEADER_SHORT_PACKET) {
           int srcId = -1;
 
@@ -162,7 +167,7 @@ static uint32_t rxcallback(dwDevice_t *dev) {
       dwStartTransmit(dev);
 
       break;
-    case LPS_TWR_REPORT:
+    case LPS_TWR_REPORT:			//Loco Positioning System Two Way Ranging Report
     {
       lpsTwrTagReportPayload_t *report = (lpsTwrTagReportPayload_t *)(rxPacket.payload+2);
       double tround1, treply1, treply2, tround2, tprop_ctn, tprop;
@@ -212,6 +217,7 @@ static uint32_t adjustTxRxTime(dwTime_t *time)
 }
 
 /* Calculate the transmit time for a given timeslot in the current frame */
+//unverändert übernehmen
 static dwTime_t transmitTimeForSlot(int slot)
 {
   dwTime_t transmitTime = { .full = 0 };
@@ -260,6 +266,7 @@ static dwTime_t transmitTimeForSlot(int slot)
   dwStartTransmit(dev);
 }*/
 
+/*Versenden der Daten*/
 void sendLppShort(dwDevice_t *dev, lpsLppShortPacket_t *packet)		
 {
   dwIdle(dev);
@@ -278,37 +285,44 @@ void sendLppShort(dwDevice_t *dev, lpsLppShortPacket_t *packet)
   dwStartTransmit(dev);
 }
 
-static uint32_t twrTagOnEvent(dwDevice_t *dev, uwbEvent_t event)		// Antwort auf Event, Thema Ranging Complete
+/*Aufrufe der vorangegangenen Funktionen*/
+static uint32_t twrTagOnEvent(dwDevice_t *dev, uwbEvent_t event)		
 {
   static uint32_t statisticStartTick = 0;
 
-  if (statisticStartTick == 0) {
+  if (statisticStartTick == 0) 
+  {
     statisticStartTick = xTaskGetTickCount();
   }
 
-  switch(event) {
+  switch(event) 
+  {
     case eventPacketReceived:
       return rxcallback(dev);
       break;
     case eventPacketSent:
       txcallback(dev);
 
-      if (lpp_transaction) {
+      if (lpp_transaction) 
+	  {
         return 0;
       }
       return MAX_TIMEOUT;
       break;
-    case eventTimeout:  // Comes back to timeout after each ranging attempt
+	case eventTimeout:  // Comes back to timeout after each ranging attempt //ai_distance muss vermutlich hier rein!
       if (!ranging_complete && !lpp_transaction) {
         options->rangingState &= ~(1<<current_drone);
-        if (options->failedRanging[current_drone] < options->rangingFailedThreshold) {
+        if (options->failedRanging[current_drone] < options->rangingFailedThreshold) 
+		{
           options->failedRanging[current_drone] ++;
           options->rangingState |= (1<<current_drone);
         }
 
         locSrvSendRangeFloat(current_drone, NAN);
         failedRanging[current_drone]++;
-      } else {
+      } 
+	  else 
+	  {
         options->rangingState |= (1<<current_drone);
         options->failedRanging[current_drone] = 0;
 
@@ -355,6 +369,7 @@ static uint32_t twrTagOnEvent(dwDevice_t *dev, uwbEvent_t event)		// Antwort auf
   return MAX_TIMEOUT;
 }
 
+/*Init für Two Way Ranging*/
 static void twrTagInit(dwDevice_t *dev, lpsAlgoOptions_t* algoOptions)
 {
   options = algoOptions;
@@ -384,11 +399,13 @@ static void twrTagInit(dwDevice_t *dev, lpsAlgoOptions_t* algoOptions)
   memset(options->failedRanging, 0, sizeof(options->failedRanging));
 }
 
-uwbAlgorithm_t uwbTwrTagAlgorithm = {
+uwbAlgorithm_t uwbTwrTagAlgorithm = 
+{
   .init = twrTagInit,
   .onEvent = twrTagOnEvent,
 };
 
+//Ranging
 LOG_GROUP_START(twr)
 LOG_ADD(LOG_UINT8, rangingSuccessRate0, &rangingSuccessRate[0])
 LOG_ADD(LOG_UINT8, rangingPerSec0, &rangingPerSec[0])
