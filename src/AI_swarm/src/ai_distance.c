@@ -18,24 +18,34 @@ Momentan noch Nonsense, muss überdacht werden
 #include "ai_config.h"
 
 //Seite der aktuellen Distanz-Tabelle 
-
-while (//array nicht voll)
+void FillDistanceTable() //name evtländern  , in .h includen
+{
+	while (1)//array nicht voll)
 	{
 		//Anpassung der "Adress-Aufrufe". Wie können die einzelnen Drohnen als Ganzzahlen von 0-3 angesprochen werden?
 		//CurrentDrone_NR=0;
 		//VergleichsDrone_NR=0;
 
 		distanceTable[curDisTab][CurrentDrone_NR][VergleichsDrone_NR] = get_distance();
+		
+//CurrentDrone_NR= UWB_NAME als int
+//VergleichsDrone_NR= UWB_NAME
 
 		//CurrentDrone_NR, VergleichsDrone_NR hochzählen
 	}
+}
+
 
 //Umschalten der Tabllen Seiten nach jedem Dateneinlesen
+if (MAX_HISTORY > 0)
+{
 	curDisTab += 1;
 	if (curDisTab > MAX_HISTORY)
 	{
 		curDistTab = 0;
 	}
+}
+
 
 /*switch (curdisTab)
 {

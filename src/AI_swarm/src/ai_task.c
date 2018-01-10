@@ -53,7 +53,7 @@ void ai_Task(void * arg) {
 //eventuell müssen args als void *
 void getDistances(st_distances_t * data) {
 	//hier call der deckinterface.distances 
-
+	FillDistanceTable();
 }
 
 

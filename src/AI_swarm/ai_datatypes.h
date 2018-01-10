@@ -22,7 +22,7 @@ e_role_t my_ai_role = UNDEFINED;
 
 //Vorschlag: mehrdimensionales quadratisches Array mit Distanzen aller Drohnen, Synchronisierung der Haupt- und Nebendiagonalen
 typedef struct st_distances_t {
-	float distanceTable[2][NR_OF_DRONES][NR_OF_DRONES]; //[Tabellen Nummer (1-2)][Drohnen Nummer][Distanz]
+	float distanceTable[MAX_HISTORY][NR_OF_DRONES][NR_OF_DRONES]; //[Tabellen Nummer (1-2)][Drohnen Nummer][Distanz]
 	int curDisTab = 0;										//aktuelle Distance Tabel, Wert 0 oder 1, switch case in .c
 	time_t timestamp[NR_OF_DRONES][NR_OF_DRONES];
 	//history ...

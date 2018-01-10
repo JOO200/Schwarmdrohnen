@@ -39,6 +39,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "ai_config.h"
 #include "libdw1000.h"
 #include "stabilizer_types.h"
 #include <FreeRTOS.h>
@@ -56,9 +57,6 @@ typedef enum uwbEvent_e {
   eventReceiveFailed,
 } uwbEvent_t;
 
-#ifndef NR_OF_DRONES
-#define NR_OF_DRONES 4		//Festlegung der Anz der Teilnehmer
-#endif
 
 typedef uint64_t locoAddress_t;
 
