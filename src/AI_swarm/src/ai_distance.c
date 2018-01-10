@@ -9,53 +9,70 @@ Distanzberechnung über eigenen Thread?
 
 include für DEBUG_PRINT
 
-Momentan noch Nonsense, muss überdacht werden
+Ablauf:
+Master -> call UpdateDistanceTabel() in ai_task.c
+{ 
+	Master startet distance update in Slaves
+	Master updatet seine eigenen Distanzen
+	Master fordert alle Slave Tabels an
+	{ 
+		Slaves schicken erste wenn fertig berechnet (z.B. Semaphore)
+	} 
+	Master verteilt vollständige Tabelle
+}
+
 */
-
-
 
 #include "ai_datatypes.h"
 #include "ai_config.h"
+#include "ai_distance.h"
 
-//Seite der aktuellen Distanz-Tabelle 
-void FillDistanceTable() //name evtländern  , in .h includen
+
+void UpdateDistanceTable()
 {
-	while (1)//array nicht voll)
+	//Anpassung der "Adress-Aufrufe". Wie können die einzelnen Drohnen als Ganzzahlen von 0-3 angesprochen werden?
+	//CurrentDrone_NR=0;
+	//VergleichsDrone_NR=0;
+	int CurrentDrone_NR = UWB_NAME;
+	for (int VergleichsDrone_NR = 0; VergleichsDrone_NR <5; VergleichsDrone_NR++)
 	{
-		//Anpassung der "Adress-Aufrufe". Wie können die einzelnen Drohnen als Ganzzahlen von 0-3 angesprochen werden?
-		//CurrentDrone_NR=0;
-		//VergleichsDrone_NR=0;
+		distanceTable[curDisTab][CurrentDrone_NR][VergleichsDrone_NR] = calculate_distance();
+	}
 
-		distanceTable[curDisTab][CurrentDrone_NR][VergleichsDrone_NR] = get_distance();
-		
-//CurrentDrone_NR= UWB_NAME als int
-//VergleichsDrone_NR= UWB_NAME
+	//Tabellenschnipsel an MASTER senden
+	//MASTER versendet ganze Tabelle
 
-		//CurrentDrone_NR, VergleichsDrone_NR hochzählen
+	if (my_ai_role == MASTER)
+	{
+		get_distances(); //von allen Drohnen die Distanztabellen bekommen
+		distribute_distances(); //versendet vollständige Distanztabelle
+	}
+	
+	//Umschalten der Tabllen Seiten nach jedem Dateneinlesen
+	if (MAX_HISTORY > 0)
+	{
+		curDisTab += 1;
+		if (curDisTab > MAX_HISTORY)
+		{
+			curDistTab = 0;
+		}
 	}
 }
 
-
-//Umschalten der Tabllen Seiten nach jedem Dateneinlesen
-if (MAX_HISTORY > 0)
+//Tabelle mit Abständen füllen
+float calculate_distance()
 {
-	curDisTab += 1;
-	if (curDisTab > MAX_HISTORY)
-	{
-		curDistTab = 0;
-	}
+
 }
 
-
-/*switch (curdisTab)
+//von allen Drohnen die Distanztabellen bekommen
+float get_distances() 
 {
-case 0:
-	distanceTable
-	break;
-case 1:
 
-	break;
-default:
-	DEBUG_PRINT("Failed to configure Distance Table!\r\n");
-	break;
-}*/
+}
+
+//versendet vollständige Distanztabelle
+float distribute_distances() 
+{
+
+}

@@ -19,7 +19,7 @@ typedef struct packet_s {
         uint16_t reserved:3;
         uint16_t destAddrMode:2;
         uint16_t version:2;
-        uint16_t srcAddrMode:2;
+        uint16_t srcAddrMode:2; 
       } fcf_s;
     };
 
