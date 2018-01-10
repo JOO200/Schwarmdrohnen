@@ -104,7 +104,7 @@ typedef struct uwbAlgorithm_s {
 
 // Send a short configuration packet to the LPS system
 // Returns true if packet will be send, false instead
-bool lpsSendLppShort(uint8_t destId, void* data, size_t length);
+bool lpsSendLppShort(uint8_t destId, void* data, size_t length); 
 
 /*typedef struct {
   uint8_t dest;

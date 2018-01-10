@@ -6,7 +6,7 @@
  *  ||  ||    /_____/_/\__/\___/_/   \__,_/ /___/\___/
  *
  * LPS node firmware.
- *
+ * 
  * Copyright 2016, Bitcraze AB
  *
  * This program is free software: you can redistribute it and/or modify

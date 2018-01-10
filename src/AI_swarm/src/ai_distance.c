@@ -17,7 +17,7 @@ Master -> call UpdateDistanceTabel() in ai_task.c
 	Master fordert alle Slave Tabels an
 	{ 
 		Slaves schicken erste wenn fertig berechnet (z.B. Semaphore)
-	}
+	} 
 	Master verteilt vollständige Tabelle
 }
 

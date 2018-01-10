@@ -6,3 +6,4 @@
 
 // Sorgt für Aktualisierung der Distanztabellen in jeder Drohen, unabhängig von der Rolle der Drohne
 void UpdateDistanceTable();
+ 

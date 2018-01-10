@@ -12,7 +12,7 @@ typedef struct {
 
 //Rolle der Drohne
 typedef enum e_role_t {
-	MASTER,
+	MASTER, 
 	SLAVE,
 	UNDEFINED = 0
 } e_role_t;

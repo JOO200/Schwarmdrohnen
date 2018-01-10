@@ -9,3 +9,4 @@
 #define AI_TASK_NAME "ai_task"
 #define AI_TASK_STACKSIZE 1024  //kp was genug/zu viel - MIST
 #define AI_TASK_PRIO 2			//hier einfaches aber evtl. schlechtes tuning möglich - Maximum 6, je höher desto wichtiger (idle hat 0), task der läuft hat immer die höchste prio der aktivierbaren tasks
+ 

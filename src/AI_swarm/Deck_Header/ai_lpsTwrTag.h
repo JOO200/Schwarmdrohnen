@@ -16,7 +16,7 @@
 #define LPS_TWR_TYPE 0
 #define LPS_TWR_SEQ 1
 // LPP payload can be in the ANSWER packet
-#define LPS_TWR_LPP_HEADER 2
+#define LPS_TWR_LPP_HEADER 2 
 #define LPS_TWR_LPP_TYPE 3
 #define LPS_TWR_LPP_PAYLOAD 4
 
