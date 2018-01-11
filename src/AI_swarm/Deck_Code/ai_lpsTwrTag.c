@@ -6,7 +6,7 @@
  *  ||  ||    /_____/_/\__/\___/_/   \__,_/ /___/\___/
  *
  * LPS node firmware.
- *
+ * 
  * Copyright 2016, Bitcraze AB
  *
  * This program is free software: you can redistribute it and/or modify
@@ -110,7 +110,7 @@ static uint32_t rxcallback(dwDevice_t *dev)			//Beginn des Wichtigen Distanz Ber
   if (dataLength == 0) return 0;		//if Fall für leere Empfangsdaten
 
   packet_t rxPacket;
-  memset(&rxPacket, 0, MAC802154_HEADER_LENGTH);
+  memset(&rxPacket, 0, MAC802154_HEADER_LENGTH);  //packet mit Nullen überschreiben
 
   dwGetData(dev, (uint8_t*)&rxPacket, dataLength);	//get Paket und befüllen
 
@@ -298,7 +298,7 @@ static uint32_t twrTagOnEvent(dwDevice_t *dev, uwbEvent_t event)
   switch(event) 
   {
     case eventPacketReceived:
-      return rxcallback(dev);
+      return rxcallback(dev);			//call
       break;
     case eventPacketSent:
       txcallback(dev);

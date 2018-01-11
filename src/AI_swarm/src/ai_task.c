@@ -1,6 +1,6 @@
 #include "ai_task.h"
 #include "ai_datatypes.h"
-
+#include "ai_distances.h"
 
 #include "worker.h"
 
@@ -24,7 +24,6 @@ void ai_Task(void * arg) {
 	//... lokale Vars, init
 	st_distances_t tableDistances;
 
-	
 	initAi_Swarm();
 
 	if (my_ai_role == SLAVE) {
@@ -33,11 +32,12 @@ void ai_Task(void * arg) {
 
 	while (1) {
 		//... repetetives
-	
-		if (my_ai_role == SLAVE) {
+			if (my_ai_role == SLAVE) {
 			//distanzen aktualisieren
-			workerSchedule(getDistances, &tableDistances);
-			
+			if (DistanceOldFlag)					//noch setzen in timer
+			{ 
+				get_distances();
+			}				
 			//position neu berechnen
 			workerSchedule(calculatePosition, &tableDistances);
 		}	
@@ -53,7 +53,7 @@ void ai_Task(void * arg) {
 //eventuell müssen args als void *
 void getDistances(st_distances_t * data) {
 	//hier call der deckinterface.distances 
-	FillDistanceTable();
+	FillDistanceTable(); 
 }
 
 
@@ -76,8 +76,6 @@ bool initAi_Swarm() {
 	{
 		my_ai_role = SLAVE;
 	}
-
-	
 
 	//...
 }

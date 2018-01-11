@@ -1,6 +1,10 @@
 //Includes...
 #include "ai_datatypes.h"
 //...
+/*
+
+
+*/
 
 //-----Funktionale Methoden
 
@@ -19,8 +23,4 @@ bool aiRequestDistances(st_distances_t *  slaveDistances1);
 //3. Master wartet auf Fernbedienungsverbindung
 //
 void aiInit();
-
-
-
-
 
