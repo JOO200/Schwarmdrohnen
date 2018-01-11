@@ -66,7 +66,7 @@ float calculate_distance()
 }
 
 //von allen Drohnen die Distanztabellen bekommen
-float get_distances() 
+float get_distances()
 {
 
 }
