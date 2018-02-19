@@ -13,7 +13,7 @@ bool setup_dwm1000_spi_interface(){
 	spiBegin();		//call der Funktion aus "deck_spi.c""
 
 
-	st_DMW_Config_t config;
+	st_DWM_Config_t config;
 
 	//hier config ausfüllen
 
@@ -29,7 +29,7 @@ bool dwm1000_SendData(void * data, int lengthOfData /*adressen?, ...*/) {
 }
 
 
-e_message_type_t dwm1000_ReceiveDate(void * data, int lengthOfData) {
+e_message_type_t dwm1000_ReceiveData(void * data, int lengthOfData) {
 	//1. Receive Buffer Auslesen
 	//2. Art der Nachricht entschlüsseln
 	//3. Auf Data schreiben
@@ -46,23 +46,36 @@ float dwm1000_getDistance(double nameOfOtherDWM) {
 
 
 st_DWM_Config_t dwm1000_init(st_DWM_Config_t newConfig) {
-<<<<<<< HEAD
-	//1. für jeden Eintrag Register Schreiben
-	//2. Alle Register lesen und in Ausgabe zusammenfassen
-=======
+
 	spiStart();	//für Mutexinteraktion genutzt	
 	
-	//1. PAN Identifier
+	// -------- Init SPI --------
+
+	//Baud Rate
+		//Bausrate Nachricht aus newConfig erstellen
+
 	spiExchange();
 
-	//2. Baud Rate
+
+
+	// -------- Init UWB --------
+
+	//PAN Identifier
+		//Identifeier Nachricht aus newConfig erstellen
+
 	spiExchange();
+
 
 
 	spiStop();	//für Mutexinteraktion genutzt	
->>>>>>> b4be7939637e6bed2cfd6591d198e8c5d560b212
 }
 
+
+void __attribute__((used)) EXTI4_IRQHandler(void)
+{
+	EXTI_ClearITPendingBit(EXTI_Line4);
+	DWM1000_IRQ_ISR();	//ISR in ai_task.c
+}
 
 //helper Functions:
 void spiStart(){
@@ -72,3 +85,4 @@ void spiStart(){
 void spiStop(){
 	spiEndTransaction();
 }
+

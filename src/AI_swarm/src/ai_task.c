@@ -8,7 +8,7 @@
 #include "FreeRTOS.h"
 #include "task.h"
 
-
+bool DMW1000_IRQ_Flag;
 
 //wird in initphase von main in main.c aufgerufen, bevor scheduler gestartet wird
 void ai_launch(void)
@@ -32,20 +32,14 @@ void ai_Task(void * arg) {
 
 	while (1) {
 		//... repetetives
-			if (my_ai_role == SLAVE) {
-			//distanzen aktualisieren
-			if (DistanceOldFlag)					//noch setzen in timer
-			{ 
-				get_distances();
-			}				
-			//position neu berechnen
-			workerSchedule(calculatePosition, &tableDistances);
-		}	
-		else
-		{
-			//pennen
-			vTaskDelete(NULL); //braucht Taskt nicht^^ - zumindes vor on the fly änderungen
+
+		if (DWM1000_IRQ_Flag){
+			DWM1000_IRQ_Flag = false;
+			//1. Interrupt Register anschauen
+			//2. Evaluieren
+			//3. Entsprechende Funktion aufrufen
 		}
+
 	}
 	vTaskDelete(NULL); //wäre schlecht, wenn das hier aufgerufen wird...
 }
@@ -64,8 +58,8 @@ void calculatePosition(tableDistances * data)
 }
 
 bool initAi_Swarm() {
-	//UWB_Deck für Josy und Janüüüühk
-	//hier euer init-shizzle
+	//UWB_Deck für Josy und Janüüüühk (neuerdings auch Nüüükküh)
+	//hier euer/unser init-shizzle
 
 
 	//Rolle eigendlich geringster Name im Netzwerk --> erst Netzwerk nötig
@@ -80,4 +74,9 @@ bool initAi_Swarm() {
 	//...
 }
 
+//isr des externen Interrupts von dwm1000
+void DWM1000_IRQ_ISR(void) {
 
+	DWM1000_IRQ_Flag = true;
+
+}
