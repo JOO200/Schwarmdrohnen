@@ -27,7 +27,8 @@ float dwm1000_getDistance(double nameOfOtherDWM) {
 
 
 st_DWM_Config_t dwm1000_init(st_DWM_Config_t newConfig) {
-
+	//1. für jeden Eintrag Register Schreiben
+	//2. Alle Register lesen und in Ausgabe zusammenfassen
 }
 
 
