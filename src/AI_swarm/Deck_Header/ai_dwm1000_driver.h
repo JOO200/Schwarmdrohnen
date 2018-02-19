@@ -3,7 +3,10 @@
 #include "ai_datatypes.h"
 
 
-
+bool setup_dwm1000_spi_interface();
+/*
+initialisiert das SPI interface (nach Anleitung durch "stm32f4xx_spi.c" - Z.17 - Z.134)
+*/
 
 bool dwm1000_SendData(void * data, int lengthOfData /*adressen?, ...*/);
 /*
