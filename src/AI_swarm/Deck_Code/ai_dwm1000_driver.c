@@ -2,6 +2,7 @@
 #include "Driver_SPI.h"
 #include "stm32f4xx_spi.h"
 #include "deck_spi.h"
+#include "stm32f4xx_exti.h"	//wird benötigt um externe interrupts zu initialisieren
 
 
 #define READ_TFC //Instruction Manual S.12
@@ -19,23 +20,86 @@
 
 #define BaudRate SPI_BAUDRATE_21MHZ;	//hier auch 11.5, 5.25, 2.625, 1.3125 auswählbar
 
+//defines für Interrupt Config
+#define EXTI_Line11 ((uint32_t)0x00800);
+#define EXTI_LineN 	EXTI_Line11;	//bestimmt exti input port (von Bitcraze RX genannt)
+#define EXTI_Mode_Interrupt 0x00;	//interrupt mode - aus stm32f4xx_exti.h
+#define EXTI_Trigger_Rising 0x08;	//aus stm32f4xx_exti.h
+#define ENABLE 
+
+//defines für SPI
+#define CS_PIN DECK_GPIO_IO1		//CS/SS Pin ist "IO_1"
+#define GPIO_Mode_OUT 0x01;			
+#define GPIO_OType_OD 0x01;			
+
+
 //hier wird deck_spi.h/deck_spi.c angewendet (in src/deck/api/...)
 
 
+//inhalt von locodec.c init (ab Z.312) inspiriert (und angepasst)
+bool setup_dwm1000_communication(){
+	
+	// ---- Aus ST-Doku: ----
+	/*
+	In order to use an I / O pin as an external interrupt source, follow steps
+		below :
+	(#) Configure the I / O in input mode using GPIO_Init()
+		(#) Select the input source pin for the EXTI line using SYSCFG_EXTILineConfig()
+		(#) Select the mode(interrupt, event) and configure the trigger
+		selection(Rising, falling or both) using EXTI_Init()
+		(#) Configure NVIC IRQ channel mapped to the EXTI line using NVIC_Init()
 
-bool setup_dwm1000_spi_interface(){
-	spiBegin();		//call der Funktion aus "deck_spi.c""
+		[..]
+	(@) SYSCFG APB clock must be enabled to get write access to SYSCFG_EXTICRx
+		registers using RCC_APB2PeriphClockCmd(RCC_APB2Periph_SYSCFG, ENABLE);
+	*/
 
 
-	st_DWM_Config_t config;
+	EXTI_InitTypeDef EXTI_InitStructure;
+	GPIO_InitTypeDef GPIO_InitStructure;
+	NVIC_InitTypeDef NVIC_InitStructure;
 
-	//hier config ausfüllen
+	spiBegin();
 
+	// Init IRQ input
+	bzero(&GPIO_InitStructure, sizeof(GPIO_InitStructure));
+	GPIO_InitStructure.GPIO_Pin = GPIO_PIN_IRQ;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;
+	//GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_DOWN;
+
+	GPIO_Init(GPIO_PORT, &GPIO_InitStructure);
+
+
+	// Init reset output
+	GPIO_InitStructure.GPIO_Pin = GPIO_PIN_RESET;
+	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
+	GPIO_InitStructure.GPIO_OType = GPIO_OType_OD;
+	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
+
+	GPIO_Init(GPIO_PORT, &GPIO_InitStructure);
+
+
+	//Interrupt Initstruct vorbereiten
+	EXTI_InitStructure.EXTI_Line = EXTI_LineN;
+	EXTI_InitStructure.EXTI_Mode = EXTI_Mode_Interrupt;
+	EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Rising;
+	EXTI_InitStructure.EXTI_LineCmd = ENABLE;
+
+	EXTI_Init(EXTI_InitStructure);
+
+
+	// Enable interrupt
+	NVIC_InitStructure.NVIC_IRQChannel = EXTI_IRQChannel;
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = NVIC_LOW_PRI;
+	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
+	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+	NVIC_Init(&NVIC_InitStructure);
+	
 
 
 }
 
-bool dwm1000_SendData(void * data, int lengthOfData /*adressen?, ...*/) {
+bool dwm1000_SendData(void * data, int lengthOfData /*Adressen?, ...*/) {
 	//1. Aufbauen der Transmit Frame für den SPI Bus an den DWM1000
 	//2. Data auf Transmit Data Buffer Register
 	//3. Transmit Frame Control aktualisieren
@@ -85,13 +149,13 @@ st_DWM_Config_t dwm1000_init(st_DWM_Config_t newConfig) {
 }
 
 
-void __attribute__((used)) EXTI4_IRQHandler(void)
+void __attribute__((used)) EXTI11_Callback(void)
 {
 	EXTI_ClearITPendingBit(EXTI_Line4);
-	DWM1000_IRQ_ISR();	//ISR in ai_task.c
+	DMW1000_IRQ_Flag = true;	//aktiviert synchrone "ISR" in ai_task.c
 }
 
-//helper Functions:
+//-------------------------------------- helper Functions: -------------------------------------------------------------
 void spiStart(){
 	spiBeginTransaction(BaudRate);
 }
@@ -99,4 +163,7 @@ void spiStart(){
 void spiStop(){
 	spiEndTransaction();
 }
+
+
+
 

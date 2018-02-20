@@ -46,5 +46,39 @@ typedef enum e_message_type_t {
 } e_message_type_t;
 
 //----------------------------------- DWM1000 Interface -------------------------------------
+//Struct welches DMW1000 darstellt
+typedef struct dwDevice_s {
+	struct dwOps_s *ops;
+	void *userdata;
 
+	/* State */
+	uint8_t sysctrl[LEN_SYS_CTRL];
+	uint8_t deviceMode;
+	uint8_t networkAndAddress[LEN_PANADR];
+	uint8_t syscfg[LEN_SYS_CFG];
+	uint8_t sysmask[LEN_SYS_MASK];
+	uint8_t chanctrl[LEN_CHAN_CTRL];
+	uint8_t sysstatus[LEN_SYS_STATUS];
+	uint8_t txfctrl[LEN_TX_FCTRL];
+
+	uint8_t extendedFrameLength;
+	uint8_t pacSize;
+	uint8_t pulseFrequency;
+	uint8_t dataRate;
+	uint8_t preambleLength;
+	uint8_t preambleCode;
+	uint8_t channel;
+	/*bool smartPower;
+	bool frameCheck;
+	bool permanentReceive;
+	bool wait4resp;*/
+
+	//dwTime_t antennaDelay;
+
+	// Callback handles
+	dwHandler_t handleSent;
+	dwHandler_t handleReceived;
+	dwHandler_t handleReceiveTimeout;
+	dwHandler_t handleReceiveFailed;
+} dwDevice_t;
 
