@@ -33,8 +33,8 @@ void ai_Task(void * arg) {
 	while (1) {
 		//... repetetives
 
-		if (DWM1000_IRQ_Flag){
-			DWM1000_IRQ_Flag = false;
+		if (DMW1000_IRQ_Flag){		//"ISR"
+			DMW1000_IRQ_Flag = false;
 			//1. Interrupt Register anschauen
 			//2. Evaluieren
 			//3. Entsprechende Funktion aufrufen

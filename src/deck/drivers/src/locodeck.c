@@ -310,7 +310,7 @@ static dwOps_t dwOps = {
 /*********** Deck driver initialization ***************/
 
 static void dwm1000Init(DeckInfo *info)
-{
+{ 
   EXTI_InitTypeDef EXTI_InitStructure;
   GPIO_InitTypeDef GPIO_InitStructure;
   NVIC_InitTypeDef NVIC_InitStructure;

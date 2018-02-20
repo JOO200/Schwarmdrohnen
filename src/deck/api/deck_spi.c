@@ -41,7 +41,7 @@
 #define SPI_CLK                       RCC_APB2Periph_SPI1
 #define SPI_CLK_INIT                  RCC_APB2PeriphClockCmd
 #define SPI_IRQ_HANDLER               SPI1_IRQHandler
-#define SPI_IRQn                      SPI1_IRQn
+#define SPI_IRQn					  SPI1_IRQn
 
 #define SPI_DMA_IRQ_PRIO        (NVIC_HIGH_PRI)
 #define SPI_DMA                 DMA2
