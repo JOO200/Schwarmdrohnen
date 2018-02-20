@@ -4,9 +4,28 @@
 #include "deck_spi.h"
 #include "stm32f4xx_exti.h"	//wird benötigt um externe interrupts zu initialisieren
 
-
+/*Register "Transmit Frame Control", besteht aus 5 Byte
+Beschreibung:
+Orientierung: 
+Bit 39, Bit 38, ..., Bit 0
+Letztendlich muss man nur noch die einzelnen Zahlen addieren und erhält das 5-Byte große Register
+Binär -> Hex
+00000000 00000000 00000000 00000000 00001100 -> 0x000000000C - TFLEN, Transmission Frame Length (0-6)
+00000000 00000000 00000000 00000000 00000000 -> 0x0000000000 - TFLE, Transmit Frame Length Extension (7-9)
+00000000 00000000 00000000 00000000 00000000 -> 0x0000000000 - R, Reserved (10-12)
+00000000 00000000 00000000 00100000 00000000 -> 0x0000002000 - TXBR, Transmit Bit Rate (13+14)
+00000000 00000000 00000000 00000000 00000000 -> 0x0000000000 - TR, Transmit Ranging enable  (15)
+00000000 00000000 00000001 00000000 00000000 -> 0x0000010000 - TXPRF, Transmit Pulse Repetition Frequency (16+17)
+00000000 00000000 00000100 00000000 00000000 -> 0x0000040000 - TXPSR, Transmit Pramble Symbol Repititions  (18+19)
+00000000 00000000 00010000 00000000 00000000 -> 0x0000100000 - PE, Preamble Extension (20+21)
+00000000 00000000 00000000 00000000 00000000 -> 0x0000000000 - TXBOFFS, Transmit Buffer index offset (22-31)
+00000000 00000000 00000000 00000000 00000000 -> 0x0000000000 - IFSDELAY, Extension für TXBOFFS  (32-39)
+ 
+00000000 00000000 00010101 00100000 00001100 -> 0x000015200C - TFC 
+*/
 #define READ_TFC //Instruction Manual S.12
 
+<<<<<<< HEAD
 #define DWMINIT_TFC_TFLEN 0b0001100		//Orientierung: Bit  6 - 0 
 #define DWMINIT_TFC_TFLE 0b000		//Orientierung: Bit  9, Bit 8, Bit 7 
 #define DWMINIT_TFC_R 0b000		
@@ -17,6 +36,10 @@
 #define DWMINIT_TFC_PE 0b01
 #define DWMINIT_TFC_TXBOFFS 0b0000000000
 #define DWMINIT_TFC_IFSDELAY 0b00000000			//Zusammensetzung: IFSDELAY+TXBOFFS+PE+....
+=======
+#define DWMINIT_TFC 0x000015200C;	
+
+>>>>>>> 1ce734a4258000675f5d4fca33894dcb50152146
 
 #define BaudRate SPI_BAUDRATE_21MHZ;	//hier auch 11.5, 5.25, 2.625, 1.3125 auswählbar
 
