@@ -7,7 +7,7 @@
 
 #define READ_TFC //Instruction Manual S.12
 
-#define DWMINIT_TFC_TFLEN 0b0001100		//Orientierung: Bit  6, Bit 5, ... , Bit 0 etc.
+#define DWMINIT_TFC_TFLEN 0b0001100		//Orientierung: Bit  6 - 0 
 #define DWMINIT_TFC_TFLE 0b000		//Orientierung: Bit  9, Bit 8, Bit 7 
 #define DWMINIT_TFC_R 0b000		
 #define DWMINIT_TFC_TXBR 0b01		// hier ändern für 850 kbps
