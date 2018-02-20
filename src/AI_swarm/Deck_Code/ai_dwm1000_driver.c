@@ -3,6 +3,20 @@
 #include "stm32f4xx_spi.h"
 #include "deck_spi.h"
 
+
+#define READ_TFC //Instruction Manual S.12
+
+#define DWMINIT_TFC_TFLEN 0b0001100		//Orientierung: Bit  6, Bit 5, ... , Bit 0 etc.
+#define DWMINIT_TFC_TFLE 0b000		//Orientierung: Bit  9, Bit 8, Bit 7 
+#define DWMINIT_TFC_R 0b000		
+#define DWMINIT_TFC_TXBR 0b01		// hier ändern für 850 kbps
+#define DWMINIT_TFC_TR 0b0	
+#define DWMINIT_TFC_TXPRF 0b01
+#define DWMINIT_TFC_TXPSR 0b01
+#define DWMINIT_TFC_PE 0b01
+#define DWMINIT_TFC_TXBOFFS 0b0000000000
+#define DWMINIT_TFC_IFSDELAY 0b00000000			//Zusammensetzung: IFSDELAY+TXBOFFS+PE+....
+
 #define BaudRate SPI_BAUDRATE_21MHZ;	//hier auch 11.5, 5.25, 2.625, 1.3125 auswählbar
 
 //hier wird deck_spi.h/deck_spi.c angewendet (in src/deck/api/...)

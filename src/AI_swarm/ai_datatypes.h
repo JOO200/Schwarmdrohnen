@@ -18,13 +18,14 @@ typedef enum e_role_t {
 } e_role_t;
 
 e_role_t my_ai_role = UNDEFINED;
+char my_ai_name = 0;
 
 //Vorschlag: mehrdimensionales quadratisches Array mit Distanzen aller Drohnen, Synchronisierung der Haupt- und Nebendiagonalen
 typedef struct st_distances_t {
-	float distanceTable[MAX_HISTORY][NR_OF_DRONES][NR_OF_DRONES]; //[Tabellen Nummer (1-2)][Drohnen Nummer][Distanz]
-	int curDisTab;										//aktuelle Distance Tabel, Wert 0 oder 1, switch case in .c
+	float distanceTable[NR_OF_DRONES][NR_OF_DRONES]; //[Drohnen Nummer][Distanz]
+	int curDisTab;										//aktuelle DistanceTabel, Wert 0 oder 1, switch case in .c
 	time_t timestamp[NR_OF_DRONES][NR_OF_DRONES];
-	//history ...
+	//history ... Entscheidung: keine History
 	//Semaphoren? Staus Vaiable (running, waiting, ready)?
 	//Fkt zum Vergleich der Haupt- Nebendiagonale
 } st_distaces_t;
@@ -33,7 +34,8 @@ typedef struct st_distances_t {
 typedef struct st_DWM_Config_t {
 	double PAN_Identifier;	//persönlicher "Name" des DWM1000s im UWB-Bus
 	//Baudrate, ...
-} st_DWM_Config_t;
+	
+} st_DWM_Config_t_default = { PAN_Identifier = my_ai_name, Bitrate = };
 
 //enum um zu spezifizieren, welche Art von Nachricht aus dem DWM1000 ausgelesen wurde
 typedef enum e_message_type_t {
