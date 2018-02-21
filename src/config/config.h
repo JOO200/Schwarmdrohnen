@@ -41,7 +41,7 @@
 
 #ifndef CONFIG_H_
 #define CONFIG_H_
-#include "nrf24l01.h"
+#include "../init/drivers/interface/nrf24l01.h"
 
 #include "trace.h"
 #include "usec_time.h"
