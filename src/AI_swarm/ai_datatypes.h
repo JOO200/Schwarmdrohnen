@@ -1,5 +1,4 @@
 #include "ai_config.h"
-#include "ai_locodeck.h"
 #include "stddef.h"	//für z.B. NULL muss dies includiert werden
 
 

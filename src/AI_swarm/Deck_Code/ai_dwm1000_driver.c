@@ -20,26 +20,35 @@ Binär -> Hex
 00000000 00000000 00010000 00000000 00000000 -> 0x0000100000 - PE, Preamble Extension (20+21)
 00000000 00000000 00000000 00000000 00000000 -> 0x0000000000 - TXBOFFS, Transmit Buffer index offset (22-31)
 00000000 00000000 00000000 00000000 00000000 -> 0x0000000000 - IFSDELAY, Extension für TXBOFFS  (32-39)
- 
+Addiert:
 00000000 00000000 00010101 00100000 00001100 -> 0x000015200C - TFC 
 */
-#define READ_TFC //Instruction Manual S.12
+#define READ_TFC_TX_FCTRL 0x000015200C	//Instruction Manual S.12; Register-ID: 0x08
 
-<<<<<<< HEAD
-#define DWMINIT_TFC_TFLEN 0b0001100		//Orientierung: Bit  6 - 0 
-#define DWMINIT_TFC_TFLE 0b000		//Orientierung: Bit  9, Bit 8, Bit 7 
-#define DWMINIT_TFC_R 0b000		
-#define DWMINIT_TFC_TXBR 0b01		// hier ändern für 850 kbps
-#define DWMINIT_TFC_TR 0b0	
-#define DWMINIT_TFC_TXPRF 0b01
-#define DWMINIT_TFC_TXPSR 0b01
-#define DWMINIT_TFC_PE 0b01
-#define DWMINIT_TFC_TXBOFFS 0b0000000000
-#define DWMINIT_TFC_IFSDELAY 0b00000000			//Zusammensetzung: IFSDELAY+TXBOFFS+PE+....
-=======
-#define DWMINIT_TFC 0x000015200C;	
+/*Register "System Control Register", besteht aus 4 Byte
+Beschreibung:
+Orientierung:
+Bit 31, Bit 30, ..., Bit 0
+Letztendlich muss man nur noch die einzelnen Zahlen addieren und erhält das 4-Byte große Register
+Binär -> Hex
+00000000 00000000 00000000 00001011  -> 0x0000000B 
+*/
+#define READ_SYS_CTRL 0x0000000B //System Control Register, Register-ID: 0x0D
 
->>>>>>> 1ce734a4258000675f5d4fca33894dcb50152146
+/*Register "System Status Register", besteht aus 5 Byte
+Beschreibung:
+Orientierung:
+Bit 39, Bit 38, ..., Bit 0
+Letztendlich muss man nur noch die einzelnen Zahlen addieren und erhält das 5-Byte große Register
+Binär -> Hex
+00000000 00000000 00000000 00000000 00000000 -> 0x0000000000 
+
+Es müssen folgende interupts gesetzt werden:
+RXDFR (Bit 13) -> wenn die Nachricht fertig ist
+RXFCG (Bit 14) -> Checksummenvergleich erfolgreich am Ende des Frames
+RXFCE (Bit 15) -> Checksummenvergleich nicht erfolgreich am Ende des Frames
+*/
+#define READ_SYS_STATUS 0x0000000000 //System Event Status Register, Register-ID: 0x0F
 
 #define BaudRate SPI_BAUDRATE_21MHZ;	//hier auch 11.5, 5.25, 2.625, 1.3125 auswählbar
 
