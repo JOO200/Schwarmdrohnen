@@ -1,6 +1,6 @@
 #include "ai_task.h"
 #include "ai_datatypes.h"
-#include "ai_distances.h"
+#include "ai_distance.h"
 
 #include "worker.h"
 
@@ -18,8 +18,15 @@ void ai_launch(void)
 		AI_TASK_PRIO, NULL);
 }
 
+//Rolle der Drohne
+enum e_role_t {
+	AI_ROLE_NO_ROLE = 0,
+	AI_ROLE_MASTER,
+	AI_ROLE_SLAVE
+}; // e_role_t;
+
 //hier unsere main
-//wird ausgeführt von FreeRTOS-Scheduler sobald dieser das für sinnvoll hält (und natürlich,nachdem dieser in "main.c" gestartet wurde)
+//wird ausgefï¿½hrt von FreeRTOS-Scheduler sobald dieser das fï¿½r sinnvoll hï¿½lt (und natï¿½rlich,nachdem dieser in "main.c" gestartet wurde)
 void ai_Task(void * arg) {
 	//... lokale Vars, init
 	st_distances_t tableDistances;
@@ -41,28 +48,28 @@ void ai_Task(void * arg) {
 		}
 
 	}
-	vTaskDelete(NULL); //wäre schlecht, wenn das hier aufgerufen wird...
+	vTaskDelete(NULL); //wï¿½re schlecht, wenn das hier aufgerufen wird...
 }
 
-//eventuell müssen args als void *
+//eventuell mï¿½ssen args als void *
 void getDistances(st_distances_t * data) {
 	//hier call der deckinterface.distances 
 	FillDistanceTable(); 
 }
 
 
-//eventuell müssen args als void *
+//eventuell mï¿½ssen args als void *
 void calculatePosition(tableDistances * data)
 {
 	//hier call der positionsberechnung
 }
 
 bool initAi_Swarm() {
-	//UWB_Deck für Josy und Janüüüühk (neuerdings auch Nüüükküh)
+	//UWB_Deck fï¿½r Josy und Janï¿½ï¿½ï¿½ï¿½hk (neuerdings auch Nï¿½ï¿½ï¿½kkï¿½h)
 	//hier euer/unser init-shizzle
 
 
-	//Rolle eigendlich geringster Name im Netzwerk --> erst Netzwerk nötig
+	//Rolle eigendlich geringster Name im Netzwerk --> erst Netzwerk nï¿½tig
 	if (UWB_NAME == 0) {
 		my_ai_role = MASTER;
 	}

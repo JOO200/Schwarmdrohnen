@@ -1,4 +1,5 @@
 #include "ai_config.h"
+<<<<<<< HEAD
 #include "stddef.h"	//für z.B. NULL muss dies includiert werden
 
 
@@ -8,14 +9,16 @@ typedef struct {
 	float dist_to_master;		//Entfernung zu Masterdrohne
 	float dist_to [NR_OF_DRONES];
 }st_distances_t;				*/
+=======
+//#include "ai_locodeck.h"
+#include "stddef.h"	//fï¿½r z.B. NULL muss dies includiert werden
+>>>>>>> 87396e1998d46bfab222aa232f3e62b443bc2a99
 
 //Rolle der Drohne
-typedef enum e_role_t {
-	MASTER, 
-	SLAVE,
-	UNDEFINED = 0
-} e_role_t;
+typedef enum e_role_t;
+//typedef enum e_role_t State;
 
+<<<<<<< HEAD
 e_role_t my_ai_role = UNDEFINED;
 char my_ai_name = 0;
 
@@ -35,14 +38,18 @@ typedef struct st_DWM_Config_t {
 	//Baudrate, ...
 	
 } st_DWM_Config_t_default = { PAN_Identifier = my_ai_name, Bitrate = };
+=======
+//static enum e_role_t my_ai_role = AI_ROLE_NO_ROLE;
+
+//Vorschlag: mehrdimensionales quadratisches Array mit Distanzen aller Drohnen, Synchronisierung der Haupt- und Nebendiagonalen
+typedef struct st_distances_t;
+
+//config des DWM-Boards
+typedef struct st_DWM_Config_t;
+>>>>>>> 87396e1998d46bfab222aa232f3e62b443bc2a99
 
 //enum um zu spezifizieren, welche Art von Nachricht aus dem DWM1000 ausgelesen wurde
-typedef enum e_message_type_t {
-	DISTANCE_TABEL,
-	MASTER_STATE,
-	UNDEFINED = 0
-
-} e_message_type_t;
+ typedef enum  e_message_type_t;
 
 //----------------------------------- DWM1000 Interface -------------------------------------
 //Struct welches DMW1000 darstellt

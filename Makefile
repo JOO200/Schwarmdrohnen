@@ -103,7 +103,7 @@ CFLAGS += -DUSD_RUN_DISKIO_FUNCTION_TESTS
 endif
 
 # Crazyflie sources
-VPATH += src/init src/hal/src src/modules/src src/utils/src src/drivers/bosch/src src/drivers/src
+VPATH += src/init src/hal/src src/modules/src src/utils/src src/drivers/bosch/src src/drivers/src src/AI_swarm/src src/AI_swarm/Deck_Code src/AI_swarm/Deck_Header  #die letzten beiden von uns beigefügt
 VPATH_CF2 += src/platform/cf2
 
 ifeq ($(PLATFORM), CF2)
@@ -118,6 +118,7 @@ PROJ_OBJ += main.o
 PROJ_OBJ_CF2 += platform_cf2.o
 
 # Drivers
+PROJ_OBJ += ai_dwm1000_driver.o ai_task.o	#von uns beigefügt
 PROJ_OBJ += exti.o nvic.o motors.o
 PROJ_OBJ_CF2 += led_f405.o mpu6500.o i2cdev_f405.o ws2812_cf2.o lps25h.o i2c_drv.o
 PROJ_OBJ_CF2 += ak8963.o eeprom.o maxsonar.o piezo.o
@@ -215,6 +216,7 @@ SIZE = $(CROSS_COMPILE)size
 OBJCOPY = $(CROSS_COMPILE)objcopy
 GDB = $(CROSS_COMPILE)gdb
 
+
 INCLUDES  = -I$(FREERTOS)/include -I$(PORT) -Isrc
 INCLUDES += -Isrc/config -Isrc/hal/interface -Isrc/modules/interface
 INCLUDES += -Isrc/utils/interface -Isrc/drivers/interface -Isrc/platform
@@ -227,6 +229,9 @@ INCLUDES_CF2 += -I$(LIB)/STM32_USB_OTG_Driver/inc
 INCLUDES_CF2 += -Isrc/deck/interface -Isrc/deck/drivers/interface
 INCLUDES_CF2 += -Ivendor/libdw1000/inc
 INCLUDES_CF2 += -I$(LIB)/FatFS
+INCLUDES_CF2 += -Isrc/AI_swarm/					#von uns beigefügt
+INCLUDES_CF2 += -Isrc/init/drivers/interface	#von uns beigefügt
+INCLUDES_CF2 += -Isrc/Ai_swarm/Deck_Header		#von uns beigefügt
 
 ifeq ($(USE_FPU), 1)
 	PROCESSOR = -mcpu=cortex-m4 -mthumb -mfloat-abi=hard -mfpu=fpv4-sp-d16

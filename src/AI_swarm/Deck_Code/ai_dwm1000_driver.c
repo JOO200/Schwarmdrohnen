@@ -1,7 +1,8 @@
-#include "ai_dwm1000_driver.h"
-#include "Driver_SPI.h"
+#include "../Deck_Header/ai_dwm1000_driver.h"
+#include "../../../vendor/CMSIS/CMSIS/Driver/Include/Driver_SPI.h"
 #include "stm32f4xx_spi.h"
 #include "deck_spi.h"
+<<<<<<< HEAD
 #include "stm32f4xx_exti.h"	//wird benötigt um externe interrupts zu initialisieren
 
 /*Register "Transmit Frame Control", besteht aus 5 Byte
@@ -49,8 +50,11 @@ RXFCG (Bit 14) -> Checksummenvergleich erfolgreich am Ende des Frames
 RXFCE (Bit 15) -> Checksummenvergleich nicht erfolgreich am Ende des Frames
 */
 #define READ_SYS_STATUS 0x0000000000 //System Event Status Register, Register-ID: 0x0F
+=======
+#include "../ai_task.h"
+>>>>>>> 87396e1998d46bfab222aa232f3e62b443bc2a99
 
-#define BaudRate SPI_BAUDRATE_21MHZ;	//hier auch 11.5, 5.25, 2.625, 1.3125 auswählbar
+#define BaudRate SPI_BAUDRATE_21MHZ	//hier auch 11.5, 5.25, 2.625, 1.3125 auswï¿½hlbar
 
 //defines für Interrupt Config
 #define EXTI_Line11 ((uint32_t)0x00800);
@@ -67,6 +71,14 @@ RXFCE (Bit 15) -> Checksummenvergleich nicht erfolgreich am Ende des Frames
 
 //hier wird deck_spi.h/deck_spi.c angewendet (in src/deck/api/...)
 
+//helper Functions:
+void spiStart(){
+	spiBeginTransaction(BaudRate);
+}
+
+void spiStop(){
+	spiEndTransaction();
+}
 
 //inhalt von locodec.c init (ab Z.312) inspiriert (und angepasst)
 bool setup_dwm1000_communication(){
@@ -108,7 +120,11 @@ bool setup_dwm1000_communication(){
 	GPIO_InitStructure.GPIO_OType = GPIO_OType_OD;
 	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
 
+<<<<<<< HEAD
 	GPIO_Init(GPIO_PORT, &GPIO_InitStructure);
+=======
+	//hier config ausfï¿½llen
+>>>>>>> 87396e1998d46bfab222aa232f3e62b443bc2a99
 
 
 	//Interrupt Initstruct vorbereiten
@@ -131,19 +147,24 @@ bool setup_dwm1000_communication(){
 
 }
 
+<<<<<<< HEAD
 bool dwm1000_SendData(void * data, int lengthOfData /*Adressen?, ...*/) {
 	//1. Aufbauen der Transmit Frame für den SPI Bus an den DWM1000
+=======
+bool dwm1000_SendData(void * data, int lengthOfData /*adressen?, ...*/) {
+	//1. Aufbauen der Transmit Frame fï¿½r den SPI Bus an den DWM1000
+>>>>>>> 87396e1998d46bfab222aa232f3e62b443bc2a99
 	//2. Data auf Transmit Data Buffer Register
 	//3. Transmit Frame Control aktualisieren
-	//4. Sendung überprüfen (Timestamp abholen?, ...)
+	//4. Sendung ï¿½berprï¿½fen (Timestamp abholen?, ...)
 }
 
 
 e_message_type_t dwm1000_ReceiveData(void * data, int lengthOfData) {
 	//1. Receive Buffer Auslesen
-	//2. Art der Nachricht entschlüsseln
+	//2. Art der Nachricht entschlï¿½sseln
 	//3. Auf Data schreiben
-	//4. Art der Nachricht zurückgeben
+	//4. Art der Nachricht zurï¿½ckgeben
 }
 
 
@@ -157,14 +178,14 @@ float dwm1000_getDistance(double nameOfOtherDWM) {
 
 st_DWM_Config_t dwm1000_init(st_DWM_Config_t newConfig) {
 
-	spiStart();	//für Mutexinteraktion genutzt	
+	spiStart();	//fï¿½r Mutexinteraktion genutzt	
 	
 	// -------- Init SPI --------
 
 	//Baud Rate
 		//Bausrate Nachricht aus newConfig erstellen
 
-	spiExchange();
+	spiExchange(0,0,0);
 
 
 
@@ -173,11 +194,11 @@ st_DWM_Config_t dwm1000_init(st_DWM_Config_t newConfig) {
 	//PAN Identifier
 		//Identifeier Nachricht aus newConfig erstellen
 
-	spiExchange();
+	spiExchange(0,0,0);
 
 
 
-	spiStop();	//für Mutexinteraktion genutzt	
+	spiStop();	//fï¿½r Mutexinteraktion genutzt	
 }
 
 
@@ -187,14 +208,14 @@ void __attribute__((used)) EXTI11_Callback(void)
 	DMW1000_IRQ_Flag = true;	//aktiviert synchrone "ISR" in ai_task.c
 }
 
+<<<<<<< HEAD
 //-------------------------------------- helper Functions: -------------------------------------------------------------
 void spiStart(){
 	spiBeginTransaction(BaudRate);
 }
+=======
+>>>>>>> 87396e1998d46bfab222aa232f3e62b443bc2a99
 
-void spiStop(){
-	spiEndTransaction();
-}
 
 
 
