@@ -81,9 +81,3 @@ bool initAi_Swarm() {
 	//...
 }
 
-//isr des externen Interrupts von dwm1000
-void DWM1000_IRQ_ISR(void) {
-
-	DWM1000_IRQ_Flag = true;
-
-}

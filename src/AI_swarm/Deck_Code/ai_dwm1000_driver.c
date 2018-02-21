@@ -2,15 +2,14 @@
 #include "../../../vendor/CMSIS/CMSIS/Driver/Include/Driver_SPI.h"
 #include "stm32f4xx_spi.h"
 #include "deck_spi.h"
-<<<<<<< HEAD
-#include "stm32f4xx_exti.h"	//wird benötigt um externe interrupts zu initialisieren
+#include "stm32f4xx_exti.h"	//wird benï¿½tigt um externe interrupts zu initialisieren
 
 /*Register "Transmit Frame Control", besteht aus 5 Byte
 Beschreibung:
 Orientierung: 
 Bit 39, Bit 38, ..., Bit 0
-Letztendlich muss man nur noch die einzelnen Zahlen addieren und erhält das 5-Byte große Register
-Binär -> Hex
+Letztendlich muss man nur noch die einzelnen Zahlen addieren und erhï¿½lt das 5-Byte groï¿½e Register
+Binï¿½r -> Hex
 00000000 00000000 00000000 00000000 00001100 -> 0x000000000C - TFLEN, Transmission Frame Length (0-6)
 00000000 00000000 00000000 00000000 00000000 -> 0x0000000000 - TFLE, Transmit Frame Length Extension (7-9)
 00000000 00000000 00000000 00000000 00000000 -> 0x0000000000 - R, Reserved (10-12)
@@ -20,53 +19,53 @@ Binär -> Hex
 00000000 00000000 00000100 00000000 00000000 -> 0x0000040000 - TXPSR, Transmit Pramble Symbol Repititions  (18+19)
 00000000 00000000 00010000 00000000 00000000 -> 0x0000100000 - PE, Preamble Extension (20+21)
 00000000 00000000 00000000 00000000 00000000 -> 0x0000000000 - TXBOFFS, Transmit Buffer index offset (22-31)
-00000000 00000000 00000000 00000000 00000000 -> 0x0000000000 - IFSDELAY, Extension für TXBOFFS  (32-39)
+00000000 00000000 00000000 00000000 00000000 -> 0x0000000000 - IFSDELAY, Extension fï¿½r TXBOFFS  (32-39)
 Addiert:
 00000000 00000000 00010101 00100000 00001100 -> 0x000015200C - TFC 
 */
-#define READ_TFC_TX_FCTRL 0x000015200C	//Instruction Manual S.12; Register-ID: 0x08
+#define READ_TFC_TX_FCTRL 0x000015200C;	//Instruction Manual S.12; Register-ID: 0x08
 
 /*Register "System Control Register", besteht aus 4 Byte
 Beschreibung:
 Orientierung:
 Bit 31, Bit 30, ..., Bit 0
-Letztendlich muss man nur noch die einzelnen Zahlen addieren und erhält das 4-Byte große Register
-Binär -> Hex
+Letztendlich muss man nur noch die einzelnen Zahlen addieren und erhï¿½lt das 4-Byte groï¿½e Register
+Binï¿½r -> Hex
 00000000 00000000 00000000 00001011  -> 0x0000000B 
 */
-#define READ_SYS_CTRL 0x0000000B //System Control Register, Register-ID: 0x0D
+#define READ_SYS_CTRL 0x0000000B; //System Control Register, Register-ID: 0x0D
 
 /*Register "System Status Register", besteht aus 5 Byte
 Beschreibung:
 Orientierung:
 Bit 39, Bit 38, ..., Bit 0
-Letztendlich muss man nur noch die einzelnen Zahlen addieren und erhält das 5-Byte große Register
-Binär -> Hex
+Letztendlich muss man nur noch die einzelnen Zahlen addieren und erhï¿½lt das 5-Byte groï¿½e Register
+Binï¿½r -> Hex
 00000000 00000000 00000000 00000000 00000000 -> 0x0000000000 
 
-Es müssen folgende interupts gesetzt werden:
+Es mï¿½ssen folgende interupts gesetzt werden:
 RXDFR (Bit 13) -> wenn die Nachricht fertig ist
 RXFCG (Bit 14) -> Checksummenvergleich erfolgreich am Ende des Frames
 RXFCE (Bit 15) -> Checksummenvergleich nicht erfolgreich am Ende des Frames
 */
 #define READ_SYS_STATUS 0x0000000000 //System Event Status Register, Register-ID: 0x0F
-=======
+
 #include "../ai_task.h"
->>>>>>> 87396e1998d46bfab222aa232f3e62b443bc2a99
 
-#define BaudRate SPI_BAUDRATE_21MHZ	//hier auch 11.5, 5.25, 2.625, 1.3125 auswï¿½hlbar
+#define BaudRate 0x0008//SPI_BAUDRATE_21MHZ	//hier auch 11.5, 5.25, 2.625, 1.3125 auswï¿½hlbar -- 21MHZ --> (uint16_t)0x0008
 
-//defines für Interrupt Config
-#define EXTI_Line11 ((uint32_t)0x00800);
-#define EXTI_LineN 	EXTI_Line11;	//bestimmt exti input port (von Bitcraze RX genannt)
-#define EXTI_Mode_Interrupt 0x00;	//interrupt mode - aus stm32f4xx_exti.h
-#define EXTI_Trigger_Rising 0x08;	//aus stm32f4xx_exti.h
+//defines fï¿½r Interrupt Config
+#define EXTI_Line11 0x00800
+#define EXTI_LineN 	EXTI_Line11	//bestimmt exti input port (von Bitcraze RX genannt)
+#define EXTI_Mode_Interrupt 0x00	//interrupt mode - aus stm32f4xx_exti.h
+#define EXTI_Trigger_Rising 0x08	//aus stm32f4xx_exti.h
 #define ENABLE 
 
-//defines für SPI
+//defines fï¿½r SPI
 #define CS_PIN DECK_GPIO_IO1		//CS/SS Pin ist "IO_1"
-#define GPIO_Mode_OUT 0x01;			
-#define GPIO_OType_OD 0x01;			
+#define GPIO_Mode_OUT 0x01
+#define GPIO_OType_OD 0x01
+#define GPIO_PIN_IRQ GPIO_PIN_11
 
 
 //hier wird deck_spi.h/deck_spi.c angewendet (in src/deck/api/...)
@@ -107,7 +106,7 @@ bool setup_dwm1000_communication(){
 
 	// Init IRQ input
 	bzero(&GPIO_InitStructure, sizeof(GPIO_InitStructure));
-	GPIO_InitStructure.GPIO_Pin = GPIO_PIN_IRQ;
+	GPIO_InitStructure.GPIO_Pin = GPIO_PIN_IRQ; //GPIO_PIN_11
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;
 	//GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_DOWN;
 
@@ -115,16 +114,13 @@ bool setup_dwm1000_communication(){
 
 
 	// Init reset output
-	GPIO_InitStructure.GPIO_Pin = GPIO_PIN_RESET;
+	GPIO_InitStructure.GPIO_Pin = GPIO_PIN_RESET; //GPIO_PIN_10
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
 	GPIO_InitStructure.GPIO_OType = GPIO_OType_OD;
 	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
 
-<<<<<<< HEAD
+
 	GPIO_Init(GPIO_PORT, &GPIO_InitStructure);
-=======
-	//hier config ausfï¿½llen
->>>>>>> 87396e1998d46bfab222aa232f3e62b443bc2a99
 
 
 	//Interrupt Initstruct vorbereiten
@@ -137,8 +133,8 @@ bool setup_dwm1000_communication(){
 
 
 	// Enable interrupt
-	NVIC_InitStructure.NVIC_IRQChannel = EXTI_IRQChannel;
-	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = NVIC_LOW_PRI;
+	NVIC_InitStructure.NVIC_IRQChannel = EXTI_IRQChannel;	//EXTI15_10_IRQn
+	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = NVIC_LOW_PRI;	//13
 	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
 	NVIC_Init(&NVIC_InitStructure);
@@ -147,13 +143,8 @@ bool setup_dwm1000_communication(){
 
 }
 
-<<<<<<< HEAD
 bool dwm1000_SendData(void * data, int lengthOfData /*Adressen?, ...*/) {
-	//1. Aufbauen der Transmit Frame für den SPI Bus an den DWM1000
-=======
-bool dwm1000_SendData(void * data, int lengthOfData /*adressen?, ...*/) {
 	//1. Aufbauen der Transmit Frame fï¿½r den SPI Bus an den DWM1000
->>>>>>> 87396e1998d46bfab222aa232f3e62b443bc2a99
 	//2. Data auf Transmit Data Buffer Register
 	//3. Transmit Frame Control aktualisieren
 	//4. Sendung ï¿½berprï¿½fen (Timestamp abholen?, ...)
@@ -208,13 +199,6 @@ void __attribute__((used)) EXTI11_Callback(void)
 	DMW1000_IRQ_Flag = true;	//aktiviert synchrone "ISR" in ai_task.c
 }
 
-<<<<<<< HEAD
-//-------------------------------------- helper Functions: -------------------------------------------------------------
-void spiStart(){
-	spiBeginTransaction(BaudRate);
-}
-=======
->>>>>>> 87396e1998d46bfab222aa232f3e62b443bc2a99
 
 
 
