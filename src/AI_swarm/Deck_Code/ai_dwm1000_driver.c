@@ -3,7 +3,28 @@
 #include "stm32f4xx_spi.h"
 #include "deck_spi.h"
 #include "stm32f4xx_exti.h"	//wird ben�tigt um externe interrupts zu initialisieren
+#include "../ai_datatypes.h"
 
+
+//--------------------------------Instructions:
+//Bit 7 -> 0
+//Bit 7: Read - 0, Write - 1
+//Bit 6: 0
+// Bit 5 - 0: Reg ID
+#define READ_TFC 0b00001000
+#define WRITE_TFC 0b10001000
+
+#define READ_SYS_CTRL 0b00001101
+#define WRITE_SYS_CTRL 0b10001101
+
+#define READ_SYS_STATUS 0b00001111
+#define WRITE_SYS_STATUS 0b10001111
+
+#define WRITE_TXBUFFER 0b10001001
+
+#define READ_RXBUFFER 0b00010001	//Reg ID:0x11
+#define READ_RXTIMESTAMP 0b00010101 //REG ID 0x15
+//--------------------------------Register:
 /*Register "Transmit Frame Control", besteht aus 5 Byte
 Beschreibung:
 Orientierung: 
@@ -23,7 +44,7 @@ Bin�r -> Hex
 Addiert:
 00000000 00000000 00010101 00100000 00001100 -> 0x000015200C - TFC 
 */
-#define WRITE_TX_FCTRL 0x000015200C;	//Instruction Manual S.12; Register-ID: 0x08, Bei INIT Schreiben
+#define WRITE_INIT_TX_FCTRL 0x000015200C;	//Instruction Manual S.12; Register-ID: 0x08, Bei INIT Schreiben
 
 /*Register "System Control Register", besteht aus 4 Byte
 Beschreibung:
@@ -35,7 +56,7 @@ Bin�r -> Hex
 */
 #define READ_SYS_CTRL 0x00000000; //System Control Register, Register-ID: 0x0D, Diesen Wert einem Speicherbereich zuschreiben, dann den Inhalt des Registers darauf lesen
 
-#define TRANSMIT_BITs 0x00000003;	//hiermit & -> dann Transmit Bit auf jeden Fall gesetzt
+#define WRITE_TRANSMIT_BITs 0x00000003;	//hiermit & -> dann Transmit Bit auf jeden Fall gesetzt
 
 /*Register "System Status Register", besteht aus 5 Byte
 Beschreibung:
@@ -171,9 +192,29 @@ bool setup_dwm1000_communication(){
 
 }
 
-bool dwm1000_SendData(void * data, int lengthOfData /*Adressen?, ...*/) {
+bool dwm1000_SendData(void * data, int lengthOfData, enum e_message_type_t message_type /*Adressen?, ...*/) {
+	spiStart();
+
 	//1. Aufbauen der Transmit Frame f�r den SPI Bus an den DWM1000
-	//2. Data auf Transmit Data Buffer Register
+	void *sendData;
+	int messageSize = lengthOfData + sizeof(char) + sizeof(enum e_message_type_t);
+	sendData = malloc(messageSize);	// zwei bytes Extra um Art der Nachricht und Name des Senders beizufügen
+	if (sendData == NULL) {
+		return false;		//kein Mem mehr verfügbar --> Funktion wird nicht Ausgeführt
+	}
+	char senderID = my_ai_name; 
+
+	*(char*)sendData = senderID;																	//Sender ID ist erstes Byte der Nachricht
+	*(enum e_message_type_t*)((int*)sendData + sizeof(char)) = message_type;						//message ytpe ist zweites Byte der Nachricht
+	for (int i = 0; i < lengthOfData; i++)															//jedes byte einzeln auf alloc Speicher schreiben
+	{
+		*((char*)sendData + sizeof(char) + sizeof(enum e_message_type_t) + i) = *((char*)data + i);
+	}
+
+	//2. Data auf Transmit Data Buffer Register packen
+
+	spiExchange()		//instruction Schicken - write
+
 	//3. Transmit Frame Control aktualisieren
 	//4. Sendung �berpr�fen (Timestamp abholen?, ...)
 }
