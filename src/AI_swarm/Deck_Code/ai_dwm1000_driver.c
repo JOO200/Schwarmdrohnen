@@ -74,7 +74,8 @@ Bit 31, Bit 30, ..., Bit 0
 Letztendlich muss man nur noch die einzelnen Zahlen addieren und erh�lt das 4-Byte gro�e Register
 Bin�r -> Hex
 00000000 00000000 00000001 00000000  -> 0x00000100*/
-#define WRITE_RECEIVE_ENABLE 0x //Nach lesen einer Nachricht aus den Receive Buffer muss dieses Bit gesetzt werden um neue Nachrichten empfangen zu können
+#define WRITE_RECEIVE_ENABLE 0x00000100 //Nach lesen einer Nachricht aus den Receive Buffer muss dieses Bit gesetzt werden um neue Nachrichten empfangen zu können
+
 
 
 #include "../ai_task.h"
