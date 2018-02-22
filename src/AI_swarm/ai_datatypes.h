@@ -27,10 +27,10 @@ typedef struct st_DWM_Config_t {
 	//Baudrate, ...
 } st_DWM_Config_t;
 
-typedef enum {
+enum e_message_type_t {
 	DISTANCE_TABEL,
 	MASTER_STATE,
 	UNDEFINED = 0
 
-} e_message_type_t;
+} ;
 

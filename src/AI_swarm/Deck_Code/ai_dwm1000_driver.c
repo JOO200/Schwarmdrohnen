@@ -18,13 +18,14 @@
 #define READ_TFC 0b00001000
 #define WRITE_TFC 0b10001000
 
+#define WRITE_TXBUFFER 0b10001001
+
 #define READ_SYS_CTRL 0b00001101
 #define WRITE_SYS_CTRL 0b10001101
+#define SET_TRANSMIT_START WRITE_TRANSMIT_BITs
 
 #define READ_SYS_STATUS 0b00001111
 #define WRITE_SYS_STATUS 0b10001111
-
-#define WRITE_TXBUFFER 0b10001001
 
 #define READ_RXBUFFER 0b00010001	//Reg ID:0x11
 #define READ_RXTIMESTAMP 0b00010101 //REG ID 0x15
@@ -60,7 +61,7 @@ Bin�r -> Hex
 */
 #define READ_SYS_CTRL 0x00000000; //System Control Register, Register-ID: 0x0D, Diesen Wert einem Speicherbereich zuschreiben, dann den Inhalt des Registers darauf lesen
 
-#define WRITE_TRANSMIT_BITs 0x00000003;	//hiermit & -> dann Transmit Bit auf jeden Fall gesetzt
+#define WRITE_TRANSMIT_BITs 0x00000003;	//hiermit | -> dann Transmit Bit auf jeden Fall gesetzt
 
 /*Register "System Status Register", besteht aus 5 Byte
 Beschreibung:
@@ -196,11 +197,7 @@ bool setup_dwm1000_communication(){
 
 }
 
-<<<<<<< HEAD
-bool dwm1000_SendData(void * data, int lengthOfData /*Adressen?, ...*/) {
-	//1. Aufbauen der Transmit Frame fuer den SPI Bus an den DWM1000
-	//2. Data auf Transmit Data Buffer Register
-=======
+
 bool dwm1000_SendData(void * data, int lengthOfData, enum e_message_type_t message_type /*Adressen?, ...*/) {
 	spiStart();
 
@@ -221,12 +218,33 @@ bool dwm1000_SendData(void * data, int lengthOfData, enum e_message_type_t messa
 	}
 
 	//2. Data auf Transmit Data Buffer Register packen
+	char instruction = WRITE_TXBUFFER;
+	char receiveByte = 0x00;
 
-	spiExchange()		//instruction Schicken - write
+	void *placeHolder = malloc(lengthOfData);
 
->>>>>>> 531d29733538e874e19555b9bccba685fbe8a8e8
-	//3. Transmit Frame Control aktualisieren
+		//spiExchange(size_t length, const uint8_t * data_tx, uint8_t * data_rx)		
+	spiExchange(1, &instruction, placeHolder);	//instruction Schicken - write txbuffer
+
+	spiExchange(lengthOfData, sendData, placeHolder);
+
+	//3. System Control aktualisieren
+	instruction = READ_SYS_CTRL;
+	spiExchange(1, &instruction, &receiveByte);	//instruction: ich will sysctrl lesen
+
+	void * sysctrl = malloc(5);
+	spiExchange(5, placeHolder, sysctrl);		//syscontrol lesen
+
+
+	*(int*)sysctrl |= SET_TRANSMIT_START;		//neuen Inhalt für syscontrol erstellen
+
+	instruction = WRITE_SYS_CTRL;			
+	spiExchange(1, instruction, placeHolder);	//instruction: ich will syscontrol schreiben
+
+	spiExchange(5, sysctrl, placeHolder);		//syscontrol schreiben
+
 	//4. Sendung ueberpruefen (Timestamp abholen?, ...)
+		//.. noch keine Relevanten Dinge eingefallen
 }
 
 
@@ -246,8 +264,14 @@ float dwm1000_getDistance(double nameOfOtherDWM) {
 	//2. Partner antwortet  mit seinem Timestamp (Slave)
 	//3. Master empfägt Slave-Timestamp
 	//4. Errechnung der Response Time
-	//5. Response Time * Lichtgeschwindigkeit (* Radiowellen) = Abstand,
+	//5. (Gestoppte Zeit - (TransmitTimestamp_Ziel - ReceiveTimestamp_Ziel))/2 * Lichtgeschw = Abstand
 	// Danach weiß der Master, Initiator den Abstand 
+}
+
+void dwm1000_sendDistance(char id_requester) {
+	//1. Funktion aktiviert, nach Distance request eingang
+	//2. Antworten, damit requester Zeit stopppen kann
+	//3. Zeit zwischen Receive Timestamp und Transmit Timestamp an requester schicken, damit von gestoppter zeit abgezogen werden kann
 }
 
 
