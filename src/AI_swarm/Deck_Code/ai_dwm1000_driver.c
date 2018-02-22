@@ -23,7 +23,7 @@ Bin�r -> Hex
 Addiert:
 00000000 00000000 00010101 00100000 00001100 -> 0x000015200C - TFC 
 */
-#define READ_TFC_TX_FCTRL 0x000015200C;	//Instruction Manual S.12; Register-ID: 0x08
+#define WRITE_TX_FCTRL 0x000015200C;	//Instruction Manual S.12; Register-ID: 0x08, Bei INIT Schreiben
 
 /*Register "System Control Register", besteht aus 4 Byte
 Beschreibung:
@@ -33,7 +33,9 @@ Letztendlich muss man nur noch die einzelnen Zahlen addieren und erh�lt das 4-
 Bin�r -> Hex
 00000000 00000000 00000000 00001011  -> 0x0000000B 
 */
-#define READ_SYS_CTRL 0x0000000B; //System Control Register, Register-ID: 0x0D
+#define READ_SYS_CTRL 0x00000000; //System Control Register, Register-ID: 0x0D, Diesen Wert einem Speicherbereich zuschreiben, dann den Inhalt des Registers darauf lesen
+
+#define TRANSMIT_BITs 0x00000003;	//hiermit & -> dann Transmit Bit auf jeden Fall gesetzt
 
 /*Register "System Status Register", besteht aus 5 Byte
 Beschreibung:
@@ -43,12 +45,37 @@ Letztendlich muss man nur noch die einzelnen Zahlen addieren und erh�lt das 5-
 Bin�r -> Hex
 00000000 00000000 00000000 00000000 00000000 -> 0x0000000000 
 
-Es m�ssen folgende interupts gesetzt werden:
-RXDFR (Bit 13) -> wenn die Nachricht fertig ist
-RXFCG (Bit 14) -> Checksummenvergleich erfolgreich am Ende des Frames
-RXFCE (Bit 15) -> Checksummenvergleich nicht erfolgreich am Ende des Frames
+Es koenten folgende interupts gesetzt werden, die für uns relevant sind:
+RXDFR (Bit 13) -> wenn die Nachricht fertig gesendet ist
+RXFCG (Bit 14) -> Checksummenvergleich erfolgreich am Ende des Frames - FRAME GUT GESENDET
+RXFCE (Bit 15) -> Checksummenvergleich nicht erfolgreich am Ende des Frames	- FRAME SCHLECHT GESENDET
 */
-#define READ_SYS_STATUS 0x0000000000 //System Event Status Register, Register-ID: 0x0F
+#define READ_SYS_STATUS 0x0000000000 //System Event Status Register, Register-ID: 0x0F, Diesen Wert einem Speicherbereich zuschreiben, dann den Inhalt des Registers darauf lesen
+
+/*Register "System Status Register", besteht aus 5 Byte
+Beschreibung:
+Orientierung:
+Bit 39, Bit 38, ..., Bit 0
+Letztendlich muss man nur noch die einzelnen Zahlen addieren und erh�lt das 5-Byte gro�e Register
+Bin�r -> Hex
+00000000 00000000 00000000 00100000 00000000 -> 0x0000000000
+
+Es koenten folgende interupts gesetzt werden, die für uns relevant sind:
+RXDFR (Bit 13) -> wenn die Nachricht fertig gesendet ist
+RXFCG (Bit 14) -> Checksummenvergleich erfolgreich am Ende des Frames - FRAME GUT GESENDET
+RXFCE (Bit 15) -> Checksummenvergleich nicht erfolgreich am Ende des Frames	- FRAME SCHLECHT GESENDET
+*/
+#define MESSAGE_RECEIVED_STATUS 0x0000002000;	//Wenn bei verunden mit diesem Wert und dem System Status Register (0x0F) > 0 rauskommt -> Nachricht erhalten
+
+/*Register "System Control Register", besteht aus 4 Byte
+Beschreibung:
+Orientierung:
+Bit 31, Bit 30, ..., Bit 0
+Letztendlich muss man nur noch die einzelnen Zahlen addieren und erh�lt das 4-Byte gro�e Register
+Bin�r -> Hex
+00000000 00000000 00000001 00000000  -> 0x00000100*/
+#define WRITE_RECEIVE_ENABLE 0x //Nach lesen einer Nachricht aus den Receive Buffer muss dieses Bit gesetzt werden um neue Nachrichten empfangen zu können
+
 
 #include "../ai_task.h"
 
@@ -59,7 +86,7 @@ RXFCE (Bit 15) -> Checksummenvergleich nicht erfolgreich am Ende des Frames
 #define EXTI_LineN 	EXTI_Line11	//bestimmt exti input port (von Bitcraze RX genannt)
 #define EXTI_Mode_Interrupt 0x00	//interrupt mode - aus stm32f4xx_exti.h
 #define EXTI_Trigger_Rising 0x08	//aus stm32f4xx_exti.h
-#define ENABLE 
+#define ENABLE 1;
 
 //defines f�r SPI
 #define CS_PIN DECK_GPIO_IO1		//CS/SS Pin ist "IO_1"
@@ -153,9 +180,10 @@ bool dwm1000_SendData(void * data, int lengthOfData /*Adressen?, ...*/) {
 
 e_message_type_t dwm1000_ReceiveData(void * data, int lengthOfData) {
 	//1. Receive Buffer Auslesen
-	//2. Art der Nachricht entschl�sseln
-	//3. Auf Data schreiben
-	//4. Art der Nachricht zur�ckgeben
+	//2. Receive Enable Setzten
+	//3. Art der Nachricht entschl�sseln
+	//4. Auf Data schreiben
+	//5. Art der Nachricht zur�ckgeben
 }
 
 
