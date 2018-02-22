@@ -9,6 +9,9 @@ enum e_role_t {
 	AI_ROLE_SLAVE
 }; // e_role_t;
 
+char my_ai_name = 0;
+enum e_role_t my_ai_role = AI_ROLE_MASTER;
+
 typedef struct st_distances_t {
 
 	int curDisTab;										//aktuelle Distance Tabel, Wert 0 oder 1, switch case in .c
