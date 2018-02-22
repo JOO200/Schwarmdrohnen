@@ -29,6 +29,8 @@
 // LPP = Loco Positioning Protocol
 // LPS = Loco Positioning System
 
+/* Git Comment */
+
 
 #include <string.h>
 #include <math.h>
@@ -63,7 +65,7 @@ static uint8_t succededRanging[NR_OF_DRONES];
 static uint8_t failedRanging[NR_OF_DRONES];
 
 // Timestamps for ranging
-static dwTime_t poll_tx;		//dwTime_T Datentype von Decawave, Zeit für bestimmte Aktion
+static dwTime_t poll_tx;		//dwTime_T Datentype von Decawave, Zeit fï¿½r bestimmte Aktion
 static dwTime_t poll_rx;
 static dwTime_t answer_tx;
 static dwTime_t answer_rx;
@@ -107,12 +109,12 @@ static uint32_t rxcallback(dwDevice_t *dev)			//Beginn des Wichtigen Distanz Ber
   dwTime_t arival = { .full=0 };
   int dataLength = dwGetDataLength(dev);
 
-  if (dataLength == 0) return 0;		//if Fall für leere Empfangsdaten
+  if (dataLength == 0) return 0;		//if Fall fï¿½r leere Empfangsdaten
 
   packet_t rxPacket;
-  memset(&rxPacket, 0, MAC802154_HEADER_LENGTH);  //packet mit Nullen überschreiben
+  memset(&rxPacket, 0, MAC802154_HEADER_LENGTH);  //packet mit Nullen ï¿½berschreiben
 
-  dwGetData(dev, (uint8_t*)&rxPacket, dataLength);	//get Paket und befüllen
+  dwGetData(dev, (uint8_t*)&rxPacket, dataLength);	//get Paket und befï¿½llen
 
   if (rxPacket.destAddress != options->tagAddress) 
   {
@@ -217,7 +219,7 @@ static uint32_t adjustTxRxTime(dwTime_t *time)
 }
 
 /* Calculate the transmit time for a given timeslot in the current frame */
-//unverändert übernehmen
+//unverï¿½ndert ï¿½bernehmen
 static dwTime_t transmitTimeForSlot(int slot)
 {
   dwTime_t transmitTime = { .full = 0 };
@@ -369,7 +371,7 @@ static uint32_t twrTagOnEvent(dwDevice_t *dev, uwbEvent_t event)
   return MAX_TIMEOUT;
 }
 
-/*Init für Two Way Ranging*/
+/*Init fï¿½r Two Way Ranging*/
 static void twrTagInit(dwDevice_t *dev, lpsAlgoOptions_t* algoOptions)
 {
   options = algoOptions;
