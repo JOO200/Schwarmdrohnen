@@ -2,7 +2,7 @@
 #include "../../../vendor/CMSIS/CMSIS/Driver/Include/Driver_SPI.h"
 #include "stm32f4xx_spi.h"
 #include "deck_spi.h"
-#include "stm32f4xx_exti.h"	//wird ben�tigt um externe interrupts zu initialisieren
+#include "stm32f4xx_exti.h"	//wird benoetigt um externe interrupts zu initialisieren
 
 /*Register "Transmit Frame Control", besteht aus 5 Byte
 Beschreibung:
@@ -82,14 +82,14 @@ Bin�r -> Hex
 
 #define BaudRate 0x0008//SPI_BAUDRATE_21MHZ	//hier auch 11.5, 5.25, 2.625, 1.3125 ausw�hlbar -- 21MHZ --> (uint16_t)0x0008
 
-//defines f�r Interrupt Config
+//defines fuer Interrupt Config
 #define EXTI_Line11 0x00800
 #define EXTI_LineN 	EXTI_Line11	//bestimmt exti input port (von Bitcraze RX genannt)
 #define EXTI_Mode_Interrupt 0x00	//interrupt mode - aus stm32f4xx_exti.h
 #define EXTI_Trigger_Rising 0x08	//aus stm32f4xx_exti.h
 #define ENABLE 1;
 
-//defines f�r SPI
+//defines fuer SPI
 #define CS_PIN DECK_GPIO_IO1		//CS/SS Pin ist "IO_1"
 #define GPIO_Mode_OUT 0x01
 #define GPIO_OType_OD 0x01
@@ -172,10 +172,10 @@ bool setup_dwm1000_communication(){
 }
 
 bool dwm1000_SendData(void * data, int lengthOfData /*Adressen?, ...*/) {
-	//1. Aufbauen der Transmit Frame f�r den SPI Bus an den DWM1000
+	//1. Aufbauen der Transmit Frame fuer den SPI Bus an den DWM1000
 	//2. Data auf Transmit Data Buffer Register
 	//3. Transmit Frame Control aktualisieren
-	//4. Sendung �berpr�fen (Timestamp abholen?, ...)
+	//4. Sendung ueberpruefen (Timestamp abholen?, ...)
 }
 
 
@@ -184,21 +184,25 @@ e_message_type_t dwm1000_ReceiveData(void * data, int lengthOfData) {
 	//2. Receive Enable Setzten
 	//3. Art der Nachricht entschl�sseln
 	//4. Auf Data schreiben
-	//5. Art der Nachricht zur�ckgeben
+	//5. Art der Nachricht zurueckgeben
 }
 
 
 float dwm1000_getDistance(double nameOfOtherDWM) {
-	//1. 
-	//2.
-	//3.
-	//4.
+	
+	// Beschreibung für eine Drohne
+	//1. Nachrichten an Partner schicken (Master)
+	//2. Partner antwortet  mit seinem Timestamp (Slave)
+	//3. Master empfägt Slave-Timestamp
+	//4. Errechnung der Response Time
+	//5. Response Time * Lichtgeschwindigkeit (* Radiowellen) = Abstand,
+	// Danach weiß der Master, Initiator den Abstand 
 }
 
 
 st_DWM_Config_t dwm1000_init(st_DWM_Config_t newConfig) {
 
-	spiStart();	//f�r Mutexinteraktion genutzt	
+	spiStart();	//fuer Mutexinteraktion genutzt	
 	
 	// -------- Init SPI --------
 
@@ -218,7 +222,7 @@ st_DWM_Config_t dwm1000_init(st_DWM_Config_t newConfig) {
 
 
 
-	spiStop();	//f�r Mutexinteraktion genutzt	
+	spiStop();	//fuer Mutexinteraktion genutzt	
 }
 
 

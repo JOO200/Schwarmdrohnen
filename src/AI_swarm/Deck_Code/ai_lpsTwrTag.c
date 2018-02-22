@@ -109,12 +109,12 @@ static uint32_t rxcallback(dwDevice_t *dev)			//Beginn des Wichtigen Distanz Ber
   dwTime_t arival = { .full=0 };
   int dataLength = dwGetDataLength(dev);
 
-  if (dataLength == 0) return 0;		//if Fall f�r leere Empfangsdaten
+  if (dataLength == 0) return 0;		//if Fall fuer leere Empfangsdaten
 
   packet_t rxPacket;
-  memset(&rxPacket, 0, MAC802154_HEADER_LENGTH);  //packet mit Nullen �berschreiben
+  memset(&rxPacket, 0, MAC802154_HEADER_LENGTH);  //packet mit Nullen ueberschreiben
 
-  dwGetData(dev, (uint8_t*)&rxPacket, dataLength);	//get Paket und bef�llen
+  dwGetData(dev, (uint8_t*)&rxPacket, dataLength);	//get Packet und befuellen
 
   if (rxPacket.destAddress != options->tagAddress) 
   {
