@@ -110,8 +110,13 @@ bool dwm1000_SendData(void * data, int lengthOfData, enum e_message_type_t messa
 	char receiveByte = 0x00;
 
 	void *placeHolder = malloc(lengthOfData);
-
-		//spiExchange(size_t length, const uint8_t * data_tx, uint8_t * data_rx)		
+	
+	for (int i = 0; i < lengthOfData; i++)
+	{
+		*((char*)placeHolder + i) = 0;
+	}
+	
+	//spiExchange(size_t length, const uint8_t * data_tx, uint8_t * data_rx)		
 	spiExchange(1, &instruction, placeHolder);	//instruction Schicken - write txbuffer
 
 	spiExchange(lengthOfData, sendData, placeHolder);
@@ -165,24 +170,69 @@ float dwm1000_getDistance(double nameOfOtherDWM) {
 void dwm1000_sendDistance(char id_requester) {
 	//1. Funktion aktiviert, nach Distance request Eingang
 	//2. Antworten, damit requester Zeit stopppen kann
+
+	float Slave_timestamp_on_first_request;		
+	float Slave_timestamp_on_final_request;
+	getDistance();
+	getimmediateAnswer();
+
 	//3. Zeit zwischen Receive Timestamp und Transmit Timestamp an requester schicken, damit von gestoppter zeit abgezogen werden kann
 	//Receive Timestamp - Transmit Timestamp
+}
 
-	timestamp_t Slave_timestamp
+enum e_interrupt_type_t dwm1000_EvalInterrupt()
+{
+	//5 Bytes fuer System Event Status Register reservieren
+	void *sesrContents;
+	int registerSize = 5;			
+	sesrContents = malloc(registerSize);	
 
-		getDistance()
-		getimmediateAnswer
 
+	void *placeholder;
+	placeholder = malloc(registerSize);
 
+	//Placeholder mit 0 fuellen
+	for (int i = 0; i < registerSize; i++)					
+	{
+		*((char*)placeholder + i) = 0;
+	}
+	char instruction = READ_SESR;
+
+	spiStart();
+	
+	//Instruction Transmitten (an Slave)	
+	spiExchange(1, &instruction, placeholder);		
+
+	//Register auslesen
+	spiExchange(registerSize, placeholder, sesrContents);
+
+	//Gelesenes Register auswerten
+	enum e_interrupt_type_t retVal;
+	char TFSMask = MASK_TRANSMIT_FRAME_SENT;
+	short RFSMask = MASK_RECEIVE_FRAME_SENT;
+
+	//ist Transmit Frame Sent gesetzt?
+	if ((*(char*)sesrContents & TFSMask) > 1)		//char, weil Mask 1 Byte lang
+	{
+		retVal = TX_DONE;
+	}
+
+	//ist Receive Frame Sent gesetzt?
+	else if ((*(short*)sesrContents & RFSMask) > 1)	//short, weil Mask 2 Byte lang
+	{
+		retVal = RX_DONE;
+	}
+
+	//Resourcen freigeben
+	free(placeholder);
+	free(sesrContents);
+	spiStop();
+
+	return retVal;
 }
 
 
 
-<<<<<<< HEAD
-
-
-=======
->>>>>>> 01126342aa2bc0333e44ce5c7db5350069bfdeeb
 st_DWM_Config_t dwm1000_init(st_DWM_Config_t newConfig) {
 
 	spiStart();	//fuer Mutexinteraktion genutzt	

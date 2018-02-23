@@ -13,9 +13,11 @@
 
 #define WRITE_TXBUFFER 0b10001001
 
+#define READ_SESR 0b00001111		//System Event Status Register
+
 #define READ_SYS_CTRL 0b00001101
 #define WRITE_SYS_CTRL 0b10001101
-#define SET_TRANSMIT_START WRITE_TRANSMIT_BITs
+
 
 #define READ_SYS_STATUS 0b00001111
 #define WRITE_SYS_STATUS 0b10001111
@@ -97,6 +99,13 @@ Bin�r -> Hex
 
 
 #define BaudRate 0x0008//SPI_BAUDRATE_21MHZ	//hier auch 11.5, 5.25, 2.625, 1.3125 ausw�hlbar -- 21MHZ --> (uint16_t)0x0008
+
+/*Maske für jeden relevanten Interrupt-Typ
+Vergleich mit System Event Status Register (Register 0x0F), falls Verundung größer 0 -> abgefragtes Event hat stattgefunden*/
+
+#define SET_TRANSMIT_START WRITE_TRANSMIT_BITs
+#define MASK_TRANSMIT_FRAME_SENT 0x80			//Bit 7
+#define MASK_RECEIVE_FRAME_SENT 0x2000			//Bit 13
 
 //defines fuer Interrupt Config
 #define EXTI_Line11 0x00800

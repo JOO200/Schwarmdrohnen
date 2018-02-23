@@ -35,6 +35,8 @@ enum e_message_type_t {
 } ;
 
 enum e_interrupt_type_t {
-	
+	FAILED_EVAL=0,
+	RX_DONE,
+	TX_DONE
 
 };
