@@ -67,7 +67,13 @@ void ai_Task(void * arg) {
 }
 
 void receiveHandler() {
-
+	
+	dwm1000_ReceiveData();
+	switch (switch_on)
+	{
+	default:
+		break;
+	}
 }
 
 //eventuell m�ssen args als void *
