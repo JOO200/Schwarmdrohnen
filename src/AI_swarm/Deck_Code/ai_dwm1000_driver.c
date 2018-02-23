@@ -8,7 +8,6 @@
 
 #include "../ai_task.h"
 
-
 //hier wird deck_spi.h/deck_spi.c angewendet (in src/deck/api/...)
 
 //helper Functions:
@@ -38,7 +37,6 @@ bool setup_dwm1000_communication(){
 		registers using RCC_APB2PeriphClockCmd(RCC_APB2Periph_SYSCFG, ENABLE);
 	*/
 
-
 	EXTI_InitTypeDef EXTI_InitStructure;
 	GPIO_InitTypeDef GPIO_InitStructure;
 	NVIC_InitTypeDef NVIC_InitStructure;
@@ -53,17 +51,14 @@ bool setup_dwm1000_communication(){
 
 	GPIO_Init(GPIO_PORT, &GPIO_InitStructure);
 
-
 	// Init reset output
 	GPIO_InitStructure.GPIO_Pin = GPIO_PIN_RESET; //GPIO_PIN_10
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
 	GPIO_InitStructure.GPIO_OType = GPIO_OType_OD;
 	GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_NOPULL;
 
-
 	GPIO_Init(GPIO_PORT, &GPIO_InitStructure);
-
-
+	
 	//Interrupt Initstruct vorbereiten
 	EXTI_InitStructure.EXTI_Line = EXTI_LineN;
 	EXTI_InitStructure.EXTI_Mode = EXTI_Mode_Interrupt;
@@ -72,18 +67,14 @@ bool setup_dwm1000_communication(){
 
 	EXTI_Init(EXTI_InitStructure);
 
-
 	// Enable interrupt
 	NVIC_InitStructure.NVIC_IRQChannel = EXTI_IRQChannel;	//EXTI15_10_IRQn
 	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = NVIC_LOW_PRI;	//13
 	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
 	NVIC_Init(&NVIC_InitStructure);
-	
-
 
 }
-
 
 bool dwm1000_SendData(void * data, int lengthOfData, enum e_message_type_t message_type, char targetID /*Adressen?, ...*/) {
 	spiStart();
@@ -99,7 +90,7 @@ bool dwm1000_SendData(void * data, int lengthOfData, enum e_message_type_t messa
 
 	*(char*)sendData = senderID;																	//Sender ID ist erstes Byte der Nachricht
 	*(char*)((int*)sendData + sizeof(char)) = targetID;												//targedID ist ab zweites Byte der Nachricht
-	*(enum e_message_type_t*)((int*)sendData + 2*sizeof(char)) = message_type;			//message ytpe ist ab drittes Byte der Nachricht
+	*(enum e_message_type_t*)((int*)sendData + 2*sizeof(char)) = message_type;						//message ytpe ist ab drittes Byte der Nachricht
 	for (int i = 0; i < lengthOfData; i++)															//jedes byte einzeln auf alloc Speicher schreiben
 	{
 		*((char*)sendData + 2*sizeof(char) + sizeof(enum e_message_type_t) + i) = *((char*)data + i);
@@ -147,15 +138,13 @@ bool dwm1000_SendData(void * data, int lengthOfData, enum e_message_type_t messa
 	spiStop();
 }
 
-
-e_message_type_t dwm1000_ReceiveData(void * data, int lengthOfData) {
+enum e_message_type_t dwm1000_ReceiveData(void * data, int lengthOfData) {
 	//1. Receive Buffer Auslesen
 	//2. Receive Enable Setzten
 	//3. Art der Nachricht entschl�sseln
 	//4. Auf Data schreiben
 	//5. Art der Nachricht zurueckgeben
 }
-
 
 float dwm1000_getDistance(double nameOfOtherDWM) {
 	// Beschreibung für eine Drohne
@@ -186,7 +175,6 @@ enum e_interrupt_type_t dwm1000_EvalInterrupt()
 	void *sesrContents;
 	int registerSize = 5;			
 	sesrContents = malloc(registerSize);	
-
 
 	void *placeholder;
 	placeholder = malloc(registerSize);
@@ -231,7 +219,6 @@ enum e_interrupt_type_t dwm1000_EvalInterrupt()
 	return retVal;
 }
 
-
 st_DWM_Config_t dwm1000_init(st_DWM_Config_t newConfig) {
 
 	spiStart();	//fuer Mutexinteraktion genutzt	
@@ -242,8 +229,6 @@ st_DWM_Config_t dwm1000_init(st_DWM_Config_t newConfig) {
 		//Bausrate Nachricht aus newConfig erstellen
 
 	spiExchange(0,0,0);
-
-
 
 	// -------- Init UWB --------
 
@@ -257,15 +242,8 @@ st_DWM_Config_t dwm1000_init(st_DWM_Config_t newConfig) {
 	spiStop();	//fuer Mutexinteraktion genutzt	
 }
 
-
 void __attribute__((used)) EXTI11_Callback(void)
 {
 	EXTI_ClearITPendingBit(EXTI_Line4);
 	DMW1000_IRQ_Flag = true;	//aktiviert synchrone "ISR" in ai_task.c
 }
-
-
-
-
-
-
