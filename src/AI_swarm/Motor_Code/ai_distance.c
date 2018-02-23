@@ -4,10 +4,10 @@ Es gibt 2 Distanz-Tabelle, Seite 0 und Seite 1. curDisTab (Current Distance Tabl
 Beim einlesen der Distanzen muss curDisTab nach jedem Zyklus negiert werden.
 Die jeweils nicht aktuelle Seite ist damit automatisch die History Page.
 
-Distanzberechnung über eigenen Thread?
-	-- workerSchedule habe ich mich schon drum gekümmert - Nicolai
+Distanzberechnung ï¿½ber eigenen Thread?
+	-- workerSchedule habe ich mich schon drum gekï¿½mmert - Nicolai
 
-include für DEBUG_PRINT
+include fï¿½r DEBUG_PRINT
 
 Ablauf:
 Master -> call UpdateDistanceTabel() in ai_task.c
@@ -18,7 +18,7 @@ Master -> call UpdateDistanceTabel() in ai_task.c
 	{ 
 		Slaves schicken erste wenn fertig berechnet (z.B. Semaphore)
 	} 
-	Master verteilt vollständige Tabelle
+	Master verteilt vollstï¿½ndige Tabelle
 }
 
 */
@@ -28,9 +28,9 @@ Master -> call UpdateDistanceTabel() in ai_task.c
 #include "ai_distance.h"
 
 
-void UpdateDistanceTable()
+void UpdateDistanceTable(st_distances_t * distanceTable)
 {
-	//Anpassung der "Adress-Aufrufe". Wie können die einzelnen Drohnen als Ganzzahlen von 0-3 angesprochen werden?
+	//Anpassung der "Adress-Aufrufe". Wie kï¿½nnen die einzelnen Drohnen als Ganzzahlen von 0-3 angesprochen werden?
 	//CurrentDrone_NR=0;
 	//VergleichsDrone_NR=0;
 	int CurrentDrone_NR = UWB_NAME;
@@ -45,7 +45,7 @@ void UpdateDistanceTable()
 	if (my_ai_role == MASTER)
 	{
 		get_distances(); //von allen Drohnen die Distanztabellen bekommen
-		distribute_distances(); //versendet vollständige Distanztabelle
+		distribute_distances(); //versendet vollstï¿½ndige Distanztabelle
 	}
 	
 	//Umschalten der Tabllen Seiten nach jedem Dateneinlesen
@@ -59,7 +59,7 @@ void UpdateDistanceTable()
 	}
 }
 
-//Tabelle mit Abständen füllen
+//Tabelle mit Abstï¿½nden fï¿½llen
 float calculate_distance()
 {
 
@@ -71,7 +71,7 @@ float get_distances()
 
 }
 
-//versendet vollständige Distanztabelle
+//versendet vollstï¿½ndige Distanztabelle
 float distribute_distances() 
 {
 

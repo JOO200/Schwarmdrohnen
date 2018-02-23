@@ -35,6 +35,7 @@ void ai_Task(void * arg) {
 
 	if (my_ai_role == SLAVE) {
 		//slave inits
+        // @ai_motors.c : Deaktiviere evtl den Task STABILIZER
 	}
 
 	while (1) {
