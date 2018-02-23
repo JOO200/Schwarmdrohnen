@@ -272,7 +272,18 @@ void dwm1000_sendDistance(char id_requester) {
 	//1. Funktion aktiviert, nach Distance request eingang
 	//2. Antworten, damit requester Zeit stopppen kann
 	//3. Zeit zwischen Receive Timestamp und Transmit Timestamp an requester schicken, damit von gestoppter zeit abgezogen werden kann
+	//Receive Timestamp - Transmit Timestamp
+
+	timestamp_t Slave_timestamp
+
+		getDistance()
+		getimmediateAnswer
+
+
 }
+
+
+
 
 
 st_DWM_Config_t dwm1000_init(st_DWM_Config_t newConfig) {
