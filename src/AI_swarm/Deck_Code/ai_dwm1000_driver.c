@@ -217,8 +217,6 @@ enum e_interrupt_type_t dwm1000_EvalInterrupt()
 		retVal = TX_DONE;
 	}
 
-<<<<<<< HEAD
-=======
 	//ist Receive Frame Sent gesetzt?
 	else if ((*(short*)sesrContents & RFSMask) > 1)	//short, weil Mask 2 Byte lang
 	{
@@ -234,8 +232,6 @@ enum e_interrupt_type_t dwm1000_EvalInterrupt()
 }
 
 
-
->>>>>>> a6392a18178ab97988f9ef58b3bd838a39722779
 st_DWM_Config_t dwm1000_init(st_DWM_Config_t newConfig) {
 
 	spiStart();	//fuer Mutexinteraktion genutzt	
