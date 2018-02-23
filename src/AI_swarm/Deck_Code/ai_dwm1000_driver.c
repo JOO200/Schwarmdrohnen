@@ -177,12 +177,6 @@ void dwm1000_sendDistance(char id_requester) {
 }
 
 
-
-<<<<<<< HEAD
-
-
-=======
->>>>>>> 01126342aa2bc0333e44ce5c7db5350069bfdeeb
 st_DWM_Config_t dwm1000_init(st_DWM_Config_t newConfig) {
 
 	spiStart();	//fuer Mutexinteraktion genutzt	

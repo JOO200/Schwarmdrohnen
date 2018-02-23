@@ -44,11 +44,30 @@ void ai_Task(void * arg) {
 			DMW1000_IRQ_Flag = false;
 			//1. Interrupt Register anschauen
 			//2. Evaluieren
+			enum e_interrupt_type_t interruptType = dwm1000_EvalInterrupt();
+
 			//3. Entsprechende Funktion aufrufen
+			switch (interruptType)
+			{
+			case /*receive*/:
+				receiveHandler();
+				break;
+			case /*Transmit done*/:
+				if (transmitProcessingTimePendingFlag) {
+					transmitProcessingTime();
+				}
+				break;
+			default:
+				break;
+			}
 		}
 
 	}
 	vTaskDelete(NULL); //w�re schlecht, wenn das hier aufgerufen wird...
+}
+
+void receiveHandler() {
+
 }
 
 //eventuell m�ssen args als void *
