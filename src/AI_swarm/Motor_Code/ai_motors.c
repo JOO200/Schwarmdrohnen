@@ -33,12 +33,21 @@ void makeMotors(st_distances_t * distances, st_coords_t * ideal, control_s * mas
     if(real_coords == NULL || control == NULL) {
         return;
     }
-    UpdateDistanceTable(distances);
-    triangulate(distances, ideal, real_coords);
+    UpdateDistanceTable(distances);					// Abastandstabelle aktuell halten. -> das wird evtl. ein anderer Task machen.
+    triangulate(distances, ideal, real_coords);		// triangulieren der aktuelen Position. (benötigt history?)
 
-    pid_regler(control, ideal, real_coords, master_control);
+    pid_regler(control, ideal, real_coords, master_control); // PID-Regler (benötigt history von den realen Koordinaten?)
 
-    powerDistributionAI(control);
+    powerDistribution(control); // Motoren angesteuert
 
 
+    backupRealCoords(real_coords); // in einen Speicher schreiben
+
+    //Speicher leeren
+    free(real_coords);
+    free(control);
+}
+
+void backupRealCoords(real_coords) {
+	// TODO: Backup für PID-Regler erstellen
 }

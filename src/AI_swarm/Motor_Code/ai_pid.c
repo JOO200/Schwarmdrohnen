@@ -3,6 +3,9 @@
  * Die Werte werden in einem Struct vom Typ "control_s" gespeichert. Dieses Struct ist von Bitcraze schon vorhanden.
  */
 
+#include "stabilizer_types.h"
+#include "ai_datatypes.h"
+
 void pid_regler(control_s * control, st_coords_t ** ideal, st_coords_t ** real, control_s * master_control) {
     //TODO: PID Regler hinzufügen. Dabei die Vergangenheit der Drohnen "prüfen".
 
