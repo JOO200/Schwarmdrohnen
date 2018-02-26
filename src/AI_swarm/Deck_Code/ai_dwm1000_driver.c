@@ -20,6 +20,31 @@ void spiStop(){
 	spiEndTransaction();
 }
 
+//beschreibt die angegebene anzahl an Bytes mit "0"
+void fillMemZero(void * mem, char size){
+	//Placeholder mit 0 fuellen
+	for (int i = 0; i < size; i++)
+	{
+		*((char*)mem + i) = 0;
+	}
+}
+
+//schreibt die angegeben Anzahl an Bytes von origin in Target
+ void writeToMem(void *target, void *origin, char size){
+	 for (int i = 0; i < size; i++)
+	 {
+	 	*((char*)target + i) = *(char*)(origin + 1);
+	 }
+ }
+
+//setzt bits, die im Beispiel gesetzt sind (für init) - behält bereits gesetzte Bits gesetzt
+void setInitBits(void *target, void *origin, char size){
+	for (int i = 0; i < size; i++)
+		 {
+		 	*((char*)target + i) = *(char*)(origin + 1) | *((char*)target + i);
+		 }
+}
+
 //inhalt von locodec.c init (ab Z.312) inspiriert (und angepasst)
 bool setup_dwm1000_communication(){
 	
@@ -110,10 +135,7 @@ bool dwm1000_SendData(void * data, int lengthOfData, e_message_type_t message_ty
 
 	void *placeHolder = malloc(lengthOfData);
 	
-	for (int i = 0; i < lengthOfData; i++)
-	{
-		*((char*)placeHolder + i) = 0;
-	}
+	fillMemZero(placeHolder, lengthOfData);
 	
 	//spiExchange(size_t length, const uint8_t * data_tx, uint8_t * data_rx)		
 	spiExchange(1, &instruction, placeHolder);	//instruction Schicken - write txbuffer
@@ -203,10 +225,7 @@ void dmw1000_sendProcessingTime(char id_requester) {
 	spiExchange(1, &instruction, placeholder);
 
 	//Placeholder mit 0 fuellen
-	for (int i = 0; i < txStampSize; i++)
-	{
-		*((char*)placeholder + i) = 0;
-	}
+	fillMemZero(placeholder, txStampSize);
 
 	//Register auslesen
 	spiExchange(txStampSize, placeholder, txTimestamp);
@@ -222,10 +241,7 @@ void dmw1000_sendProcessingTime(char id_requester) {
 	spiExchange(1, &instruction, placeholder);
 	
 	//Placeholder mit 0 fuellen
-	for (int i = 0; i < txStampSize; i++)
-	{
-		*((char*)placeholder + i) = 0;
-	}
+	fillMemZero(placeholder, rxStampSize);
 
 	//Register auslesen
 	spiExchange(rxStampSize, placeholder, rxTimestamp);
@@ -264,10 +280,7 @@ e_interrupt_type_t dwm1000_EvalInterrupt()
 	spiExchange(1, &instruction, placeholder);		
 
 	//Placeholder mit 0 fuellen
-	for (int i = 0; i < registerSize; i++)
-	{
-		*((char*)placeholder + i) = 0;
-	}
+	fillMemZero(placeholder, registerSize);
 
 	//Register auslesen
 	spiExchange(registerSize, placeholder, sesrContents);
@@ -301,18 +314,38 @@ void dwm1000_init() {
 
 	spiStart();	//fuer Mutexinteraktion genutzt	
 	
-	//Init Transmission
-	
-	unsigned char instruction = READ_TFC;		//Read Transmission Frame Control Register
-	spiExchange(1, &instruction, ...);
-	//WRITE_INIT_TX_FCTRL
 
+	//------------------------ TFC LESEN
+	//Init Transmission
+	unsigned char empty_byte = 0;
+	unsigned char instruction = READ_TFC;
+
+	//Read Transmission Frame Control Register
+	spiExchange(1, &instruction, &empty_byte);
+	
+	//WRITE_INIT_TX_FCTRL
+	void *tfcContents = malloc(5);
+	void *initValTFC = malloc(5);
+	void *placeHolder = malloc(5);
+
+	//Placeholder mit 0 fuellen
+	fillMemZero(tfcContents, 5);
+	fillMemZero(placeHolder, 5);
+	double storage = WRITE_INIT_TX_FCTRL;
+	writeToMem(initValTFC, &storage, 5);
+
+	spiExchange(5, placeHolder, tfcContents);		//Inhalt des TFC Registers auslesen
+	setInitBits(tfcContents, initValTFC, 5);		//Inhalt mit gewolltem ODERn
+
+	//------------------------ SYSCONTROL LESEN
 
 	instruction = READ_SYS_CTRL;
-	spiExchange(1, &instruction, ...);
+	spiExchange(1, &instruction, &empty_byte);
+	empty_byte = 0;
 
+	//------------------------ SYSSTATUS LESEN
 	instruction = READ_SYS_STATUS;
-	spiExchange(1, &instruction, ...);
+	spiExchange(1, &instruction, &empty_byte);
 
 
 	// -------- Init SPI --------
@@ -331,8 +364,7 @@ void dwm1000_init() {
 
 
 
-	spiStop();	//fuer Mutexinteraktion genutzt	
-	return 
+	spiStop();	//fuer Mutexinteraktion genutzt
 }
 
 void __attribute__((used)) EXTI11_Callback(void)
