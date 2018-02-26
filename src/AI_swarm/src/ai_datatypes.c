@@ -1,5 +1,5 @@
 #include "ai_datatypes.h"
-
+/*
 //Rolle der Drohne
 enum e_role_t {
 	AI_ROLE_NO_ROLE = 0,
@@ -28,3 +28,4 @@ typedef enum {
 	UNDEFINED = 0
 
 } e_message_type_t;
+*/
