@@ -8,6 +8,10 @@
 //Bit 7: Read - 0, Write - 1
 //Bit 6: 0
 // Bit 5 - 0: Reg ID
+
+#define READ_TX_TIMESTAMP 0b00010111		//Register 0x17
+#define READ_RX_TIMESTAMP 0b00010101		//Register 0x15
+
 #define READ_TFC 0b00001000
 #define WRITE_TFC 0b10001000
 

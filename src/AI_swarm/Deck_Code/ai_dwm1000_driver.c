@@ -138,12 +138,15 @@ bool dwm1000_SendData(void * data, int lengthOfData, enum e_message_type_t messa
 	spiStop();
 }
 
-enum e_message_type_t dwm1000_ReceiveData(void * data, int lengthOfData) {
+enum e_message_type_t dwm1000_ReceiveData(st_message_t *data) {
 	//1. Receive Buffer Auslesen
+
 	//2. Receive Enable Setzten
-	//3. Art der Nachricht entschl�sseln
+	//3. Art der Nachricht entschluesseln
 	//4. Auf Data schreiben
-	//5. Art der Nachricht zurueckgeben
+	//5. Art der Nachricht zurueckgeben 
+
+
 }
 
 float dwm1000_getDistance(double nameOfOtherDWM) {
@@ -170,10 +173,60 @@ void dwm1000_immediateDistanceAnswer(char id_requester) {
 }
 
 void dmw1000_sendProcessingTime(char id_requester) {
-	//1. Timestamp TX lesen
-	//2. Timestamp RX lesen
-	//3. Differenz bestimmen
+	
+	spiStart();
+	
+	//1. Timestamp TX lesen, Register 0x17 Timestamp von bit 0-39
+	void *txTimestamp;
+	int txStampSize = 5;			//5 Bytes für Timestaqmp reservieren
+	txTimestamp = malloc(txStampSize);
+
+	void *placeholder;
+	placeholder = malloc(txStampSize);
+
+	//Instruction Transmitten	
+	spiExchange(1, &instruction, placeholder);
+
+	//Placeholder mit 0 fuellen
+	for (int i = 0; i < txStampSize; i++)
+	{
+		*((char*)placeholder + i) = 0;
+	}
+	char instruction = READ_TX_TIMESTAMP;
+
+	//Register auslesen
+	spiExchange(txStampSize, placeholder, txTimestamp);
+
+	//2. Timestamp RX lesen, Register 0x15 Timestamp von bit 0-39
+	void *rxTimestamp;
+	int rxStampSize = 5;
+	rxTimestamp = malloc(rxStampSize);
+
+	instruction = READ_RX_TIMESTAMP;
+
+	//Instruction Transmitten	
+	spiExchange(1, &instruction, placeholder);
+	
+	//Placeholder mit 0 fuellen
+	for (int i = 0; i < txStampSize; i++)
+	{
+		*((char*)placeholder + i) = 0;
+	}
+
+	//Register auslesen
+	spiExchange(rxStampSize, placeholder, rxTimestamp);
+
+	//3. Differenz bestimmen, Rx-Tx, Ergebnis in 15,65 Pico sek
+
+	double result = rxTimestamp - txTimestamp;
+
 	//4. an requester schicken
+
+	//dwm1000_SendData(void * result, 5, enum e_message_type_t message_type, char targetID /*Adressen?, ...*/);
+
+	free(txTimestamp);
+	free(rxTimestamp);
+	spiStop();
 }
 
 enum e_interrupt_type_t dwm1000_EvalInterrupt()
@@ -186,17 +239,18 @@ enum e_interrupt_type_t dwm1000_EvalInterrupt()
 	void *placeholder;
 	placeholder = malloc(registerSize);
 
-	//Placeholder mit 0 fuellen
-	for (int i = 0; i < registerSize; i++)					
-	{
-		*((char*)placeholder + i) = 0;
-	}
 	char instruction = READ_SESR;
 
 	spiStart();
 	
 	//Instruction Transmitten (an Slave)	
 	spiExchange(1, &instruction, placeholder);		
+
+	//Placeholder mit 0 fuellen
+	for (int i = 0; i < registerSize; i++)
+	{
+		*((char*)placeholder + i) = 0;
+	}
 
 	//Register auslesen
 	spiExchange(registerSize, placeholder, sesrContents);
