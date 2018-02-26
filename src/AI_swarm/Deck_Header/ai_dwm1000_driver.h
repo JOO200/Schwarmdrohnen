@@ -128,7 +128,7 @@ bool setup_dwm1000_spi_interface();
 initialisiert das SPI interface (nach Anleitung durch "stm32f4xx_spi.c" - Z.17 - Z.134)
 */
 
-bool dwm1000_SendData(void * data, int lengthOfData /*adressen?, ...*/);
+bool dwm1000_SendData(void * data, int lengthOfData, e_message_type_t message_type, char targetID /*Adressen?, ...*/);
 /*
 sendet Daten �ber den UWB-Bus
 
@@ -138,7 +138,7 @@ lengthOfData - L�nge der Daten in byte
 */
 
 
-enum e_message_type_t dwm1000_ReceiveData(void * data, int lengthOfData);
+e_message_type_t dwm1000_ReceiveData(st_message_t *data);
 /*
 liest Daten im dwm1000 Receivebuffer
 
@@ -154,7 +154,7 @@ startet Rangingvorgang
 nameOfOtherDWM - PAN (Personal Area Network) Identifier (8Byte) des anderen DWMs (Register 0x03)
 */
 
-st_DWM_Config_t dwm1000_init(st_DWM_Config_t newConfig);
+void dwm1000_init();
 /*
 beschreibt alle Register mit den in "newConfig" f�r diese enthaltenen Werten
 
