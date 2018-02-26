@@ -18,12 +18,6 @@ void ai_launch(void)
 		AI_TASK_PRIO, NULL);
 }
 
-//Rolle der Drohne
-enum e_role_t {
-	AI_ROLE_NO_ROLE = 0,
-	AI_ROLE_MASTER,
-	AI_ROLE_SLAVE
-}; // e_role_t;
 
 //hier unsere main
 //wird ausgefuehrt von FreeRTOS-Scheduler sobald dieser das fuer sinnvoll haelt (und natuerlich,nachdem dieser in "main.c" gestartet wurde)
