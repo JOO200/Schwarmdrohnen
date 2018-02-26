@@ -7,6 +7,7 @@
 #include "../ai_datatypes.h"
 #include "stm32f4xx.h"
 #include "../ai_task.h"
+#include "../../vendor/unity/extras/fixture/src/unity_fixture_malloc_overrides.h"
 
 //hier wird deck_spi.h/deck_spi.c angewendet (in src/deck/api/...)
 
@@ -80,6 +81,7 @@ bool setup_dwm1000_communication(){
 	GPIO_WriteBit(GPIO_PORT, GPIO_PIN_RESET, 1);
 	vTaskDelay(M2T(10));
 
+	return 1;
 }
 
 bool dwm1000_SendData(void * data, int lengthOfData, e_message_type_t message_type, char targetID /*Adressen?, ...*/) {
@@ -103,8 +105,8 @@ bool dwm1000_SendData(void * data, int lengthOfData, e_message_type_t message_ty
 	}
 
 	//2. Data auf Transmit Data Buffer Register packen
-	char instruction = WRITE_TXBUFFER;
-	char receiveByte = 0x00;
+	unsigned char instruction = WRITE_TXBUFFER;
+	unsigned char receiveByte = 0x00;
 
 	void *placeHolder = malloc(lengthOfData);
 	
@@ -129,7 +131,7 @@ bool dwm1000_SendData(void * data, int lengthOfData, e_message_type_t message_ty
 	*(int*)sysctrl |= SET_TRANSMIT_START;		//neuen Inhalt für syscontrol erstellen
 
 	instruction = WRITE_SYS_CTRL;			
-	spiExchange(1, instruction, placeHolder);	//instruction: ich will syscontrol schreiben
+	spiExchange(1, &instruction, placeHolder);	//instruction: ich will syscontrol schreiben
 
 	spiExchange(5, sysctrl, placeHolder);		//syscontrol schreiben
 
@@ -142,16 +144,21 @@ bool dwm1000_SendData(void * data, int lengthOfData, e_message_type_t message_ty
 	free(sysctrl);
 
 	spiStop();
+
+	return 1;
 }
 
-enum e_message_type_t dwm1000_ReceiveData(st_message_t *data) {
+e_message_type_t dwm1000_ReceiveData(st_message_t *data) {
 	//1. Receive Buffer Auslesen
 
 	//2. Receive Enable Setzten
 	//3. Art der Nachricht entschluesseln
 	//4. Auf Data schreiben
 	//5. Art der Nachricht zurueckgeben 
+	e_message_type_t retType;
+	retType = DISTANCE_REQUEST;
 
+	return retType;
 
 }
 
@@ -163,6 +170,9 @@ float dwm1000_getDistance(double nameOfOtherDWM) {
 	//4. Errechnung der Response Time
 	//5. (Gestoppte Zeit - (TransmitTimestamp_Ziel - ReceiveTimestamp_Ziel))/2 * Lichtgeschw = Abstand
 	// Danach weiß der Master, Initiator den Abstand 
+
+	float distance = 0;
+	return distance;
 }
 
 void dwm1000_immediateDistanceAnswer(char id_requester) {
@@ -187,6 +197,8 @@ void dmw1000_sendProcessingTime(char id_requester) {
 	void *placeholder;
 	placeholder = malloc(txStampSize);
 
+	unsigned char instruction = READ_TX_TIMESTAMP;
+
 	//Instruction Transmitten	
 	spiExchange(1, &instruction, placeholder);
 
@@ -195,7 +207,6 @@ void dmw1000_sendProcessingTime(char id_requester) {
 	{
 		*((char*)placeholder + i) = 0;
 	}
-	char instruction = READ_TX_TIMESTAMP;
 
 	//Register auslesen
 	spiExchange(txStampSize, placeholder, txTimestamp);
@@ -225,15 +236,17 @@ void dmw1000_sendProcessingTime(char id_requester) {
 
 	//4. an requester schicken
 
+	void * pups = malloc((int)result);
 	//dwm1000_SendData(void * result, 5, enum e_message_type_t message_type, char targetID /*Adressen?, ...*/);
 
+	free(pups);
 	free(txTimestamp);
 	free(placeholder);
 	free(rxTimestamp);
 	spiStop();
 }
 
-enum e_interrupt_type_t dwm1000_EvalInterrupt()
+e_interrupt_type_t dwm1000_EvalInterrupt()
 {
 	//5 Bytes fuer System Event Status Register reservieren
 	void *sesrContents;
@@ -243,7 +256,7 @@ enum e_interrupt_type_t dwm1000_EvalInterrupt()
 	void *placeholder;
 	placeholder = malloc(registerSize);
 
-	char instruction = READ_SESR;
+	unsigned char instruction = READ_SESR;
 
 	spiStart();
 	
@@ -260,8 +273,8 @@ enum e_interrupt_type_t dwm1000_EvalInterrupt()
 	spiExchange(registerSize, placeholder, sesrContents);
 
 	//Gelesenes Register auswerten
-	enum e_interrupt_type_t retVal;
-	char TFSMask = MASK_TRANSMIT_FRAME_SENT;
+	e_interrupt_type_t retVal = FAILED_EVAL;
+	unsigned char TFSMask = MASK_TRANSMIT_FRAME_SENT;
 	short RFSMask = MASK_RECEIVE_FRAME_SENT;
 
 	//ist Transmit Frame Sent gesetzt?
@@ -325,5 +338,5 @@ void dwm1000_init() {
 void __attribute__((used)) EXTI11_Callback(void)
 {
 	EXTI_ClearITPendingBit(EXTI_Line4);
-	DMW1000_IRQ_Flag = true;	//aktiviert synchrone "ISR" in ai_task.c
+	DMW1000_IRQ_Flag = 1;	//aktiviert synchrone "ISR" in ai_task.c
 }
