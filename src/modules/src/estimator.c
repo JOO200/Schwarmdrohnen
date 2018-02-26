@@ -1,3 +1,4 @@
+
 #define DEBUG_MODULE "ESTIMATOR"
 #include "debug.h"
 
@@ -5,7 +6,7 @@
 #include "estimator.h"
 #include "estimator_complementary.h"
 #include "estimator_kalman.h"
-#include "estimator_ai.h"
+#include "../../AI_swarm/estimator_ai.c"
 
 #define DEFAULT_ESTIMATOR complementaryEstimator
 static StateEstimatorType currentEstimator = anyEstimator;
