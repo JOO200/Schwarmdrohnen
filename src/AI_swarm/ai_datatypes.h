@@ -27,6 +27,11 @@ typedef struct st_DWM_Config_t {
 	//Baudrate, ...
 } st_DWM_Config_t;
 
+typedef struct st_coords_t { // struct für Koordinaten
+	float x,y,z;
+	float angle;
+};
+
 enum e_message_type_t {
 	DISTANCE_TABEL,
 	MASTER_STATE,
