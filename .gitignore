@@ -18,3 +18,8 @@ tags
 *.gch
 
 /generated-test/**
+*.mk
+Debug/src/init/drivers/bosch/src/bmp280.d
+*.o
+*.d
+Debug/makefile
