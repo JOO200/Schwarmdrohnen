@@ -158,7 +158,7 @@ e_message_type_t dwm1000_ReceiveData(void * data, int lengthOfData) {
 
 
 float dwm1000_getDistance(double nameOfOtherDWM) {
-	// Beschreibung für eine Drohne
+	// Beschreibung für eine Drohne (gesammtes Vorgehen)
 	//1. Nachrichten an Partner schicken (Master)
 	//2. Partner antwortet  mit seinem Timestamp (Slave)
 	//3. Master empfägt Slave-Timestamp
@@ -167,7 +167,7 @@ float dwm1000_getDistance(double nameOfOtherDWM) {
 	// Danach weiß der Master, Initiator den Abstand 
 }
 
-void dwm1000_sendDistance(char id_requester) {
+void dwm1000_immediateDistanceAnswer(char id_requester) {
 	//1. Funktion aktiviert, nach Distance request Eingang
 	//2. Antworten, damit requester Zeit stopppen kann
 
@@ -176,8 +176,15 @@ void dwm1000_sendDistance(char id_requester) {
 	getDistance();
 	getimmediateAnswer();
 
-	//3. Zeit zwischen Receive Timestamp und Transmit Timestamp an requester schicken, damit von gestoppter zeit abgezogen werden kann
+	//Zusatz: Zeit zwischen Receive Timestamp und Transmit Timestamp an requester schicken, damit von gestoppter zeit abgezogen werden kann
 	//Receive Timestamp - Transmit Timestamp
+}
+
+void dmw1000_sendProcessingTime(char id_requester) {
+	//1. Timestamp TX lesen
+	//2. Timestamp RX lesen
+	//3. Differenz bestimmen
+	//4. an requester schicken
 }
 
 enum e_interrupt_type_t dwm1000_EvalInterrupt()
