@@ -318,7 +318,7 @@ void dwm1000_init() {
 	// -------- Init SPI --------
 
 	//Baud Rate
-		//Bausrate Nachricht aus newConfig erstellen
+		//Baudrate Nachricht aus newConfig erstellen
 
 	spiExchange(0,0,0);
 
@@ -332,7 +332,6 @@ void dwm1000_init() {
 
 
 	spiStop();	//fuer Mutexinteraktion genutzt	
-	return 
 }
 
 void __attribute__((used)) EXTI11_Callback(void)
