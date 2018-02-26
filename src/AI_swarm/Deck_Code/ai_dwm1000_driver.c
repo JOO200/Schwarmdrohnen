@@ -284,13 +284,24 @@ enum e_interrupt_type_t dwm1000_EvalInterrupt()
 	return retVal;
 }
 
-st_DWM_Config_t dwm1000_init(st_DWM_Config_t newConfig) {
+void dwm1000_init() {
 
 	spiStart();	//fuer Mutexinteraktion genutzt	
 	
+	//Init Transmission
+	
+	unsigned char instruction = READ_TFC;		//Read Transmission Frame Control Register
+	spiExchange(1, &instruction, ...);
 	//WRITE_INIT_TX_FCTRL
-	//READ_SYS_CTRL
-	//READ_SYS_STATUS
+
+
+	instruction = READ_SYS_CTRL;
+	spiExchange(1, &instruction, ...);
+
+	instruction = READ_SYS_STATUS;
+	spiExchange(1, &instruction, ...);
+
+
 	// -------- Init SPI --------
 
 	//Baud Rate
@@ -308,6 +319,7 @@ st_DWM_Config_t dwm1000_init(st_DWM_Config_t newConfig) {
 
 
 	spiStop();	//fuer Mutexinteraktion genutzt	
+	return 
 }
 
 void __attribute__((used)) EXTI11_Callback(void)

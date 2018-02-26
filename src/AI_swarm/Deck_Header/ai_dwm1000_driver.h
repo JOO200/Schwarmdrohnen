@@ -87,8 +87,8 @@ RXFCE (Bit 15) -> Checksummenvergleich nicht erfolgreich am Ende des Frames	- FR
 Beschreibung:
 Orientierung:
 Bit 31, Bit 30, ..., Bit 0
-Letztendlich muss man nur noch die einzelnen Zahlen addieren und erh�lt das 4-Byte gro�e Register
-Bin�r -> Hex
+Letztendlich muss man nur noch die einzelnen Zahlen addieren und erhaelt das 4-Byte grosse Register
+Binaer -> Hex
 00000000 00000000 00000001 00000000  -> 0x00000100*/
 #define WRITE_RECEIVE_ENABLE 0x00000100 //Nach lesen einer Nachricht aus den Receive Buffer muss dieses Bit gesetzt werden um neue Nachrichten empfangen zu können
 
