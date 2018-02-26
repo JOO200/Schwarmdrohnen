@@ -33,8 +33,8 @@
 Beschreibung:
 Orientierung:
 Bit 39, Bit 38, ..., Bit 0
-Letztendlich muss man nur noch die einzelnen Zahlen addieren und erh�lt das 5-Byte gro�e Register
-Bin�r -> Hex
+Letztendlich muss man nur noch die einzelnen Zahlen addieren und erh�lt das 5-Byte grosse Register
+Binaer -> Hex
 00000000 00000000 00000000 00000000 00001100 -> 0x000000000C - TFLEN, Transmission Frame Length (0-6)
 00000000 00000000 00000000 00000000 00000000 -> 0x0000000000 - TFLE, Transmit Frame Length Extension (7-9)
 00000000 00000000 00000000 00000000 00000000 -> 0x0000000000 - R, Reserved (10-12)
@@ -54,8 +54,8 @@ Addiert:
 Beschreibung:
 Orientierung:
 Bit 31, Bit 30, ..., Bit 0
-Letztendlich muss man nur noch die einzelnen Zahlen addieren und erh�lt das 4-Byte gro�e Register
-Bin�r -> Hex
+Letztendlich muss man nur noch die einzelnen Zahlen addieren und erhaelt das 4-Byte grosse Register
+Binaer -> Hex
 00000000 00000000 00000000 00001011  -> 0x0000000B
 */
 #define READ_SYS_CTRL 0x00000000; //System Control Register, Register-ID: 0x0D, Diesen Wert einem Speicherbereich zuschreiben, dann den Inhalt des Registers darauf lesen
@@ -66,8 +66,8 @@ Bin�r -> Hex
 Beschreibung:
 Orientierung:
 Bit 39, Bit 38, ..., Bit 0
-Letztendlich muss man nur noch die einzelnen Zahlen addieren und erh�lt das 5-Byte gro�e Register
-Bin�r -> Hex
+Letztendlich muss man nur noch die einzelnen Zahlen addieren und erhaelt das 5-Byte grosse Register
+Binaer -> Hex
 00000000 00000000 00000000 00000000 00000000 -> 0x0000000000
 
 Es koenten folgende interupts gesetzt werden, die für uns relevant sind:
@@ -77,19 +77,6 @@ RXFCE (Bit 15) -> Checksummenvergleich nicht erfolgreich am Ende des Frames	- FR
 */
 #define READ_SYS_STATUS 0x0000000000 //System Event Status Register, Register-ID: 0x0F, Diesen Wert einem Speicherbereich zuschreiben, dann den Inhalt des Registers darauf lesen
 
-/*Register "System Status Register", besteht aus 5 Byte
-Beschreibung:
-Orientierung:
-Bit 39, Bit 38, ..., Bit 0
-Letztendlich muss man nur noch die einzelnen Zahlen addieren und erh�lt das 5-Byte gro�e Register
-Bin�r -> Hex
-00000000 00000000 00000000 00100000 00000000 -> 0x0000000000
-
-Es koenten folgende interupts gesetzt werden, die für uns relevant sind:
-RXDFR (Bit 13) -> wenn die Nachricht fertig gesendet ist
-RXFCG (Bit 14) -> Checksummenvergleich erfolgreich am Ende des Frames - FRAME GUT GESENDET
-RXFCE (Bit 15) -> Checksummenvergleich nicht erfolgreich am Ende des Frames	- FRAME SCHLECHT GESENDET
-*/
 #define MESSAGE_RECEIVED_STATUS 0x0000002000;	//Wenn bei verunden mit diesem Wert und dem System Status Register (0x0F) > 0 rauskommt -> Nachricht erhalten
 
 /*Register "System Control Register", besteht aus 4 Byte

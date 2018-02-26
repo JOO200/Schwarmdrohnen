@@ -50,10 +50,10 @@ void ai_Task(void * arg) {
 			//3. Entsprechende Funktion aufrufen
 			switch (interruptType)
 			{
-			case /*receive*/:
+			case RX_DONE:
 				receiveHandler();
 				break;
-			case /*Transmit done*/:
+			case TX_DONE:
 				if (transmitProcessingTimePendingFlag) {
 					transmitProcessingTime();
 				}

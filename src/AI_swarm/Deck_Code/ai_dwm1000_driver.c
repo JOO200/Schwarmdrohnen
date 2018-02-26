@@ -222,6 +222,7 @@ void dmw1000_sendProcessingTime(char id_requester) {
 	//dwm1000_SendData(void * result, 5, enum e_message_type_t message_type, char targetID /*Adressen?, ...*/);
 
 	free(txTimestamp);
+	free(placeholder);
 	free(rxTimestamp);
 	spiStop();
 }
@@ -281,6 +282,9 @@ st_DWM_Config_t dwm1000_init(st_DWM_Config_t newConfig) {
 
 	spiStart();	//fuer Mutexinteraktion genutzt	
 	
+	//WRITE_INIT_TX_FCTRL
+	//READ_SYS_CTRL
+	//READ_SYS_STATUS
 	// -------- Init SPI --------
 
 	//Baud Rate
