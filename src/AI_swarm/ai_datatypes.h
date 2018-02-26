@@ -1,18 +1,21 @@
+#ifndef ai_datatypesh
+#define ai_datatypesh
+
 #include "ai_config.h"
 #include "stddef.h"	//f�r z.B. NULL muss dies includiert werden
 
 
 //Rolle der Drohne
-enum e_role_t {
-	AI_ROLE_NO_ROLE = 0,
-	AI_ROLE_MASTER,
-	AI_ROLE_SLAVE
-}; // e_role_t;
+typedef enum {
+	AI_NO_ROLE = 0,
+	AI_MASTER,
+	AI_SLAVE
+} e_role_t;
 
 char my_ai_name = 0;
-enum e_role_t my_ai_role = AI_ROLE_MASTER;
+e_role_t my_ai_role = AI_MASTER;
 
-typedef struct st_distances_t {
+typedef struct {
 
 	int curDisTab;												   //aktuelle Distance Tabel, Wert 0 oder 1, switch case in .c
 	int timestamp[NR_OF_DRONES][NR_OF_DRONES];
@@ -20,37 +23,37 @@ typedef struct st_distances_t {
 	//history ...
 	//Semaphoren? Staus Vaiable (running, waiting, ready)?
 	//Fkt zum Vergleich der Haupt- Nebendiagonale
-};
+} st_distances_t;
 
-typedef struct st_DWM_Config_t {
+typedef struct {
 	double PAN_Identifier;	//pers�nlicher "Name" des DWM1000s im UWB-Bus
 	//Baudrate, ...
-} st_DWM_Config_t;
+}st_DWM_Config_t;
 
-typedef struct st_coords_t { // struct für Koordinaten
+typedef struct { // struct für Koordinaten
 	float x,y,z;
 	float angle;
-};
+} st_coords_t;
 
-enum e_message_type_t {
+typedef enum {
 	DISTANCE_TABEL,
 	MASTER_STATE,
+	DISTANCE_REQUEST,
 	UNDEFINED = 0
-} ;
+} e_message_type_t;
 
-enum e_interrupt_type_t {
+typedef enum {
 	FAILED_EVAL=0,
 	RX_DONE,
 	TX_DONE
-};
+} e_interrupt_type_t;
 
-typedef struct  st_message_t {
+typedef struct {
 	char senderID;						//Byte Name des Senders
 	char targetID;						//Byte Name des Ziels
-	enum e_message_type_t messageType;	//Art der Nachricht
-	int rxSenderTimestamp;				//Receive Timestamp beim Sender
-	int rxTargetTimestamp;				//Receive Timestamp beim Ziel
-	int txSenderTimestamp;				//Transmit Timestamp beim Sender
-	int txTargetTimestamp;				//Transmit Timestamp beim Ziel
+	e_message_type_t messageType;		//Art der Nachricht
+	double time;						//je nach Message time untersch. Bedeutung
 	st_distances_t distanceTable;		//Tabelle mit Distanzen
-};
+} st_message_t;
+
+#endif

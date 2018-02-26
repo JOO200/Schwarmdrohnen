@@ -1,7 +1,11 @@
+#ifndef ai_dwm1000_drivh
+#define ai_dwm1000_drivh
+
 //beinhaltet die Funktionen, welche ben�tigt werden um den DWM1000 zu steuern (Daten Senden, Ranging, ...)
 
 #include "ai_datatypes.h"
 #include <stdbool.h>
+#include "stm32f4xx_gpio.h"
 
 //--------------------------------Instructions:
 //Bit 7 -> 0
@@ -58,7 +62,7 @@ Letztendlich muss man nur noch die einzelnen Zahlen addieren und erhaelt das 4-B
 Binaer -> Hex
 00000000 00000000 00000000 00001011  -> 0x0000000B
 */
-#define READ_SYS_CTRL 0x00000000; //System Control Register, Register-ID: 0x0D, Diesen Wert einem Speicherbereich zuschreiben, dann den Inhalt des Registers darauf lesen
+#define READ_SYS_CTRL_MEMSPACE 0x00000000; //System Control Register, Register-ID: 0x0D, Diesen Wert einem Speicherbereich zuschreiben, dann den Inhalt des Registers darauf lesen
 
 #define WRITE_TRANSMIT_BITs 0x00000003;	//hiermit | -> dann Transmit Bit auf jeden Fall gesetzt
 
@@ -75,7 +79,7 @@ RXDFR (Bit 13) -> wenn die Nachricht fertig gesendet ist
 RXFCG (Bit 14) -> Checksummenvergleich erfolgreich am Ende des Frames - FRAME GUT GESENDET
 RXFCE (Bit 15) -> Checksummenvergleich nicht erfolgreich am Ende des Frames	- FRAME SCHLECHT GESENDET
 */
-#define READ_SYS_STATUS 0x0000000000 //System Event Status Register, Register-ID: 0x0F, Diesen Wert einem Speicherbereich zuschreiben, dann den Inhalt des Registers darauf lesen
+#define READ_SYS_STATUS_MEMSPACE 0x0000000000 //System Event Status Register, Register-ID: 0x0F, Diesen Wert einem Speicherbereich zuschreiben, dann den Inhalt des Registers darauf lesen
 
 #define MESSAGE_RECEIVED_STATUS 0x0000002000;	//Wenn bei verunden mit diesem Wert und dem System Status Register (0x0F) > 0 rauskommt -> Nachricht erhalten
 
@@ -99,17 +103,23 @@ Vergleich mit System Event Status Register (Register 0x0F), falls Verundung grö
 #define MASK_RECEIVE_FRAME_SENT 0x2000			//Bit 13
 
 //defines fuer Interrupt Config
-#define EXTI_Line11 0x00800
+//#define EXTI_Line11 0x00800
 #define EXTI_LineN 	EXTI_Line11	//bestimmt exti input port (von Bitcraze RX genannt)
 #define EXTI_Mode_Interrupt 0x00	//interrupt mode - aus stm32f4xx_exti.h
 #define EXTI_Trigger_Rising 0x08	//aus stm32f4xx_exti.h
-#define ENABLE 1;
+#define ENABLE 0x01
 
 //defines fuer SPI
 #define CS_PIN DECK_GPIO_IO1		//CS/SS Pin ist "IO_1"
 #define GPIO_Mode_OUT 0x01
 #define GPIO_OType_OD 0x01
-#define GPIO_PIN_IRQ GPIO_PIN_11
+#define GPIO_PIN_IRQ GPIO_Pin_11
+#define GPIO_PIN_RESET GPIO_Pin_10
+#define GPIO_PORT GPIOC
+
+//defines fuer NVIC
+#define EXTI_IRQChannel EXTI15_10_IRQn
+#define NVIC_LOW_PRI 13;
 
 
 
@@ -128,13 +138,13 @@ lengthOfData - L�nge der Daten in byte
 */
 
 
-e_message_type_t dwm1000_ReceiveData(void * data, int lengthOfData);
+enum e_message_type_t dwm1000_ReceiveData(void * data, int lengthOfData);
 /*
 liest Daten im dwm1000 Receivebuffer
 
 data - stelle, an die die Daten geschrieben werden k�nnen
 lengthOfData - L�nge der Daten die vom Receivebuffer gelesen werden sollen
-(return true, wenn gegl�ckt)
+(return true, wenn geglueckt)
 */
 
 float dwm1000_getDistance(double nameOfOtherDWM);
@@ -151,3 +161,4 @@ beschreibt alle Register mit den in "newConfig" f�r diese enthaltenen Werten
 newConfig - Konfigurationsstrukt, das die Werte der Register enth�lt
 return die Werte der aktuellen Konfiguration des DWM1000s um Pr�fen zu k�nnen ob init gegl�ckt
 */
+#endif

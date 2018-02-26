@@ -5,7 +5,7 @@
 #include "stm32f4xx_exti.h"	//wird benoetigt um externe interrupts zu initialisieren
 #include "stm32f4xx_exti.h"	//wird benoetigt um externe interrupts zu initialisieren
 #include "../ai_datatypes.h"
-
+#include "stm32f4xx.h"
 #include "../ai_task.h"
 
 //hier wird deck_spi.h/deck_spi.c angewendet (in src/deck/api/...)
@@ -65,7 +65,7 @@ bool setup_dwm1000_communication(){
 	EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Rising;
 	EXTI_InitStructure.EXTI_LineCmd = ENABLE;
 
-	EXTI_Init(EXTI_InitStructure);
+	EXTI_Init(&EXTI_InitStructure);
 
 	// Enable interrupt
 	NVIC_InitStructure.NVIC_IRQChannel = EXTI_IRQChannel;	//EXTI15_10_IRQn
@@ -74,14 +74,20 @@ bool setup_dwm1000_communication(){
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
 	NVIC_Init(&NVIC_InitStructure);
 
+	// Reset the DW1000 chip
+	GPIO_WriteBit(GPIO_PORT, GPIO_PIN_RESET, 0);
+	vTaskDelay(M2T(10));
+	GPIO_WriteBit(GPIO_PORT, GPIO_PIN_RESET, 1);
+	vTaskDelay(M2T(10));
+
 }
 
-bool dwm1000_SendData(void * data, int lengthOfData, enum e_message_type_t message_type, char targetID /*Adressen?, ...*/) {
+bool dwm1000_SendData(void * data, int lengthOfData, e_message_type_t message_type, char targetID /*Adressen?, ...*/) {
 	spiStart();
 
 	//1. Aufbauen der Transmit Frame f�r den SPI Bus an den DWM1000
 	void *sendData;
-	int messageSize = lengthOfData + sizeof(char) + sizeof(enum e_message_type_t);
+	int messageSize = lengthOfData + sizeof(char) + sizeof(e_message_type_t);
 	sendData = malloc(messageSize);	// zwei bytes Extra um Art der Nachricht und Name des Senders beizufügen
 	if (sendData == NULL) {
 		return false;		//kein Mem mehr verfügbar --> Funktion wird nicht Ausgeführt
@@ -90,10 +96,10 @@ bool dwm1000_SendData(void * data, int lengthOfData, enum e_message_type_t messa
 
 	*(char*)sendData = senderID;																	//Sender ID ist erstes Byte der Nachricht
 	*(char*)((int*)sendData + sizeof(char)) = targetID;												//targedID ist ab zweites Byte der Nachricht
-	*(enum e_message_type_t*)((int*)sendData + 2*sizeof(char)) = message_type;						//message ytpe ist ab drittes Byte der Nachricht
+	*(e_message_type_t*)((int*)sendData + 2*sizeof(char)) = message_type;						//message ytpe ist ab drittes Byte der Nachricht
 	for (int i = 0; i < lengthOfData; i++)															//jedes byte einzeln auf alloc Speicher schreiben
 	{
-		*((char*)sendData + 2*sizeof(char) + sizeof(enum e_message_type_t) + i) = *((char*)data + i);
+		*((char*)sendData + 2*sizeof(char) + sizeof(e_message_type_t) + i) = *((char*)data + i);
 	}
 
 	//2. Data auf Transmit Data Buffer Register packen
