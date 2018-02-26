@@ -3,7 +3,7 @@
 #include "stm32f4xx_spi.h"
 #include "deck_spi.h"
 #include "stm32f4xx_exti.h"	//wird benoetigt um externe interrupts zu initialisieren
-#include "stm32f4xx_exti.h"	//wird ben�tigt um externe interrupts zu initialisieren
+#include "stm32f4xx_exti.h"	//wird benoetigt um externe interrupts zu initialisieren
 #include "../ai_datatypes.h"
 
 #include "../ai_task.h"
@@ -163,12 +163,9 @@ void dwm1000_immediateDistanceAnswer(char id_requester) {
 	//1. Funktion aktiviert, nach Distance request Eingang
 	//2. Antworten, damit requester Zeit stopppen kann
 
-	float Slave_timestamp_on_first_request;		
-	float Slave_timestamp_on_final_request;
-	getDistance();
-	getimmediateAnswer();
+	//dwm1000_SendData(void * data, int lengthOfData, enum e_message_type_t message_type, char targetID /*Adressen?, ...*/);
 
-	//Zusatz: Zeit zwischen Receive Timestamp und Transmit Timestamp an requester schicken, damit von gestoppter zeit abgezogen werden kann
+	//Zusatz: Zeit zwischen Receive Timestamp und Transmit Timestamp an requester schicken, damit von gestoppter Zeit abgezogen werden kann
 	//Receive Timestamp - Transmit Timestamp
 }
 
@@ -199,7 +196,7 @@ void dmw1000_sendProcessingTime(char id_requester) {
 
 	//2. Timestamp RX lesen, Register 0x15 Timestamp von bit 0-39
 	void *rxTimestamp;
-	int rxStampSize = 5;
+	int rxStampSize = 5;			//5 Bytes für Timestaqmp reservieren
 	rxTimestamp = malloc(rxStampSize);
 
 	instruction = READ_RX_TIMESTAMP;
