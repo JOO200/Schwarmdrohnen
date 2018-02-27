@@ -323,8 +323,6 @@ void dwm1000_init() {
 	//Read Transmission Frame Control Register
 	spiExchange(1, &instruction, &empty_byte);
 	
-	unsigned char instruction = READ_TFC;		//Read Transmission Frame Control Register
-	spiExchange(1, &instruction, ...);
 	//WRITE_INIT_TX_FCTRL
 	void *tfcContents = malloc(5);
 	void *initValTFC = malloc(5);
