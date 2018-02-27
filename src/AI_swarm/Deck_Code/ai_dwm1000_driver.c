@@ -18,9 +18,9 @@ Sollten keine Funktionsaenderungen des DWM1000 gewuenscht sein, sollte dieser Dr
 #include "../ai_task.h"
 #include "../../vendor/unity/extras/fixture/src/unity_fixture_malloc_overrides.h"
 
-//hier wird deck_spi.h/deck_spi.c angewendet (in src/deck/api/...)
+//Hier wird deck_spi.h/deck_spi.c angewendet (in src/deck/api/...)
 
-//helper Functions:
+//Helper Functions:
 void spiStart(){
 	spiBeginTransaction(BaudRate);
 }
@@ -29,7 +29,7 @@ void spiStop(){
 	spiEndTransaction();
 }
 
-//beschreibt die angegebene anzahl an Bytes mit "0"
+//Beschreibt die angegebene Anzahl an Bytes mit "0"
 void fillMemZero(void * mem, char size){
 	//Placeholder mit 0 fuellen
 	for (int i = 0; i < size; i++)
@@ -38,7 +38,7 @@ void fillMemZero(void * mem, char size){
 	}
 }
 
-//schreibt die angegeben Anzahl an Bytes von origin in Target
+//Schreibt die angegeben Anzahl an Bytes von origin in Target
  void writeToMem(void *target, void *origin, char size){
 	 for (int i = 0; i < size; i++)
 	 {
@@ -46,7 +46,7 @@ void fillMemZero(void * mem, char size){
 	 }
  }
 
-//setzt bits, die im Beispiel gesetzt sind (für init) - behält bereits gesetzte Bits gesetzt
+//Setzt Bits, die im Beispiel gesetzt sind (für init) - behält bereits gesetzte Bits gesetzt
 void setInitBits(void *target, void *origin, char size){
 	for (int i = 0; i < size; i++)
 		 {
@@ -55,7 +55,7 @@ void setInitBits(void *target, void *origin, char size){
 }
 
 
-//inhalt von locodec.c init (ab Z.312) inspiriert (und angepasst)
+//Inhalt von locodec.c init (ab Z.312) inspiriert (und angepasst)
 bool setup_dwm1000_communication(){
 	
 	// ---- Aus ST-Doku: ----
@@ -119,10 +119,10 @@ bool setup_dwm1000_communication(){
 	return 1;
 }
 
-bool dwm1000_SendData(void * data, int lengthOfData, e_message_type_t message_type, char targetID /*Adressen?, ...*/) {
+bool dwm1000_SendData(st_message_t *message) {
 	spiStart();
 
-	//1. Aufbauen der Transmit Frame f�r den SPI Bus an den DWM1000
+	/*//1. Aufbauen der Transmit Frame fuer den SPI Bus an den DWM1000
 	void *sendData;
 	int messageSize = lengthOfData + sizeof(char) + sizeof(e_message_type_t);
 	sendData = malloc(messageSize);	// zwei bytes Extra um Art der Nachricht und Name des Senders beizufügen
@@ -131,10 +131,10 @@ bool dwm1000_SendData(void * data, int lengthOfData, e_message_type_t message_ty
 	}
 	char senderID = my_ai_name; 
 
-	*(char*)sendData = senderID;																	//Sender ID ist erstes Byte der Nachricht
-	*(char*)((int*)sendData + sizeof(char)) = targetID;												//targedID ist ab zweites Byte der Nachricht
+	*(char*)sendData = senderID;																//Sender ID ist erstes Byte der Nachricht
+	*(char*)((int*)sendData + sizeof(char)) = targetID;											//targedID ist ab zweites Byte der Nachricht
 	*(e_message_type_t*)((int*)sendData + 2*sizeof(char)) = message_type;						//message ytpe ist ab drittes Byte der Nachricht
-	for (int i = 0; i < lengthOfData; i++)															//jedes byte einzeln auf alloc Speicher schreiben
+	for (int i = 0; i < lengthOfData; i++)														//jedes byte einzeln auf alloc Speicher schreiben
 	{
 		*((char*)sendData + 2*sizeof(char) + sizeof(e_message_type_t) + i) = *((char*)data + i);
 	}
@@ -145,12 +145,21 @@ bool dwm1000_SendData(void * data, int lengthOfData, e_message_type_t message_ty
 
 	void *placeHolder = malloc(lengthOfData);
 	
-	fillMemZero(placeHolder, lengthOfData);
+	fillMemZero(placeHolder, lengthOfData);*/
 	
 	//spiExchange(size_t length, const uint8_t * data_tx, uint8_t * data_rx)		
+	
+	//2. Data auf Transmit Data Buffer Register packen
+	unsigned char instruction = WRITE_TXBUFFER;
+	unsigned char receiveByte = 0x00;
+
+	unsigned int lenghtOfMessage = sizeof(st_message_t);
+	void *placeHolder = malloc(lenghtOfMessage);
+	fillMemZero(placeHolder, lenghtOfMessage);
+
 	spiExchange(1, &instruction, placeHolder);	//instruction Schicken - write txbuffer
 
-	spiExchange(lengthOfData, sendData, placeHolder);
+	spiExchange(lenghtOfMessage, message, placeHolder);
 
 	//3. System Control aktualisieren
 	instruction = READ_SYS_CTRL;
@@ -171,7 +180,6 @@ bool dwm1000_SendData(void * data, int lengthOfData, e_message_type_t message_ty
 		//.. noch keine Relevanten Dinge eingefallen
 
 	//5. Resourcen freigeben
-	free(sendData);
 	free(placeHolder);
 	free(sysctrl);
 
@@ -182,8 +190,18 @@ bool dwm1000_SendData(void * data, int lengthOfData, e_message_type_t message_ty
 
 e_message_type_t dwm1000_ReceiveData(st_message_t *data) {
 	//1. Receive Buffer Auslesen
+	unsigned int lengthOfData = sizeof(st_message_t);
+	void *placeHolder = malloc(lengthOfData);
+	fillMemZero(placeHolder, lengthOfData);
+
+	unsigned char instruction = READ_RXBUFFER;
+
+	spiExchange(1, &instruction, placeHolder);		//Instruction: Eceive Buffer soll gelesen werden
+	spiExchange(lengthOfData, data, placeHolder);	//READ_RXBUFFER schreiben
 
 	//2. Receive Enable Setzten
+	
+	instruction = WRITE_RECEIVE_ENABLE;
 	//3. Art der Nachricht entschluesseln
 	//4. Auf Data schreiben
 	//5. Art der Nachricht zurueckgeben 
