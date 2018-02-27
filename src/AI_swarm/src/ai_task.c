@@ -26,7 +26,7 @@ enum e_role_t {
 }; // e_role_t;
 
 //hier unsere main
-//wird ausgef�hrt von FreeRTOS-Scheduler sobald dieser das f�r sinnvoll h�lt (und nat�rlich,nachdem dieser in "main.c" gestartet wurde)
+//wird ausgefuehrt von FreeRTOS-Scheduler sobald dieser das fuer sinnvoll haelt (und natuerlich,nachdem dieser in "main.c" gestartet wurde)
 void ai_Task(void * arg) {
 	//... lokale Vars, init
 	st_distances_t tableDistances;
@@ -50,10 +50,10 @@ void ai_Task(void * arg) {
 			//3. Entsprechende Funktion aufrufen
 			switch (interruptType)
 			{
-			case /*receive*/:
+			case RX_DONE:
 				receiveHandler();
 				break;
-			case /*Transmit done*/:
+			case TX_DONE:
 				if (transmitProcessingTimePendingFlag) {
 					transmitProcessingTime();
 				}
@@ -64,38 +64,50 @@ void ai_Task(void * arg) {
 		}
 
 	}
-	vTaskDelete(NULL); //w�re schlecht, wenn das hier aufgerufen wird...
+	vTaskDelete(NULL); //waere schlecht, wenn das hier aufgerufen wird...
 }
 
 void receiveHandler() {
 	
-	dwm1000_ReceiveData();
-	switch (switch_on)
+	st_message_t message;
+	dwm1000_ReceiveData(&message);
+	switch (message.messageType)
 	{
+	case DISTANCE_TABLE:
+		//1. aktuelle Distance Tabelle holen
+		//2. an Absender zurück schicken
+		break;
+	case MASTER_STATE:
+		//Status des Masters aktualisieren
+		break;
+	case DISTANCE_REQUEST:
+		//1. Immediate Answer raussenden
+		//2. danach Processing Time nachsenden
+		break;
 	default:
 		break;
 	}
 }
 
-//eventuell m�ssen args als void *
+//eventuell muessen args als void *
 void getDistances(st_distances_t * data) {
 	//hier call der deckinterface.distances 
 	FillDistanceTable(); 
 }
 
 
-//eventuell m�ssen args als void *
+//eventuell muessen args als void *
 void calculatePosition(tableDistances * data)
 {
 	//hier call der positionsberechnung
 }
 
 bool initAi_Swarm() {
-	//UWB_Deck f�r Josy und Jan����hk (neuerdings auch N���kk�h)
+	//UWB_Deck fuer Josy und Janik (neuerdings auch Nico)
 	//hier euer/unser init-shizzle
 
 
-	//Rolle eigendlich geringster Name im Netzwerk --> erst Netzwerk n�tig
+	//Rolle eigendlich geringster Name im Netzwerk --> erst Netzwerk noetig
 	if (UWB_NAME == 0) {
 		my_ai_role = MASTER;
 	}

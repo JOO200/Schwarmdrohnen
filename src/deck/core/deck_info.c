@@ -27,6 +27,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
+#include "ai_datatypes.h"
 
 #define DEBUG_MODULE "DECK_INFO"
 
@@ -364,7 +365,7 @@ static bool registerRequiredEstimator(StateEstimatorType estimator)
 
 StateEstimatorType deckGetRequiredEstimator()
 {
-  return requiredEstimator;
+  return my_ai_role == AI_ROLE_SLAVE ? aiEstimator : requiredEstimator;
 }
 
 bool deckGetRequiredLowInterferenceRadioMode()

@@ -1,3 +1,4 @@
+
 #define DEBUG_MODULE "ESTIMATOR"
 #include "debug.h"
 
@@ -5,6 +6,7 @@
 #include "estimator.h"
 #include "estimator_complementary.h"
 #include "estimator_kalman.h"
+#include "../../AI_swarm/estimator_ai.c"
 
 #define DEFAULT_ESTIMATOR complementaryEstimator
 static StateEstimatorType currentEstimator = anyEstimator;
@@ -22,6 +24,7 @@ static EstimatorFcns estimatorFunctions[] = {
   {.init = 0, .test = 0, .update = 0}, // Any
   {.init = estimatorComplementaryInit, .test = estimatorComplementaryTest, .update = estimatorComplementary},
   {.init = estimatorKalmanInit, .test = estimatorKalmanTest, .update = estimatorKalman},
+  {.init = estimatorAiInit, .test = estimatorAiTest, .update = estimatorAi },
 };
 
 
