@@ -1,7 +1,7 @@
 #define NR_OF_DRONES 4
 
 //Name der Drohne bei jder Drohne unterschiedlich defined
-#define UWB_NAME 0 //oder 1;2;3;...
+#define AI_NAME 0 //oder 1;2;3;...
 
 #define MAX_HISTORY 
 

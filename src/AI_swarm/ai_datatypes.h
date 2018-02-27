@@ -12,7 +12,7 @@ typedef enum {
 	AI_SLAVE
 } e_role_t;
 
-unsigned char my_ai_name = 0;
+unsigned char = 0;
 e_role_t my_ai_role = AI_MASTER;
 
 typedef struct {
