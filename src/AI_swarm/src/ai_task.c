@@ -3,7 +3,7 @@
 #include "ai_distance.h"
 #include "task.h"
 #include "../Deck_Header/ai_dwm1000_driver.h"
-#include "../config.h"
+#include "../ai_config.h"
 
 #include "worker.h"
 
@@ -22,7 +22,7 @@ void ai_Task(void * arg) {
 
 	initAi_Swarm();
 
-	if (my_ai_role == AI_SLAVE) {
+	if (AI_ROLE == AI_SLAVE) {
 		//slave inits
         // @ai_motors.c : Deaktiviere evtl den Task STABILIZER
 	}
@@ -98,16 +98,11 @@ void calculatePosition(st_distances_t * data)
 bool initAi_Swarm() {
 	//UWB_Deck fuer Josy und Janik (neuerdings auch Nico)
 	//hier euer/unser init-shizzle
+	setup_dwm1000_communication();		//HW-Setup
+
+	dwm1000_init();
 
 
-	//Rolle eigendlich geringster Name im Netzwerk --> erst Netzwerk noetig
-	if (UWB_NAME == 0) {
-		my_ai_role = AI_MASTER;
-	}
-	else
-	{
-		my_ai_role = AI_SLAVE;
-	}
 
 	//...
 	return 1;

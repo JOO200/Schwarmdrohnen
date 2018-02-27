@@ -146,6 +146,9 @@ static void stabilizerTask(void* param)
 	if (state.attitude.roll >= VerkackWinkel || state.attitude.pitch >= VerkackWinkel) {
 		stabilizerSetEmergencyStop();
 	}
+	if (state.attitude.roll <= -1*VerkackWinkel || state.attitude.pitch <= -1*VerkackWinkel) {
+		stabilizerSetEmergencyStop();
+	}
 	else if (state.attitude.roll <= GainedControlWinkel && state.attitude.pitch <= GainedControlWinkel){
 		stabilizerResetEmergencyStop();
 	}

@@ -15,7 +15,7 @@ Sollten keine Funktionsaenderungen des DWM1000 gewuenscht sein, sollte dieser Dr
 #include "../ai_datatypes.h"
 #include "stm32f4xx.h"
 #include "../ai_task.h"
-#include "../../vendor/unity/extras/fixture/src/unity_fixture_malloc_overrides.h"
+#include <stdlib.h>
 
 //Hier wird deck_spi.h/deck_spi.c angewendet (in src/deck/api/...)
 
@@ -152,13 +152,13 @@ bool dwm1000_SendData(st_message_t *message) {
 	unsigned char instruction = WRITE_TXBUFFER;
 	unsigned char receiveByte = 0x00;
 
-	unsigned int lenghtOfMessage = sizeof(st_message_t);
-	void *placeHolder = malloc(lenghtOfMessage);
-	fillMemZero(placeHolder, lenghtOfMessage);
+	unsigned int lengthOfMessage = sizeof(st_message_t);
+	void *placeHolder = malloc(lengthOfMessage);
+	fillMemZero(placeHolder, lengthOfMessage);
 
 	spiExchange(1, &instruction, placeHolder);	//instruction Schicken - write txbuffer
 
-	spiExchange(lenghtOfMessage, (void*)message, placeHolder);
+	spiExchange(lengthOfMessage, (void*)message, placeHolder);
 
 	//3. System Control aktualisieren
 	instruction = READ_SYS_CTRL;

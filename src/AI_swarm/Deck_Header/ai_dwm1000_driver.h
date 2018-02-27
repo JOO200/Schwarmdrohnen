@@ -142,7 +142,7 @@ Vergleich mit System Event Status Register (Register 0x0F), falls Verundung grö
 
 
 //--------------------------------Functions:
-bool setup_dwm1000_spi_interface();
+bool setup_dwm1000_communication();
 /*
 initialisiert das SPI interface (nach Anleitung durch "stm32f4xx_spi.c" - Z.17 - Z.134)
 */
