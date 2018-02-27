@@ -264,12 +264,12 @@ static void spiRead(dwDevice_t* dev, const void *header, size_t headerLength,
   digitalWrite(CS_PIN, HIGH);
   spiEndTransaction();
 }
-
-#if LOCODECK_USE_ALT_PINS
+//Für Schwarmdrohnen auskommentiert
+//#if LOCODECK_USE_ALT_PINS
 	void __attribute__((used)) EXTI5_Callback(void)
-#else
-	void __attribute__((used)) EXTI11_Callback(void)
-#endif
+//#else
+//	void __attribute__((used)) EXTI11_Callback(void)
+//#endif
 	{
 	  portBASE_TYPE  xHigherPriorityTaskWoken = pdFALSE;
 

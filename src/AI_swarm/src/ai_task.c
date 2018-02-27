@@ -3,6 +3,7 @@
 #include "ai_distance.h"
 #include "task.h"
 #include "../Deck_Header/ai_dwm1000_driver.h"
+#include "../config.h"
 
 #include "worker.h"
 
@@ -59,7 +60,7 @@ void receiveHandler(unsigned char *distanceRequesterID) {
 	
 	st_message_t message;
 	dwm1000_ReceiveData(&message);
-	if (message.targetID != my_ai_name)
+	if (message.targetID != AI_NAME)
 		return;
 
 	switch (message.messageType)
