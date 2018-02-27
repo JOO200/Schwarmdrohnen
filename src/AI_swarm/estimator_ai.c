@@ -7,6 +7,7 @@ void estimatorAi(state_t *state, sensorData_t *sensors, control_t *control, cons
 }
 
 bool estimatorAiTest(void) {
+	return 1;
 }
 
 void estimatorAiInit(void) {

@@ -18,7 +18,6 @@ void ai_Task(void * arg) {
 	bool DMW1000_IRQ_Flag = 0;
 	bool transmitProcessingTimePendingFlag = 0;
 	unsigned char distanceRequesterID;
-	st_distances_t tableDistances;
 
 	initAi_Swarm();
 
@@ -44,7 +43,7 @@ void ai_Task(void * arg) {
 				break;
 			case TX_DONE:
 				if (transmitProcessingTimePendingFlag) {
-					dwm1000_sendProcessingTime();
+					dwm1000_sendProcessingTime(distanceRequesterID);
 				}
 				break;
 			default:
@@ -56,7 +55,7 @@ void ai_Task(void * arg) {
 	vTaskDelete(0); //waere schlecht, wenn das hier aufgerufen wird...
 }
 
-void receiveHandler() {
+void receiveHandler(unsigned char *distanceRequesterID) {
 	
 	st_message_t message;
 	dwm1000_ReceiveData(&message);
@@ -73,7 +72,7 @@ void receiveHandler() {
 		//Status des Masters aktualisieren
 		break;
 	case DISTANCE_REQUEST:
-		distanceRequesterID = message.senderID;
+		*distanceRequesterID = message.senderID;
 		//1. Immediate Answer raussenden
 		//2. danach Processing Time nachsenden
 		break;
@@ -110,6 +109,7 @@ bool initAi_Swarm() {
 	}
 
 	//...
+	return 1;
 }
 
 

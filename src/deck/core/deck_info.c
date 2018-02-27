@@ -365,7 +365,7 @@ static bool registerRequiredEstimator(StateEstimatorType estimator)
 
 StateEstimatorType deckGetRequiredEstimator()
 {
-  return my_ai_role == AI_ROLE_SLAVE ? aiEstimator : requiredEstimator;
+  return my_ai_role == AI_SLAVE ? aiEstimator : requiredEstimator;
 }
 
 bool deckGetRequiredLowInterferenceRadioMode()

@@ -51,7 +51,7 @@
  * @brief
  * @{*/
 
-#include "bmi160.h"
+#include "../interface/bmi160.h"
 
 /*********************************************************************/
 /* Static function declarations */

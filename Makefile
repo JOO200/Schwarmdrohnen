@@ -103,7 +103,7 @@ CFLAGS += -DUSD_RUN_DISKIO_FUNCTION_TESTS
 endif
 
 # Crazyflie sources
-VPATH += src/init src/hal/src src/modules/src src/utils/src src/drivers/bosch/src src/drivers/src src/AI_swarm/src src/AI_swarm/Deck_Code src/AI_swarm/Deck_Header  #die letzten beiden von uns beigefügt
+VPATH += src/init src/hal/src src/modules/src src/utils/src src/drivers/bosch/src src/drivers/src src/AI_swarm/src src/AI_swarm/Deck_Code src/AI_swarm/Deck_Header src/init/drivers/src src/init/drivers/bosch/src src/init/drivers/bosch/interface #die letzten 4 von uns beigefügt
 VPATH_CF2 += src/platform/cf2
 
 ifeq ($(PLATFORM), CF2)

@@ -12,7 +12,6 @@ Sollten keine Funktionsaenderungen des DWM1000 gewuenscht sein, sollte dieser Dr
 #include "stm32f4xx_spi.h"
 #include "deck_spi.h"
 #include "stm32f4xx_exti.h"	//wird benoetigt um externe interrupts zu initialisieren
-#include "stm32f4xx_exti.h"	//wird benoetigt um externe interrupts zu initialisieren
 #include "../ai_datatypes.h"
 #include "stm32f4xx.h"
 #include "../ai_task.h"
