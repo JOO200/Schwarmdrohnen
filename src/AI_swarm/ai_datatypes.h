@@ -12,7 +12,7 @@ typedef enum {
 	AI_SLAVE
 } e_role_t;
 
-char my_ai_name = 0;
+unsigned char my_ai_name = 0;
 e_role_t my_ai_role = AI_MASTER;
 
 typedef struct {
@@ -36,7 +36,7 @@ typedef struct { // struct für Koordinaten
 } st_coords_t;
 
 typedef enum {
-	DISTANCE_TABEL,
+	DISTANCE_TABLE,
 	MASTER_STATE,
 	DISTANCE_REQUEST,
 	UNDEFINED = 0

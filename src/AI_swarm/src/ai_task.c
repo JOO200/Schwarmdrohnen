@@ -1,70 +1,26 @@
 #include "ai_task.h"
 #include "ai_datatypes.h"
 #include "ai_distance.h"
+#include "task.h"
+#include "../Deck_Header/ai_dwm1000_driver.h"
 
 #include "worker.h"
 
 /* FreeRtos includes */
 #include "FreeRTOS.h"
-#include "task.h"
-
-bool DMW1000_IRQ_Flag;
-
-//wird in initphase von main in main.c aufgerufen, bevor scheduler gestartet wird
-void ai_launch(void)
-{
-	xTaskCreate(ai_Task, AI_TASK_NAME,		
-		AI_TASK_STACKSIZE, NULL,
-		AI_TASK_PRIO, NULL);
-}
 
 
-//hier unsere main
-//wird ausgefuehrt von FreeRTOS-Scheduler sobald dieser das fuer sinnvoll haelt (und natuerlich,nachdem dieser in "main.c" gestartet wurde)
-void ai_Task(void * arg) {
-	//... lokale Vars, init
-	st_distances_t tableDistances;
-
-	initAi_Swarm();
-
-	if (my_ai_role == SLAVE) {
-		//slave inits
-        // @ai_motors.c : Deaktiviere evtl den Task STABILIZER
-	}
-
-	while (1) {
-		//... repetetives
-
-		if (DMW1000_IRQ_Flag){		//"ISR"
-			DMW1000_IRQ_Flag = false;
-			//1. Interrupt Register anschauen
-			//2. Evaluieren
-			enum e_interrupt_type_t interruptType = dwm1000_EvalInterrupt();
-
-			//3. Entsprechende Funktion aufrufen
-			switch (interruptType)
-			{
-			case RX_DONE:
-				receiveHandler();
-				break;
-			case TX_DONE:
-				if (transmitProcessingTimePendingFlag) {
-					transmitProcessingTime();
-				}
-				break;
-			default:
-				break;
-			}
-		}
-
-	}
-	vTaskDelete(NULL); //waere schlecht, wenn das hier aufgerufen wird...
-}
+bool DMW1000_IRQ_Flag = 0;
+bool transmitProcessingTimePendingFlag = 0;
+unsigned char distanceRequesterID;
 
 void receiveHandler() {
 	
 	st_message_t message;
 	dwm1000_ReceiveData(&message);
+	if (message.targetID != my_ai_name)
+		return;
+
 	switch (message.messageType)
 	{
 	case DISTANCE_TABLE:
@@ -75,6 +31,7 @@ void receiveHandler() {
 		//Status des Masters aktualisieren
 		break;
 	case DISTANCE_REQUEST:
+		distanceRequesterID = message.senderID;
 		//1. Immediate Answer raussenden
 		//2. danach Processing Time nachsenden
 		break;
@@ -86,12 +43,12 @@ void receiveHandler() {
 //eventuell muessen args als void *
 void getDistances(st_distances_t * data) {
 	//hier call der deckinterface.distances 
-	FillDistanceTable(); 
+
 }
 
 
 //eventuell muessen args als void *
-void calculatePosition(tableDistances * data)
+void calculatePosition(st_distances_t * data)
 {
 	//hier call der positionsberechnung
 }
@@ -103,13 +60,65 @@ bool initAi_Swarm() {
 
 	//Rolle eigendlich geringster Name im Netzwerk --> erst Netzwerk noetig
 	if (UWB_NAME == 0) {
-		my_ai_role = MASTER;
+		my_ai_role = AI_MASTER;
 	}
 	else
 	{
-		my_ai_role = SLAVE;
+		my_ai_role = AI_SLAVE;
 	}
 
 	//...
 }
 
+
+//hier unsere main
+//wird ausgefuehrt von FreeRTOS-Scheduler sobald dieser das fuer sinnvoll haelt (und natuerlich,nachdem dieser in "main.c" gestartet wurde)
+void ai_Task(void * arg) {
+	//... lokale Vars, init
+	st_distances_t tableDistances;
+
+	initAi_Swarm();
+
+	if (my_ai_role == AI_SLAVE) {
+		//slave inits
+        // @ai_motors.c : Deaktiviere evtl den Task STABILIZER
+	}
+
+	while (1) {
+		//... repetetives
+
+		if (DMW1000_IRQ_Flag){		//"ISR"
+			DMW1000_IRQ_Flag = false;
+			//1. Interrupt Register anschauen
+			//2. Evaluieren
+			e_interrupt_type_t interruptType = dwm1000_EvalInterrupt();
+
+			//3. Entsprechende Funktion aufrufen
+			switch (interruptType)
+			{
+			case RX_DONE:
+				receiveHandler();
+				break;
+			case TX_DONE:
+				if (transmitProcessingTimePendingFlag) {
+					sendProcessingTime();
+				}
+				break;
+			default:
+				break;
+			}
+		}
+
+	}
+	vTaskDelete(NULL); //waere schlecht, wenn das hier aufgerufen wird...
+}
+
+
+
+//wird in initphase von main in main.c aufgerufen, bevor scheduler gestartet wird
+void ai_launch(void)
+{
+	xTaskCreate(ai_Task, AI_TASK_NAME,
+		AI_TASK_STACKSIZE, NULL,
+		AI_TASK_PRIO, NULL);
+}

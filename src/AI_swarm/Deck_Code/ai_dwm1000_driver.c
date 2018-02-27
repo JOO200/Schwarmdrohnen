@@ -289,7 +289,7 @@ e_interrupt_type_t dwm1000_EvalInterrupt()
 	//Gelesenes Register auswerten
 	e_interrupt_type_t retVal = FAILED_EVAL;
 	unsigned char TFSMask = MASK_TRANSMIT_FRAME_SENT;
-	short RFSMask = MASK_RECEIVE_FRAME_SENT;
+	short RFSMask = MASK_RECEIVE_DATA_FRAME_READY;
 
 	//ist Transmit Frame Sent gesetzt?
 	if ((*(char*)sesrContents & TFSMask) > 1)		//char, weil Mask 1 Byte lang
@@ -349,7 +349,7 @@ void dwm1000_init() {
 	free(tfcContents);
 	free(initValTFC);
 
-	/* ------------Wumpe mit Anlauf - kein Init für dieses Register nötig
+	/* ------------Wumpe mit Anlauf - kein Init für diese Register nötig
 	//------------------------ SYSCONTROL LESEN
 
 	instruction = READ_SYS_CTRL;
@@ -357,12 +357,13 @@ void dwm1000_init() {
 	spiExchange(1, &instruction, &emptyByte);	//instruction read sysctrl raushauen
 	int initValTFC =
 	spiExchange(4, )
-	*/
+
 
 	//------------------------ SYSSTATUS LESEN
 	instruction = READ_SYS_STATUS;
 	spiExchange(1, &instruction, &emptyByte);
 
+	 */
 
 	spiStop();	//fuer Mutexinteraktion genutzt
 	free(placeHolder);
