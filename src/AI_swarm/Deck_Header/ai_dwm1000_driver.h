@@ -1,7 +1,7 @@
 #ifndef ai_dwm1000_drivh
 #define ai_dwm1000_drivh
 
-//beinhaltet die Funktionen, welche benoetigt werden um den DWM1000 zu steuern (Daten Senden, Ranging, ...)
+//beinhaltet die Funktionen, welche benoetigt werden, um den DWM1000 zu steuern (Daten Senden, Ranging, ...)
 
 #include "ai_datatypes.h"
 #include <stdbool.h>
@@ -9,9 +9,9 @@
 
 //--------------------------------Instructions:
 /*Jede Instruction ist ein Byte gross und wie folgt beschrieben:
-//Bit 7: Read - 0, Write - 1
-//Bit 6: 0
-//Bit 5 - Bit 0: Reg ID*/
+Bit 7: Read - 0, Write - 1
+Bit 6: 0
+Bit 5 - Bit 0: Reg ID*/
 
 
 #define READ_TX_TIMESTAMP 0b00010111		//Register 0x17
@@ -22,7 +22,7 @@
 
 #define WRITE_TXBUFFER 0b10001001
 
-#define READ_SESR 0b00001111		//System Event Status Register
+#define READ_SESR 0b00001111				//System Event Status Register
 
 #define READ_SYS_CTRL 0b00001101
 #define WRITE_SYS_CTRL 0b10001101
@@ -31,15 +31,21 @@
 #define READ_SYS_STATUS 0b00001111
 #define WRITE_SYS_STATUS 0b10001111
 
-#define READ_RXBUFFER 0b00010001	//Reg ID:0x11
-#define READ_RXTIMESTAMP 0b00010101 //REG ID 0x15
+#define READ_RXBUFFER 0b00010001			//Reg ID:0x11
+#define READ_RXTIMESTAMP 0b00010101			//REG ID: 0x15
+
 //--------------------------------Register:
-/*Register "Transmit Frame Control", besteht aus 5 Byte
-Beschreibung:
-Orientierung:
-Bit 39, Bit 38, ..., Bit 0
-Letztendlich muss man nur noch die einzelnen Zahlen addieren und erh�lt das 5-Byte grosse Register
+
+//Register "Transmit Frame Control" (TFC)
+/*Instruction Manual S.25 und ab S.74 
+Register-ID: 0x08
+Groesse: 5 Byte
+Beschreibung: Register zur Configuration der DWM100 Transmission und Datenpakete
+Orientierung: Bit 39, Bit 38, ..., Bit 0
+Setzten der einzelnen Bits
+(Hier werden zu Veranschaulichung alle Bits nacheinander gesetzt und anschliessen addiert)
 Binaer -> Hex
+Byte 4	 Byte 3	  Byte 2   Byte 1	Byte 0
 00000000 00000000 00000000 00000000 00001100 -> 0x000000000C - TFLEN, Transmission Frame Length (0-6)
 00000000 00000000 00000000 00000000 00000000 -> 0x0000000000 - TFLE, Transmit Frame Length Extension (7-9)
 00000000 00000000 00000000 00000000 00000000 -> 0x0000000000 - R, Reserved (10-12)
@@ -50,23 +56,42 @@ Binaer -> Hex
 00000000 00000000 00010000 00000000 00000000 -> 0x0000100000 - PE, Preamble Extension (20+21)
 00000000 00000000 00000000 00000000 00000000 -> 0x0000000000 - TXBOFFS, Transmit Buffer index offset (22-31)
 00000000 00000000 00000000 00000000 00000000 -> 0x0000000000 - IFSDELAY, Extension f�r TXBOFFS  (32-39)
-Addiert:
+Addiert und in Hex:
 00000000 00000000 00010101 00100000 00001100 -> 0x000015200C - TFC
-*/
-#define WRITE_INIT_TX_FCTRL 0x000015200C;	//Instruction Manual S.12; Register-ID: 0x08, Bei INIT Schreiben
 
-/*Register "System Control Register", besteht aus 4 Byte
-Beschreibung: Keine Init nötig, wird mit 0x0000000B beschrieben, um Sendung zu starten
+Muss in der INIT initialisiert werden!
+*/
+#define WRITE_INIT_TX_FCTRL 0x000015200C;
+
+//Register "System Control Register" (SYS_CTRL)
+/*Instruction Manual S.25 und ab S.79 
+Register-ID: 0x0D
+Groesse: 4 Byte
+Beschreibung: Register, welches Bits zum Starten und Stoppen der Transmision enthaelt
 Orientierung: Bit 31, Bit 30, ..., Bit 0
-Letztendlich muss man nur noch die einzelnen Zahlen addieren und erhaelt das 4-Byte grosse Register
 Binaer -> Hex
-00000000 00000000 00000000 00001011  -> 0x0000000B
+z.B. 00000000 00000000 00000000 00000011  -> 0x00000003
+Wichtige Bits:
+Bit 0: Suppress Checksumme
+Bit 1: Transmit Start
+Bit 3: Cancel Surppression (=0)
+Bit 6: Transmit Off
+Bit 8: Enable Receiver
+
+Keine Init nötig, wird mit 0x00000003 beschrieben, um Sendung zu starten!
 */
-#define READ_SYS_CTRL_MEMSPACE 0x00000000; //System Control Register, Register-ID: 0x0D, Diesen Wert einem Speicherbereich zuschreiben, dann den Inhalt des Registers darauf lesen
+#define READ_SYS_CTRL_MEMSPACE 0x00000000; 
 
-#define WRITE_TRANSMIT_BITs 0x00000003;	//hiermit | -> dann Transmit Bit auf jeden Fall gesetzt
+#define WRITE_TRANSMIT_BITs 0x00000003;	//hiermit OR, dann Transmit Bit auf jeden Fall gesetzt
 
-/*Register "System Event Status Register", besteht aus 5 Byte
+#define WRITE_RECEIVE_ENABLE 0x00000100 //Nach lesen einer Nachricht aus den Receive Buffer muss dieses Bit gesetzt werden, um neue Nachrichten empfangen zu koennen
+
+#define BaudRate 0x0008		//SPI_BAUDRATE_21MHZ	//hier auch 11.5, 5.25, 2.625, 1.3125 auswaehlbar -- 21MHZ --> (uint16_t)0x0008
+
+//Register "System Event Status Register"
+/*Instruction Manual S.25 und ab S.79
+Register-ID: 0x0F
+Groesse: 5 Byte
 Beschreibung:
 Orientierung: Bit 39, Bit 38, ..., Bit 0
 Letztendlich muss man nur noch die einzelnen Zahlen addieren und erhaelt das 5-Byte grosse Register
@@ -74,25 +99,14 @@ Binaer -> Hex
 00000000 00000000 00000000 00000000 00000000 -> 0x0000000000
 
 Es koennten folgende interupts gesetzt werden, die für uns relevant sind:
+TXFS (Bit 7)-> Transmit Frame Sent, Transmission Done Interrupt Event
 RXDFR (Bit 13) -> Receiver Data Frame Ready, wenn die Nachricht fertig gesendet ist
-RXFCG (Bit 14) -> Checksummenvergleich erfolgreich am Ende des Frames - FRAME GUT GESENDET
-RXFCE (Bit 15) -> Checksummenvergleich nicht erfolgreich am Ende des Frames	- FRAME SCHLECHT GESENDET
 */
 #define READ_SYS_STATUS_MEMSPACE 0x0000000000 //System Event Status Register, Register-ID: 0x0F, Diesen Wert einem Speicherbereich zuschreiben, dann den Inhalt des Registers darauf lesen
 
 #define MESSAGE_RECEIVED_STATUS 0x0000002000;	//Wenn bei verunden mit diesem Wert und dem System Status Register (0x0F) > 0 rauskommt -> Nachricht erhalten
 
-/*Register "System Control Register", besteht aus 4 Byte
-Beschreibung:
-Orientierung: Bit 31, Bit 30, ..., Bit 0
-Letztendlich muss man nur noch die einzelnen Zahlen addieren und erhaelt das 4-Byte grosse Register
-Binaer -> Hex
-00000000 00000000 00000001 00000000  -> 0x00000100*/
-#define WRITE_RECEIVE_ENABLE 0x00000100 //Nach lesen einer Nachricht aus den Receive Buffer muss dieses Bit gesetzt werden um neue Nachrichten empfangen zu können
-
-
-#define BaudRate 0x0008//SPI_BAUDRATE_21MHZ	//hier auch 11.5, 5.25, 2.625, 1.3125 ausw�hlbar -- 21MHZ --> (uint16_t)0x0008
-
+//Masks fuer Interrupts
 /*Maske für jeden relevanten Interrupt-Typ
 Vergleich mit System Event Status Register (Register 0x0F), falls Verundung größer 0 -> abgefragtes Event hat stattgefunden*/
 
@@ -147,10 +161,16 @@ lengthOfData - Laenge der Daten die vom Receivebuffer gelesen werden sollen
 
 float dwm1000_getDistance(double nameOfOtherDWM);
 /*
-startet Rangingvorgang
+startet Rangingvorgang aus Sicht DWM1000
 
 nameOfOtherDWM - PAN (Personal Area Network) Identifier (8Byte) des anderen DWMs (Register 0x03)
 */
+
+e_interrupt_type_t dwm1000_EvalInterrupt();
+/*Gibt zurueck aus welchem Grund der Interrupt (IRQ) ausgeloest wurde*/
+
+void dmw1000_sendProcessingTime(char id_requester);
+/*Sendet die Zeit die zwischen Eingang der Request-Distance und Immediate-Answer vergangen ist */
 
 void dwm1000_init();
 /*
