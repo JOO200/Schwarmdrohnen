@@ -26,6 +26,7 @@
  * This code mainly interfacing the PWM peripheral lib of ST.
  */
 // Connector M1, PA1, TIM2_CH2
+#include "motors.h"
 static const MotorPerifDef CONN_M1 =
 {
     .drvType       = BRUSHED,
