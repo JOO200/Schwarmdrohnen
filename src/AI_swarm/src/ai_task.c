@@ -10,9 +10,51 @@
 #include "FreeRTOS.h"
 
 
-bool DMW1000_IRQ_Flag = 0;
-bool transmitProcessingTimePendingFlag = 0;
-unsigned char distanceRequesterID;
+
+//hier unsere main
+//wird ausgefuehrt von FreeRTOS-Scheduler sobald dieser das fuer sinnvoll haelt (und natuerlich,nachdem dieser in "main.c" gestartet wurde)
+void ai_Task(void * arg) {
+	//... lokale Vars, init
+	bool DMW1000_IRQ_Flag = 0;
+	bool transmitProcessingTimePendingFlag = 0;
+	unsigned char distanceRequesterID;
+	st_distances_t tableDistances;
+
+	initAi_Swarm();
+
+	if (my_ai_role == AI_SLAVE) {
+		//slave inits
+        // @ai_motors.c : Deaktiviere evtl den Task STABILIZER
+	}
+
+	while (1) {
+		//... repetetives
+
+		if (DMW1000_IRQ_Flag){		//"ISR"
+			DMW1000_IRQ_Flag = false;
+			//1. Interrupt Register anschauen
+			//2. Evaluieren
+			e_interrupt_type_t interruptType = dwm1000_EvalInterrupt();
+
+			//3. Entsprechende Funktion aufrufen
+			switch (interruptType)
+			{
+			case RX_DONE:
+				receiveHandler();
+				break;
+			case TX_DONE:
+				if (transmitProcessingTimePendingFlag) {
+					dwm1000_sendProcessingTime();
+				}
+				break;
+			default:
+				break;
+			}
+		}
+
+	}
+	vTaskDelete(0); //waere schlecht, wenn das hier aufgerufen wird...
+}
 
 void receiveHandler() {
 	
@@ -68,49 +110,6 @@ bool initAi_Swarm() {
 	}
 
 	//...
-}
-
-
-//hier unsere main
-//wird ausgefuehrt von FreeRTOS-Scheduler sobald dieser das fuer sinnvoll haelt (und natuerlich,nachdem dieser in "main.c" gestartet wurde)
-void ai_Task(void * arg) {
-	//... lokale Vars, init
-	st_distances_t tableDistances;
-
-	initAi_Swarm();
-
-	if (my_ai_role == AI_SLAVE) {
-		//slave inits
-        // @ai_motors.c : Deaktiviere evtl den Task STABILIZER
-	}
-
-	while (1) {
-		//... repetetives
-
-		if (DMW1000_IRQ_Flag){		//"ISR"
-			DMW1000_IRQ_Flag = false;
-			//1. Interrupt Register anschauen
-			//2. Evaluieren
-			e_interrupt_type_t interruptType = dwm1000_EvalInterrupt();
-
-			//3. Entsprechende Funktion aufrufen
-			switch (interruptType)
-			{
-			case RX_DONE:
-				receiveHandler();
-				break;
-			case TX_DONE:
-				if (transmitProcessingTimePendingFlag) {
-					sendProcessingTime();
-				}
-				break;
-			default:
-				break;
-			}
-		}
-
-	}
-	vTaskDelete(NULL); //waere schlecht, wenn das hier aufgerufen wird...
 }
 
 
