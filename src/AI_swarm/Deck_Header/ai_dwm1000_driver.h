@@ -1,17 +1,18 @@
 #ifndef ai_dwm1000_drivh
 #define ai_dwm1000_drivh
 
-//beinhaltet die Funktionen, welche ben�tigt werden um den DWM1000 zu steuern (Daten Senden, Ranging, ...)
+//beinhaltet die Funktionen, welche benoetigt werden um den DWM1000 zu steuern (Daten Senden, Ranging, ...)
 
 #include "ai_datatypes.h"
 #include <stdbool.h>
 #include "stm32f4xx_gpio.h"
 
 //--------------------------------Instructions:
-//Bit 7 -> 0
+/*Jede Instruction ist ein Byte gross und wie folgt beschrieben:
 //Bit 7: Read - 0, Write - 1
 //Bit 6: 0
-// Bit 5 - 0: Reg ID
+//Bit 5 - Bit 0: Reg ID*/
+
 
 #define READ_TX_TIMESTAMP 0b00010111		//Register 0x17
 #define READ_RX_TIMESTAMP 0b00010101		//Register 0x15
@@ -55,9 +56,8 @@ Addiert:
 #define WRITE_INIT_TX_FCTRL 0x000015200C;	//Instruction Manual S.12; Register-ID: 0x08, Bei INIT Schreiben
 
 /*Register "System Control Register", besteht aus 4 Byte
-Beschreibung:
-Orientierung:
-Bit 31, Bit 30, ..., Bit 0
+Beschreibung: Keine Init nötig, wird mit 0x0000000B beschrieben, um Sendung zu starten
+Orientierung: Bit 31, Bit 30, ..., Bit 0
 Letztendlich muss man nur noch die einzelnen Zahlen addieren und erhaelt das 4-Byte grosse Register
 Binaer -> Hex
 00000000 00000000 00000000 00001011  -> 0x0000000B
@@ -66,16 +66,15 @@ Binaer -> Hex
 
 #define WRITE_TRANSMIT_BITs 0x00000003;	//hiermit | -> dann Transmit Bit auf jeden Fall gesetzt
 
-/*Register "System Status Register", besteht aus 5 Byte
+/*Register "System Event Status Register", besteht aus 5 Byte
 Beschreibung:
-Orientierung:
-Bit 39, Bit 38, ..., Bit 0
+Orientierung: Bit 39, Bit 38, ..., Bit 0
 Letztendlich muss man nur noch die einzelnen Zahlen addieren und erhaelt das 5-Byte grosse Register
 Binaer -> Hex
 00000000 00000000 00000000 00000000 00000000 -> 0x0000000000
 
-Es koenten folgende interupts gesetzt werden, die für uns relevant sind:
-RXDFR (Bit 13) -> wenn die Nachricht fertig gesendet ist
+Es koennten folgende interupts gesetzt werden, die für uns relevant sind:
+RXDFR (Bit 13) -> Receiver Data Frame Ready, wenn die Nachricht fertig gesendet ist
 RXFCG (Bit 14) -> Checksummenvergleich erfolgreich am Ende des Frames - FRAME GUT GESENDET
 RXFCE (Bit 15) -> Checksummenvergleich nicht erfolgreich am Ende des Frames	- FRAME SCHLECHT GESENDET
 */
@@ -85,8 +84,7 @@ RXFCE (Bit 15) -> Checksummenvergleich nicht erfolgreich am Ende des Frames	- FR
 
 /*Register "System Control Register", besteht aus 4 Byte
 Beschreibung:
-Orientierung:
-Bit 31, Bit 30, ..., Bit 0
+Orientierung: Bit 31, Bit 30, ..., Bit 0
 Letztendlich muss man nur noch die einzelnen Zahlen addieren und erhaelt das 4-Byte grosse Register
 Binaer -> Hex
 00000000 00000000 00000001 00000000  -> 0x00000100*/
@@ -100,7 +98,7 @@ Vergleich mit System Event Status Register (Register 0x0F), falls Verundung grö
 
 #define SET_TRANSMIT_START WRITE_TRANSMIT_BITs
 #define MASK_TRANSMIT_FRAME_SENT 0x80			//Bit 7
-#define MASK_RECEIVE_FRAME_SENT 0x2000			//Bit 13
+#define MASK_RECEIVE_DATA_FRAME_READY 0x2000			//Bit 13
 
 //defines fuer Interrupt Config
 //#define EXTI_Line11 0x00800
@@ -130,11 +128,11 @@ initialisiert das SPI interface (nach Anleitung durch "stm32f4xx_spi.c" - Z.17 -
 
 bool dwm1000_SendData(void * data, int lengthOfData, e_message_type_t message_type, char targetID /*Adressen?, ...*/);
 /*
-sendet Daten �ber den UWB-Bus
+sendet Daten ueber den UWB-Bus
 
 data - bytehaufen, der gesendet wird
-lengthOfData - L�nge der Daten in byte
-(return true, wenn gegl�ckt)
+lengthOfData - Laenge der Daten in byte
+(return true, wenn geglueckt)
 */
 
 
@@ -142,8 +140,8 @@ e_message_type_t dwm1000_ReceiveData(st_message_t *data);
 /*
 liest Daten im dwm1000 Receivebuffer
 
-data - stelle, an die die Daten geschrieben werden k�nnen
-lengthOfData - L�nge der Daten die vom Receivebuffer gelesen werden sollen
+data - stelle, an die die Daten geschrieben werden koennen
+lengthOfData - Laenge der Daten die vom Receivebuffer gelesen werden sollen
 (return true, wenn geglueckt)
 */
 
@@ -158,7 +156,7 @@ void dwm1000_init();
 /*
 beschreibt alle Register mit den in "newConfig" f�r diese enthaltenen Werten
 
-newConfig - Konfigurationsstrukt, das die Werte der Register enth�lt
-return die Werte der aktuellen Konfiguration des DWM1000s um Pr�fen zu k�nnen ob init gegl�ckt
+newConfig - Konfigurationsstrukt, das die Werte der Register enthaelt
+return die Werte der aktuellen Konfiguration des DWM1000s um Pr�fen zu koennen ob init geglueckt
 */
 #endif
