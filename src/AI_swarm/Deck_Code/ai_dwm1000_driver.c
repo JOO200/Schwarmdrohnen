@@ -45,6 +45,7 @@ void setInitBits(void *target, void *origin, char size){
 		 }
 }
 
+
 //inhalt von locodec.c init (ab Z.312) inspiriert (und angepasst)
 bool setup_dwm1000_communication(){
 	
@@ -276,7 +277,7 @@ e_interrupt_type_t dwm1000_EvalInterrupt()
 
 	spiStart();
 	
-	//Instruction Transmitten (an Slave)	
+	//Instruction Transmitten (an Slave)	--> lesen von System Event Status Register
 	spiExchange(1, &instruction, placeholder);		
 
 	//Placeholder mit 0 fuellen
@@ -296,7 +297,7 @@ e_interrupt_type_t dwm1000_EvalInterrupt()
 		retVal = TX_DONE;
 	}
 
-	//ist Receive Frame Sent gesetzt?
+	//ist Receive Data Frame Ready
 	else if ((*(short*)sesrContents & RFSMask) > 1)	//short, weil Mask 2 Byte lang
 	{
 		retVal = RX_DONE;
@@ -317,11 +318,11 @@ void dwm1000_init() {
 
 	//------------------------ TFC LESEN
 	//Init Transmission
-	unsigned char empty_byte = 0;
+	unsigned char emptyByte = 0;
 	unsigned char instruction = READ_TFC;
 
 	//Read Transmission Frame Control Register
-	spiExchange(1, &instruction, &empty_byte);
+	spiExchange(1, &instruction, &emptyByte);
 	
 	//WRITE_INIT_TX_FCTRL
 	void *tfcContents = malloc(5);
@@ -337,34 +338,34 @@ void dwm1000_init() {
 	spiExchange(5, placeHolder, tfcContents);		//Inhalt des TFC Registers auslesen
 	setInitBits(tfcContents, initValTFC, 5);		//Inhalt mit gewolltem ODERn
 
+	//init werte für tfc in dmw1000 packen
+	instruction = WRITE_TFC;
+	emptyByte = 0;
+	spiExchange(1,  &instruction, &emptyByte);	//write tfc Instruction
+
+	fillMemZero(placeHolder, 5);
+	spiExchange(5, tfcContents, placeHolder);
+
+	free(tfcContents);
+	free(initValTFC);
+
+	/* ------------Wumpe mit Anlauf - kein Init für dieses Register nötig
 	//------------------------ SYSCONTROL LESEN
 
 	instruction = READ_SYS_CTRL;
-	spiExchange(1, &instruction, &empty_byte);
-	empty_byte = 0;
+	emptyByte = 0;
+	spiExchange(1, &instruction, &emptyByte);	//instruction read sysctrl raushauen
+	int initValTFC =
+	spiExchange(4, )
+	*/
 
 	//------------------------ SYSSTATUS LESEN
 	instruction = READ_SYS_STATUS;
-	spiExchange(1, &instruction, &empty_byte);
-
-
-	// -------- Init SPI --------
-
-	//Baud Rate
-		//Baudrate Nachricht aus newConfig erstellen
-
-	spiExchange(0,0,0);
-
-	// -------- Init UWB --------
-
-	//PAN Identifier
-		//Identifeier Nachricht aus newConfig erstellen
-
-	spiExchange(0,0,0);
-
+	spiExchange(1, &instruction, &emptyByte);
 
 
 	spiStop();	//fuer Mutexinteraktion genutzt
+	free(placeHolder);
 }
 
 void __attribute__((used)) EXTI11_Callback(void)
