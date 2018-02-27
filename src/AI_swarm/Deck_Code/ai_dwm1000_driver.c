@@ -158,7 +158,7 @@ bool dwm1000_SendData(st_message_t *message) {
 
 	spiExchange(1, &instruction, placeHolder);	//instruction Schicken - write txbuffer
 
-	spiExchange(lenghtOfMessage, message, placeHolder);
+	spiExchange(lenghtOfMessage, (void*)message, placeHolder);
 
 	//3. System Control aktualisieren
 	instruction = READ_SYS_CTRL;
@@ -196,11 +196,11 @@ e_message_type_t dwm1000_ReceiveData(st_message_t *data) {
 	unsigned char instruction = READ_RXBUFFER;
 
 	spiExchange(1, &instruction, placeHolder);		//Instruction: Eceive Buffer soll gelesen werden
-	spiExchange(lengthOfData, data, placeHolder);	//READ_RXBUFFER schreiben
+	spiExchange(lengthOfData, (void*)data, placeHolder);	//READ_RXBUFFER schreiben
 
 	//2. Receive Enable Setzten
 	
-	instruction = WRITE_RECEIVE_ENABLE;
+	instruction = WRITE_SYS_CTRL;
 	//3. Art der Nachricht entschluesseln
 	//4. Auf Data schreiben
 	//5. Art der Nachricht zurueckgeben 
