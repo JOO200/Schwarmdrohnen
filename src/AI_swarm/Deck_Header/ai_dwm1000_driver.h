@@ -1,7 +1,14 @@
+/*
+ai_dwm1000_driver.h
+
+Dieser Header beinhaltet die Funktionen, welche benoetigt werden, um den DWM1000 zu steuern (Daten Senden, Ranging, ...).
+Zusaetzlich werden die wichtigen Registerkonfigurationen defined und beschrieben.
+
+Sollten keine Funktionsaenderungen des DWM1000 gewuenscht sein, sollte dieser Driver am Besten NICHT geaendert werden!
+*/
+
 #ifndef ai_dwm1000_drivh
 #define ai_dwm1000_drivh
-
-//beinhaltet die Funktionen, welche benoetigt werden, um den DWM1000 zu steuern (Daten Senden, Ranging, ...)
 
 #include "ai_datatypes.h"
 #include <stdbool.h>
@@ -106,7 +113,7 @@ RXDFR (Bit 13) -> Receiver Data Frame Ready, wenn die Nachricht fertig gesendet 
 
 #define MESSAGE_RECEIVED_STATUS 0x0000002000;	//Wenn bei verunden mit diesem Wert und dem System Status Register (0x0F) > 0 rauskommt -> Nachricht erhalten
 
-//Masks fuer Interrupts
+//--------------------------------Masks:
 /*Maske für jeden relevanten Interrupt-Typ
 Vergleich mit System Event Status Register (Register 0x0F), falls Verundung größer 0 -> abgefragtes Event hat stattgefunden*/
 
@@ -114,14 +121,14 @@ Vergleich mit System Event Status Register (Register 0x0F), falls Verundung grö
 #define MASK_TRANSMIT_FRAME_SENT 0x80			//Bit 7
 #define MASK_RECEIVE_DATA_FRAME_READY 0x2000			//Bit 13
 
-//defines fuer Interrupt Config
-//#define EXTI_Line11 0x00800
-#define EXTI_LineN 	EXTI_Line11	//bestimmt exti input port (von Bitcraze RX genannt)
+//--------------------------------Defines fuer Hardware Init:
+//defines EXTI (Externer Interrupt)
+#define EXTI_LineN 	EXTI_Line11		//bestimmt exti input port (von Bitcraze RX genannt)
 #define EXTI_Mode_Interrupt 0x00	//interrupt mode - aus stm32f4xx_exti.h
 #define EXTI_Trigger_Rising 0x08	//aus stm32f4xx_exti.h
 #define ENABLE 0x01
 
-//defines fuer SPI
+//defines fuer SPI (Serial Peripheral Interface, Bussystem fuer Kommunikation mit DWM1000)
 #define CS_PIN DECK_GPIO_IO1		//CS/SS Pin ist "IO_1"
 #define GPIO_Mode_OUT 0x01
 #define GPIO_OType_OD 0x01
@@ -129,12 +136,12 @@ Vergleich mit System Event Status Register (Register 0x0F), falls Verundung grö
 #define GPIO_PIN_RESET GPIO_Pin_10
 #define GPIO_PORT GPIOC
 
-//defines fuer NVIC
+//defines fuer NVIC (Nested Vectored Interrupt Controller, ARM Interrupt Handling)
 #define EXTI_IRQChannel EXTI15_10_IRQn
 #define NVIC_LOW_PRI 13;
 
 
-
+//--------------------------------Functions:
 bool setup_dwm1000_spi_interface();
 /*
 initialisiert das SPI interface (nach Anleitung durch "stm32f4xx_spi.c" - Z.17 - Z.134)
@@ -154,7 +161,7 @@ e_message_type_t dwm1000_ReceiveData(st_message_t *data);
 /*
 liest Daten im dwm1000 Receivebuffer
 
-data - stelle, an die die Daten geschrieben werden koennen
+data - Stelle, an die die Daten geschrieben werden koennen
 lengthOfData - Laenge der Daten die vom Receivebuffer gelesen werden sollen
 (return true, wenn geglueckt)
 */
@@ -169,8 +176,8 @@ nameOfOtherDWM - PAN (Personal Area Network) Identifier (8Byte) des anderen DWMs
 e_interrupt_type_t dwm1000_EvalInterrupt();
 /*Gibt zurueck aus welchem Grund der Interrupt (IRQ) ausgeloest wurde*/
 
-void dmw1000_sendProcessingTime(char id_requester);
-/*Sendet die Zeit die zwischen Eingang der Request-Distance und Immediate-Answer vergangen ist */
+void dwm1000_sendProcessingTime(char id_requester);
+/*Sendet die Zeit die zwischen Eingang der Request-Distance und Immediate-Answer vergangen ist*/
 
 void dwm1000_init();
 /*

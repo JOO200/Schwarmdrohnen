@@ -1,3 +1,12 @@
+/*
+ai_dwm1000_driver.c
+
+Diese Datei definiert die Funktionen, welche benoetigt werden, um den DWM1000 zu steuern (Daten Senden, Ranging, ...).
+Zusaetzlich werden die wichtigen Registerbkonfiguriert.
+
+Sollten keine Funktionsaenderungen des DWM1000 gewuenscht sein, sollte dieser Driver am Besten NICHT geaendert werden!
+*/
+
 #include "../Deck_Header/ai_dwm1000_driver.h"
 #include "../../../vendor/CMSIS/CMSIS/Driver/Include/Driver_SPI.h"
 #include "stm32f4xx_spi.h"
@@ -208,7 +217,7 @@ void dwm1000_immediateDistanceAnswer(char id_requester) {
 	//Receive Timestamp - Transmit Timestamp
 }
 
-void dmw1000_sendProcessingTime(char id_requester) {
+void dwm1000_sendProcessingTime(char id_requester) {
 	
 	spiStart();
 	
