@@ -11,5 +11,5 @@
 //Taskconfig
 #define AI_TASK_NAME "ai_task"
 #define AI_TASK_STACKSIZE 1024  //kp was genug/zu viel - MIST
-#define AI_TASK_PRIO 2			//hier einfaches aber evtl. schlechtes tuning m�glich - Maximum 6, je h�her desto wichtiger (idle hat 0), task der l�uft hat immer die h�chste prio der aktivierbaren tasks
+#define AI_TASK_PRIO 1			//hier einfaches aber evtl. schlechtes tuning m�glich - Maximum 6, je h�her desto wichtiger (idle hat 0), task der l�uft hat immer die h�chste prio der aktivierbaren tasks
  

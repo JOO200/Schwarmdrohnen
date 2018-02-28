@@ -10,19 +10,29 @@
 /* FreeRtos includes */
 #include "FreeRTOS.h"
 
+bool ai_init = 0;
+st_message_t testMessage;
+bool DMW1000_IRQ_Flag = 0;
+
 
 
 //hier unsere main
 //wird ausgefuehrt von FreeRTOS-Scheduler sobald dieser das fuer sinnvoll haelt (und natuerlich,nachdem dieser in "main.c" gestartet wurde)
 void ai_Task(void * arg) {
 	//... lokale Vars, init
-	bool DMW1000_IRQ_Flag = 0;
-	bool transmitProcessingTimePendingFlag = 0;
-	unsigned char distanceRequesterID;
+	//bool transmitProcessingTimePendingFlag = 0;
+	//unsigned char distanceRequesterID;
+	if (ai_init == 0){
+		initAi_Swarm();
+		testMessage.messageType = MASTER_STATE;
+		ai_init = 1;
+	}
+	while(1){
+		vTaskDelay(20);
+		dwm1000_SendData(&testMessage);
+	}
 
-	initAi_Swarm();
-
-	if (AI_ROLE == AI_SLAVE) {
+	/*if (AI_ROLE == AI_SLAVE) {
 		//slave inits
         // @ai_motors.c : Deaktiviere evtl den Task STABILIZER
 	}
@@ -53,7 +63,7 @@ void ai_Task(void * arg) {
 		}
 
 	}
-	vTaskDelete(0); //waere schlecht, wenn das hier aufgerufen wird...
+	vTaskDelete(0); //waere schlecht, wenn das hier aufgerufen wird...*/
 }
 
 void receiveHandler(unsigned char *distanceRequesterID) {
