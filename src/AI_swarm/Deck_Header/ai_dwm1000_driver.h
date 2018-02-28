@@ -115,7 +115,10 @@ RXDFR (Bit 13) -> Receiver Data Frame Ready, wenn die Nachricht fertig gesendet 
 
 //--------------------------------Masks:
 /*Maske für jeden relevanten Interrupt-Typ
-Vergleich mit System Event Status Register (Register 0x0F), falls Verundung größer 0 -> abgefragtes Event hat stattgefunden*/
+Vergleich mit System Event Status Register (Register 0x0F), falls Verundung größer 0 -> abgefragtes Event hat stattgefunden
+Gleiche Bits wie bei System Event Status Register setzen( Bit7 und Bit 13)
+*/
+#define WRITE_INIT_SYS_MASK 0x00002080
 
 #define SET_TRANSMIT_START WRITE_TRANSMIT_BITs
 #define MASK_TRANSMIT_FRAME_SENT 0x80			//Bit 7

@@ -201,6 +201,11 @@ e_message_type_t dwm1000_ReceiveData(st_message_t *data) {
 	//2. Receive Enable Setzten
 	
 	instruction = WRITE_SYS_CTRL;
+
+	spiExchange(1, &instruction, placeHolder);		//Instruction: Eceive Buffer soll gelesen werden
+	fillMemZero(placeHolder);
+	spiExchange(lengthOfData, (void*)data, placeHolder);	//READ_RXBUFFER schreiben
+
 	//3. Art der Nachricht entschluesseln
 	//4. Auf Data schreiben
 	//5. Art der Nachricht zurueckgeben 
