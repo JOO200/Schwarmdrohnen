@@ -378,21 +378,36 @@ void dwm1000_init() {
 	vPortFree(tfcContents);
 	vPortFree(initValTFC);
 
-	/* ------------Wumpe mit Anlauf - kein Init für diese Register nötig
-	//------------------------ SYSCONTROL LESEN
+	//------------------------ PAN Adresse setzten (reg id = 0x03)
 
-	instruction = READ_SYS_CTRL;
-	emptyByte = 0;
-	spiExchange(1, &instruction, &emptyByte);	//instruction read sysctrl raushauen
-	int initValTFC =
-	spiExchange(4, )
-
-
-	//------------------------ SYSSTATUS LESEN
-	instruction = READ_SYS_STATUS;
+	//------------------------ System Event Mask Register (reg id = 0x0E)
+	//Read Transmission Frame Control Register
 	spiExchange(1, &instruction, &emptyByte);
 
-	 */
+	//WRITE_INIT_TX_FCTRL
+	void *sysEvMaskContents = pvPortMalloc(5);
+	void *initValSysEvMask= pvPortMalloc(5);
+	void *placeHolder = pvPortMalloc(5);
+
+	//Placeholder mit 0 fuellen
+	fillMemZero(sysEvMaskContents, 5);
+	fillMemZero(placeHolder, 5);
+	double storage = WRITE_INIT_0x00;
+	writeToMem(initValSysEvMask, &storage, 5);
+
+	spiExchange(5, placeHolder, sysEvMaskContents);		//Inhalt des TFC Registers auslesen
+	setInitBits(sysEvMaskContents, initValTFC, 5);		//Inhalt mit gewolltem ODERn
+
+	//init werte für tfc in dmw1000 packen
+	instruction = WRITE_TFC;
+	emptyByte = 0;
+	spiExchange(1,  &instruction, &emptyByte);	//write tfc Instruction
+
+	fillMemZero(placeHolder, 5);
+	spiExchange(5, sysEvMaskContents, placeHolder);
+
+	vPortFree(sysEvMaskContents);
+	vPortFree(initValSysEvMask);
 
 	spiStop();	//fuer Mutexinteraktion genutzt
 	vPortFree(placeHolder);
