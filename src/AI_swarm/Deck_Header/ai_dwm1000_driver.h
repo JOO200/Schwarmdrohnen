@@ -34,6 +34,8 @@ Bit 5 - Bit 0: Reg ID*/
 #define READ_SYS_CTRL 0b00001101
 #define WRITE_SYS_CTRL 0b10001101
 
+#define READ_SYS_EVENT_MASK 0b00001110 
+#define WRITE_SYS_EVENT_MASK 0b10001110 
 
 #define READ_SYS_STATUS 0b00001111
 #define WRITE_SYS_STATUS 0b10001111
@@ -118,7 +120,7 @@ RXDFR (Bit 13) -> Receiver Data Frame Ready, wenn die Nachricht fertig gesendet 
 Vergleich mit System Event Status Register (Register 0x0F), falls Verundung größer 0 -> abgefragtes Event hat stattgefunden
 Gleiche Bits wie bei System Event Status Register setzen( Bit7 und Bit 13)
 */
-#define WRITE_INIT_SYS_MASK 0x00002080
+#define WRITE_INIT_SYS_EVENT_MASK 0x00002080		//Register Sys Event Mask 0x0E
 
 #define SET_TRANSMIT_START WRITE_TRANSMIT_BITs
 #define MASK_TRANSMIT_FRAME_SENT 0x80			//Bit 7
