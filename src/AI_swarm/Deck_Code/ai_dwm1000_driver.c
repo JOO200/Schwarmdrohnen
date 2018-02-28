@@ -363,13 +363,8 @@ void dwm1000_init() {
 	void *initValTFC = pvPortMalloc(5);
 	void *placeHolder = pvPortMalloc(5);
 
-	//Placeholder mit 0 fuellen
-	fillMemZero(tfcContents, 5);
-	fillMemZero(placeHolder, 5);
-	double storage = WRITE_INIT_TX_FCTRL;
-	writeToMem(initValTFC, &storage, 5);
 
-	spiExchange(5, placeHolder, tfcContents);		//Inhalt des TFC Registers auslesen
+	spiExchange(5, &placeHolder, &tfcContents);		//Inhalt des TFC Registers auslesen
 	setInitBits(tfcContents, initValTFC, 5);		//Inhalt mit gewolltem ODERn
 
 	//init werte für tfc in dmw1000 packen
@@ -385,28 +380,32 @@ void dwm1000_init() {
 
 	//------------------------ PAN Adresse setzten (reg id = 0x03)
 
+	//nötig? -ne, da immer bei Nachricht sender und target dabei sein sollten
+
 	//------------------------ System Event Mask Register (reg id = 0x0E)
-	//Read Transmission Frame Control Register
+	//Read syseventmask
+	instruction = READ_SYS_EVENT_MASK;
 	spiExchange(1, &instruction, &emptyByte);
 
-	//WRITE_INIT_TX_FCTRL
-	void *sysEvMaskContents = pvPortMalloc(5);
-	void *initValSysEvMask= pvPortMalloc(5);
-	void *placeHolder = pvPortMalloc(5);
+	//syseventmask
+	void *sysEvMaskContents = pvPortMalloc(4);
+	void *initValSysEvMask= pvPortMalloc(4);
+	void *placeHolder = pvPortMalloc(4);
+
 
 	//Placeholder mit 0 fuellen
-	fillMemZero(sysEvMaskContents, 5);
-	fillMemZero(placeHolder, 5);
-	double storage = WRITE_INIT_0x00;
-	writeToMem(initValSysEvMask, &storage, 5);
+	fillMemZero(sysEvMaskContents, 4);
+	fillMemZero(placeHolder, 4);
+	double storage = WRITE_INIT_SYS_EVENT_MASK;
+	writeToMem(initValSysEvMask, &storage, 4);
 
-	spiExchange(5, placeHolder, sysEvMaskContents);		//Inhalt des TFC Registers auslesen
-	setInitBits(sysEvMaskContents, initValTFC, 5);		//Inhalt mit gewolltem ODERn
+	spiExchange(4, placeHolder, sysEvMaskContents);		//Inhalt des syseventmask Registers auslesen
+	setInitBits(sysEvMaskContents, initValSysEvMask, 4);		//Inhalt mit gewolltem ODERn
 
-	//init werte für tfc in dmw1000 packen
-	instruction = WRITE_TFC;
+	//init werte für syseventmask in dmw1000 packen
+	instruction = WRITE_SYS_EVENT_MASK;
 	emptyByte = 0;
-	spiExchange(1,  &instruction, &emptyByte);	//write tfc Instruction
+	spiExchange(1,  &instruction, &emptyByte);	//write syseventmask Instruction
 
 	fillMemZero(placeHolder, 5);
 	spiExchange(5, sysEvMaskContents, placeHolder);
