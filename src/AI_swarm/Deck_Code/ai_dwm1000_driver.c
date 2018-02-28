@@ -153,7 +153,7 @@ bool dwm1000_SendData(st_message_t *message) {
 	unsigned char receiveByte = 0x00;
 
 	unsigned int lengthOfMessage = sizeof(st_message_t);
-	void *placeHolder = malloc(lengthOfMessage);
+	void *placeHolder = pvPortMalloc(lengthOfMessage);
 	fillMemZero(placeHolder, lengthOfMessage);
 
 	spiExchange(1, &instruction, placeHolder);	//instruction Schicken - write txbuffer
@@ -164,7 +164,7 @@ bool dwm1000_SendData(st_message_t *message) {
 	instruction = READ_SYS_CTRL;
 	spiExchange(1, &instruction, &receiveByte);	//instruction: ich will sysctrl lesen
 
-	void * sysctrl = malloc(5);
+	void * sysctrl = pvPortMalloc(5);
 	spiExchange(5, placeHolder, sysctrl);		//syscontrol lesen
 
 
@@ -179,8 +179,8 @@ bool dwm1000_SendData(st_message_t *message) {
 		//.. noch keine Relevanten Dinge eingefallen
 
 	//5. Resourcen freigeben
-	free(placeHolder);
-	free(sysctrl);
+	vPortFree(placeHolder);
+	vPortFree(sysctrl);
 
 	spiStop();
 
@@ -190,7 +190,7 @@ bool dwm1000_SendData(st_message_t *message) {
 e_message_type_t dwm1000_ReceiveData(st_message_t *data) {
 	//1. Receive Buffer Auslesen
 	unsigned int lengthOfData = sizeof(st_message_t);
-	void *placeHolder = malloc(lengthOfData);
+	void *placeHolder = pvPortMalloc(lengthOfData);
 	fillMemZero(placeHolder, lengthOfData);
 
 	unsigned char instruction = READ_RXBUFFER;
@@ -206,6 +206,9 @@ e_message_type_t dwm1000_ReceiveData(st_message_t *data) {
 	//5. Art der Nachricht zurueckgeben 
 	e_message_type_t retType;
 	retType = DISTANCE_REQUEST;
+
+
+	vPortFree(placeHolder);
 
 	return retType;
 
@@ -241,10 +244,10 @@ void dwm1000_sendProcessingTime(char id_requester) {
 	//1. Timestamp TX lesen, Register 0x17 Timestamp von bit 0-39
 	void *txTimestamp;
 	int txStampSize = 5;			//5 Bytes für Timestaqmp reservieren
-	txTimestamp = malloc(txStampSize);
+	txTimestamp = pvPortMalloc(txStampSize);
 
 	void *placeholder;
-	placeholder = malloc(txStampSize);
+	placeholder = pvPortMalloc(txStampSize);
 
 	unsigned char instruction = READ_TX_TIMESTAMP;
 
@@ -260,7 +263,7 @@ void dwm1000_sendProcessingTime(char id_requester) {
 	//2. Timestamp RX lesen, Register 0x15 Timestamp von bit 0-39
 	void *rxTimestamp;
 	int rxStampSize = 5;			//5 Bytes für Timestaqmp reservieren
-	rxTimestamp = malloc(rxStampSize);
+	rxTimestamp = pvPortMalloc(rxStampSize);
 
 	instruction = READ_RX_TIMESTAMP;
 
@@ -279,13 +282,13 @@ void dwm1000_sendProcessingTime(char id_requester) {
 
 	//4. an requester schicken
 
-	void * pups = malloc((int)result);
+	void * pups = pvPortMalloc((int)result);
 	//dwm1000_SendData(void * result, 5, enum e_message_type_t message_type, char targetID /*Adressen?, ...*/);
 
-	free(pups);
-	free(txTimestamp);
-	free(placeholder);
-	free(rxTimestamp);
+	vPortFree(pups);
+	vPortFree(txTimestamp);
+	vPortFree(placeholder);
+	vPortFree(rxTimestamp);
 	spiStop();
 }
 
@@ -294,10 +297,10 @@ e_interrupt_type_t dwm1000_EvalInterrupt()
 	//5 Bytes fuer System Event Status Register reservieren
 	void *sesrContents;
 	int registerSize = 5;			
-	sesrContents = malloc(registerSize);	
+	sesrContents = pvPortMalloc(registerSize);
 
 	void *placeholder;
-	placeholder = malloc(registerSize);
+	placeholder = pvPortMalloc(registerSize);
 
 	unsigned char instruction = READ_SESR;
 
@@ -330,8 +333,8 @@ e_interrupt_type_t dwm1000_EvalInterrupt()
 	}
 
 	//Resourcen freigeben
-	free(placeholder);
-	free(sesrContents);
+	vPortFree(placeholder);
+	vPortFree(sesrContents);
 	spiStop();
 
 	return retVal;
@@ -351,9 +354,9 @@ void dwm1000_init() {
 	spiExchange(1, &instruction, &emptyByte);
 	
 	//WRITE_INIT_TX_FCTRL
-	void *tfcContents = malloc(5);
-	void *initValTFC = malloc(5);
-	void *placeHolder = malloc(5);
+	void *tfcContents = pvPortMalloc(5);
+	void *initValTFC = pvPortMalloc(5);
+	void *placeHolder = pvPortMalloc(5);
 
 	//Placeholder mit 0 fuellen
 	fillMemZero(tfcContents, 5);
@@ -372,8 +375,8 @@ void dwm1000_init() {
 	fillMemZero(placeHolder, 5);
 	spiExchange(5, tfcContents, placeHolder);
 
-	free(tfcContents);
-	free(initValTFC);
+	vPortFree(tfcContents);
+	vPortFree(initValTFC);
 
 	/* ------------Wumpe mit Anlauf - kein Init für diese Register nötig
 	//------------------------ SYSCONTROL LESEN
@@ -392,7 +395,7 @@ void dwm1000_init() {
 	 */
 
 	spiStop();	//fuer Mutexinteraktion genutzt
-	free(placeHolder);
+	vPortFree(placeHolder);
 }
 
 void __attribute__((used)) EXTI11_Callback(void)
