@@ -28,7 +28,7 @@ void ai_Task(void * arg) {
 		ai_init = 1;
 	}
 	while(1){
-		TickType_t delay = 20/portTICK_PERIOD_MS;	//ermöglicht Eingabe der Zeit in ms
+		TickType_t delay = 20/portTICK_PERIOD_MS;	//ermöglicht Eingabe der Zeit in ms - test
 		vTaskDelay(delay);	//Einheit: ca. 6 Nano Sekunden 3.000.000 --> ca. 18ms
 		dwm1000_SendData(&testMessage);
 	}
