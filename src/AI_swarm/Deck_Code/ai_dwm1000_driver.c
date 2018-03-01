@@ -203,7 +203,7 @@ e_message_type_t dwm1000_ReceiveData(st_message_t *data) {
 	instruction = WRITE_SYS_CTRL;
 
 	spiExchange(1, &instruction, placeHolder);		//Instruction: Eceive Buffer soll gelesen werden
-	fillMemZero(placeHolder);
+	fillMemZero(placeHolder, lengthOfData);
 	spiExchange(lengthOfData, (void*)data, placeHolder);	//READ_RXBUFFER schreiben
 
 	//3. Art der Nachricht entschluesseln
@@ -364,7 +364,7 @@ void dwm1000_init() {
 	void *placeHolder = pvPortMalloc(5);
 
 
-	spiExchange(5, &placeHolder, &tfcContents);		//Inhalt des TFC Registers auslesen
+	spiExchange(5, placeHolder, tfcContents);		//Inhalt des TFC Registers auslesen
 	setInitBits(tfcContents, initValTFC, 5);		//Inhalt mit gewolltem ODERn
 
 	//init werte für tfc in dmw1000 packen
@@ -377,6 +377,7 @@ void dwm1000_init() {
 
 	vPortFree(tfcContents);
 	vPortFree(initValTFC);
+	vPortFree(placeHolder);
 
 	//------------------------ PAN Adresse setzten (reg id = 0x03)
 
@@ -390,7 +391,7 @@ void dwm1000_init() {
 	//syseventmask
 	void *sysEvMaskContents = pvPortMalloc(4);
 	void *initValSysEvMask= pvPortMalloc(4);
-	void *placeHolder = pvPortMalloc(4);
+	placeHolder = pvPortMalloc(4);
 
 
 	//Placeholder mit 0 fuellen
