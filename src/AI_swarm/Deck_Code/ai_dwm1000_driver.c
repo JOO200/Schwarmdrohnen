@@ -31,14 +31,15 @@ void spiStop(){
 //Beschreibt die angegebene Anzahl an Bytes mit "0"
 void fillMemZero(void * mem, char size){
 	//Placeholder mit 0 fuellen
+	char zero = 0;
 	for (int i = 0; i < size; i++)
 	{
-		*((char*)mem + i) = 0;
+		*((char*)mem + i) = zero;
 	}
 }
 
 //Schreibt die angegeben Anzahl an Bytes von origin in Target
- void writeToMem(void *target, void *origin, char size){
+ void writeToMem(void *target, double *origin, char size){
 	 for (int i = 0; i < size; i++)
 	 {
 	 	*((char*)target + i) = *(char*)(origin + 1);
@@ -46,7 +47,7 @@ void fillMemZero(void * mem, char size){
  }
 
 //Setzt Bits, die im Beispiel gesetzt sind (für init) - behält bereits gesetzte Bits gesetzt
-void setInitBits(void *target, void *origin, char size){
+void setInitBits(void *target, double *origin, char size){
 	for (int i = 0; i < size; i++)
 		 {
 		 	*((char*)target + i) = *(char*)(origin + 1) | *((char*)target + i);
@@ -165,14 +166,20 @@ bool dwm1000_SendData(st_message_t *message) {
 	spiExchange(1, &instruction, &receiveByte);	//instruction: ich will sysctrl lesen
 
 	void * sysctrl = pvPortMalloc(5);
+double debugHilfe = *(double*)sysctrl;
+	fillMemZero(sysctrl, 5);
+debugHilfe = *(double*)sysctrl;
+
 	spiExchange(5, placeHolder, sysctrl);		//syscontrol lesen
+debugHilfe = *(double*)sysctrl;
 
 
-	*(int*)sysctrl |= SET_TRANSMIT_START;		//neuen Inhalt für syscontrol erstellen
+	double transmitBits = WRITE_TRANSMIT_BITs;
+	setInitBits(sysctrl, &transmitBits, 5);		//neuen Inhalt für syscontrol erstellen
 
 	instruction = WRITE_SYS_CTRL;			
 	spiExchange(1, &instruction, placeHolder);	//instruction: ich will syscontrol schreiben
-
+debugHilfe = *(double*)sysctrl;
 	spiExchange(5, sysctrl, placeHolder);		//syscontrol schreiben
 
 	//4. Sendung ueberpruefen (Timestamp abholen?, ...)
@@ -219,7 +226,7 @@ e_message_type_t dwm1000_ReceiveData(st_message_t *data) {
 
 }
 
-float dwm1000_getDistance(double nameOfOtherDWM) {
+void dwm1000_requestDistance(double nameOfOtherDWM) {
 	// Beschreibung für eine Drohne (gesammtes Vorgehen)
 	//1. Nachrichten an Partner schicken (Master)
 	//2. Partner antwortet  mit seinem Timestamp (Slave)
@@ -228,8 +235,7 @@ float dwm1000_getDistance(double nameOfOtherDWM) {
 	//5. (Gestoppte Zeit - (TransmitTimestamp_Ziel - ReceiveTimestamp_Ziel))/2 * Lichtgeschw = Abstand
 	// Danach weiß der Master, Initiator den Abstand 
 
-	float distance = 0;
-	return distance;
+
 }
 
 void dwm1000_immediateDistanceAnswer(char id_requester) {
@@ -360,12 +366,12 @@ void dwm1000_init() {
 	
 	//WRITE_INIT_TX_FCTRL
 	void *tfcContents = pvPortMalloc(5);
-	void *initValTFC = pvPortMalloc(5);
+	double initValTFC = WRITE_INIT_TX_FCTRL;
 	void *placeHolder = pvPortMalloc(5);
 
 
 	spiExchange(5, placeHolder, tfcContents);		//Inhalt des TFC Registers auslesen
-	setInitBits(tfcContents, initValTFC, 5);		//Inhalt mit gewolltem ODERn
+	setInitBits(tfcContents, &initValTFC, 5);		//Inhalt mit gewolltem ODERn
 
 	//init werte für tfc in dmw1000 packen
 	instruction = WRITE_TFC;
@@ -376,7 +382,6 @@ void dwm1000_init() {
 	spiExchange(5, tfcContents, placeHolder);
 
 	vPortFree(tfcContents);
-	vPortFree(initValTFC);
 	vPortFree(placeHolder);
 
 	//------------------------ PAN Adresse setzten (reg id = 0x03)
@@ -390,18 +395,15 @@ void dwm1000_init() {
 
 	//syseventmask
 	void *sysEvMaskContents = pvPortMalloc(4);
-	void *initValSysEvMask= pvPortMalloc(4);
+	double initValSysEvMask= WRITE_INIT_SYS_EVENT_MASK;
 	placeHolder = pvPortMalloc(4);
-
 
 	//Placeholder mit 0 fuellen
 	fillMemZero(sysEvMaskContents, 4);
 	fillMemZero(placeHolder, 4);
-	double storage = WRITE_INIT_SYS_EVENT_MASK;
-	writeToMem(initValSysEvMask, &storage, 4);
 
 	spiExchange(4, placeHolder, sysEvMaskContents);		//Inhalt des syseventmask Registers auslesen
-	setInitBits(sysEvMaskContents, initValSysEvMask, 4);		//Inhalt mit gewolltem ODERn
+	setInitBits(sysEvMaskContents, &initValSysEvMask, 4);		//Inhalt mit gewolltem ODERn
 
 	//init werte für syseventmask in dmw1000 packen
 	instruction = WRITE_SYS_EVENT_MASK;
@@ -412,7 +414,6 @@ void dwm1000_init() {
 	spiExchange(5, sysEvMaskContents, placeHolder);
 
 	vPortFree(sysEvMaskContents);
-	vPortFree(initValSysEvMask);
 
 	spiStop();	//fuer Mutexinteraktion genutzt
 	vPortFree(placeHolder);
