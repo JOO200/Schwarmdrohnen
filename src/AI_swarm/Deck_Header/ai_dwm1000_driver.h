@@ -14,6 +14,14 @@ Sollten keine Funktionsaenderungen des DWM1000 gewuenscht sein, sollte dieser Dr
 #include <stdbool.h>
 #include "stm32f4xx_gpio.h"
 
+#define BaudRate SPI_BAUDRATE_3MHZ		//hier auch 11.5, 5.25, 2.625, 1.3125 auswaehlbar -- 21MHZ --> (uint16_t)0x0008
+#define SPI_BAUDRATE_21MHZ  SPI_BaudRatePrescaler_4     // 21MHz
+#define SPI_BAUDRATE_12MHZ  SPI_BaudRatePrescaler_8     // 11.5MHz
+#define SPI_BAUDRATE_6MHZ   SPI_BaudRatePrescaler_16    // 5.25MHz
+#define SPI_BAUDRATE_3MHZ   SPI_BaudRatePrescaler_32    // 2.625MHz
+#define SPI_BAUDRATE_2MHZ   SPI_BaudRatePrescaler_64    // 1.3125MHz
+
+
 //--------------------------------Instructions:
 /*Jede Instruction ist ein Byte gross und wie folgt beschrieben:
 Bit 7: Read - 0, Write - 1
@@ -95,8 +103,6 @@ Keine Init nötig, wird mit 0x00000003 beschrieben, um Sendung zu starten!
 
 #define WRITE_RECEIVE_ENABLE 0x00000100 //Nach lesen einer Nachricht aus den Receive Buffer muss dieses Bit gesetzt werden, um neue Nachrichten empfangen zu koennen
 
-#define BaudRate 0x0008		//SPI_BAUDRATE_21MHZ	//hier auch 11.5, 5.25, 2.625, 1.3125 auswaehlbar -- 21MHZ --> (uint16_t)0x0008
-
 //Register "System Event Status Register"
 /*Instruction Manual S.25 und ab S.79
 Register-ID: 0x0F
@@ -171,7 +177,7 @@ lengthOfData - Laenge der Daten die vom Receivebuffer gelesen werden sollen
 (return true, wenn geglueckt)
 */
 
-float dwm1000_getDistance(double nameOfOtherDWM);
+float dwm1000_requestDistance(double nameOfOtherDWM);
 /*
 startet Rangingvorgang aus Sicht DWM1000
 
