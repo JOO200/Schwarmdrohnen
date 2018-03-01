@@ -139,6 +139,15 @@ static const uint8_t blueRing[][3] = {{64, 64, 255}, {32,32,64}, {8,8,16},
 //                                       BLACK, BLACK, BLACK,
 //                                      };
 
+/* Show Distance
+Zeigt Distanzveraenderungen anhand Helligkeit-/Farbwechsel des LED-Ring-Boards
+*/
+static void showDistance(uint8_t buffer[][3], bool reset)
+{
+	int i;
+
+}
+
 static void whiteSpinEffect(uint8_t buffer[][3], bool reset)
 {
   int i;
