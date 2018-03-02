@@ -122,7 +122,8 @@ bool setup_dwm1000_communication(){
 bool dwm1000_SendData(st_message_t *message) {
 	spiStart();
 
-	/*//1. Aufbauen der Transmit Frame fuer den SPI Bus an den DWM1000
+	/*
+	//1. Aufbauen der Transmit Frame fuer den SPI Bus an den DWM1000
 	void *sendData;
 	int messageSize = lengthOfData + sizeof(char) + sizeof(e_message_type_t);
 	sendData = malloc(messageSize);	// zwei bytes Extra um Art der Nachricht und Name des Senders beizufügen
@@ -145,7 +146,8 @@ bool dwm1000_SendData(st_message_t *message) {
 
 	void *placeHolder = malloc(lengthOfData);
 	
-	fillMemZero(placeHolder, lengthOfData);*/
+	fillMemZero(placeHolder, lengthOfData);
+	*/
 	
 	//spiExchange(size_t length, const uint8_t * data_tx, uint8_t * data_rx)		
 	
@@ -166,12 +168,12 @@ bool dwm1000_SendData(st_message_t *message) {
 	spiExchange(1, &instruction, &receiveByte);	//instruction: ich will sysctrl lesen
 
 	void * sysctrl = pvPortMalloc(5);
-double debugHilfe = *(double*)sysctrl;
+			double debugHilfe = *(double*)sysctrl;
 	fillMemZero(sysctrl, 5);
-debugHilfe = *(double*)sysctrl;
+			debugHilfe = *(double*)sysctrl;
 
 	spiExchange(5, placeHolder, sysctrl);		//syscontrol lesen
-debugHilfe = *(double*)sysctrl;
+			debugHilfe = *(double*)sysctrl;
 
 
 	double transmitBits = WRITE_TRANSMIT_BITs;
@@ -179,7 +181,7 @@ debugHilfe = *(double*)sysctrl;
 
 	instruction = WRITE_SYS_CTRL;			
 	spiExchange(1, &instruction, placeHolder);	//instruction: ich will syscontrol schreiben
-debugHilfe = *(double*)sysctrl;
+			debugHilfe = *(double*)sysctrl;
 	spiExchange(5, sysctrl, placeHolder);		//syscontrol schreiben
 
 	//4. Sendung ueberpruefen (Timestamp abholen?, ...)
@@ -228,12 +230,12 @@ e_message_type_t dwm1000_ReceiveData(st_message_t *data) {
 
 void dwm1000_requestDistance(double nameOfOtherDWM) {
 	// Beschreibung für eine Drohne (gesammtes Vorgehen)
-	//1. Nachrichten an Partner schicken (Master)
-	//2. Partner antwortet  mit seinem Timestamp (Slave)
-	//3. Master empfägt Slave-Timestamp
-	//4. Errechnung der Response Time
-	//5. (Gestoppte Zeit - (TransmitTimestamp_Ziel - ReceiveTimestamp_Ziel))/2 * Lichtgeschw = Abstand
-	// Danach weiß der Master, Initiator den Abstand 
+	//1. Nachrichten an Partner schicken (requester)
+	//2. Partner antwortet  direkt (target)
+	//3. Master empfägt target-Nachricht - berchnet Troud (Zeit die die Nachricht hin und zurück gebraucht hat)
+	//4. target berechnet seine Bearbeitungszeit (immediateAnswerTranceiveTimestamp - requestReceiveTimestamp)
+	//5. (Gestoppte Zeit - (Bearbeitungstimestamp))/2 * Lichtgeschw = Abstand
+	// Danach weiß der requester, Initiator den Abstand 
 
 
 }
