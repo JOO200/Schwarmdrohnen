@@ -228,6 +228,9 @@ e_message_type_t dwm1000_ReceiveData(st_message_t *data) {
 
 }
 
+
+//---------------------- RANGING ----------------------
+
 /*
 Sendet Distanzrequest an spezifiziertes Target
 
@@ -326,6 +329,16 @@ void dwm1000_sendProcessingTime(char id_requester) {
 	vPortFree(placeholder);
 	vPortFree(rxTimestamp);
 	spiStop();
+}
+
+//auslesen des rxTimestamps
+time_t getRxTimestamp(){
+
+}
+
+//auslesen des txTimestamps
+time_t getTxTimestamp(){
+
 }
 
 e_interrupt_type_t dwm1000_EvalInterrupt()

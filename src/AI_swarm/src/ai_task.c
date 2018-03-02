@@ -14,6 +14,27 @@ bool ai_init = 0;
 st_message_t testMessage;
 bool DMW1000_IRQ_Flag = 0;
 
+//Ranging Flags:
+bool requestTransmitTimestampPending[NR_OF_DRONES];
+bool distanceRequested[NR_OF_DRONES];
+bool immediateAnswerTransmitTimestampPending[NR_OF_DRONES];
+bool processingTimePending[NR_OF_DRONES];
+
+//requester timestamps
+time_t requestTxTimestamp[NR_OF_DRONES];
+time_t immediateAnswerRxTimestamp[NR_OF_DRONES];
+
+
+//distances
+float distances[NR_OF_DRONES];
+
+//Ranging Vars:
+time_t lastRanging[NR_OF_DRONES];
+
+e_message_type_t lastMessageType;
+char lastMessageTarget;
+
+
 
 
 //hier unsere main
@@ -54,20 +75,33 @@ void ai_Task(void * arg) {
 				receiveHandler();
 				break;
 			case TX_DONE:
-				if (transmitProcessingTimePendingFlag) {
-					dwm1000_sendProcessingTime(distanceRequesterID);
-				}
+				transmitDoneHandler();
 				break;
 			default:
 				break;
 			}
 		}
 
+		for (char i = 0; i < NR_OF_DRONES; i++){
+			if (i = AI_NAME)	//nicht zu mir selbst rangen
+				continue;
+
+			time_t timeSinceRanging = time.now - lastRanging[i];		//Zeit bestimmen, seid der Entfernung zu dieser Drohne das letzte mal bestimmt wurde
+			if (timeSinceRanging >= 1/RANGING_FREQUENCY){
+				startRanging(i);											//falls diese über Schwellenwert --> neu Rangen
+			}
+
+			if (distanceRequested[i])
+				dwm1000_immediateDistanceAnswer(i);
+		}
+
+
+
 	}
 	vTaskDelete(0); //waere schlecht, wenn das hier aufgerufen wird...*/
 }
 
-void receiveHandler(unsigned char *distanceRequesterID) {
+void receiveHandler() {
 	
 	st_message_t message;
 	dwm1000_ReceiveData(&message);
@@ -84,7 +118,7 @@ void receiveHandler(unsigned char *distanceRequesterID) {
 		//Status des Masters aktualisieren
 		break;
 	case DISTANCE_REQUEST:
-		*distanceRequesterID = message.senderID;
+		distanceRequested[message.senderID] = 1;
 		//1. Immediate Answer raussenden
 		//2. danach Processing Time nachsenden
 		break;
@@ -93,10 +127,28 @@ void receiveHandler(unsigned char *distanceRequesterID) {
 	}
 }
 
-//eventuell muessen args als void *
-void getDistances(st_distances_t * data) {
-	//hier call der deckinterface.distances 
+void transmitDoneHandler(){
+	if (transmitProcessingTimePendingFlag[lastMessageTarget]) {
+		dwm1000_sendProcessingTime(lastMessageTarget);
+	}
+	else if (requestTransmitTimestampPending[lastMessageTarget]){
+		requestTxTimestamp[lastMessageTarget] = dwm1000_getTxTimestamp();
+	}
+	else
+		return;
+}
 
+//eventuell muessen args als void *
+void startRanging(char targetID) {
+	//requestMessage senden
+	dwm1000_requestDistance(targetID);
+
+	//flags und vars für Momentanzustand setzen
+	distanceRequested[targetID] = 1;
+	requestTransmitTimestampPending[targetID] = 1;
+
+	lastMessageType = DISTANCE_REQUEST;
+	lastMessageTarget = targetID;
 }
 
 

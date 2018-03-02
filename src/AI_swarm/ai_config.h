@@ -5,8 +5,9 @@
 #define AI_NAME 0 //oder 1;2;3;...
 #define AI_ROLE AI_MASTER
 
-#define MAX_HISTORY 
+#define MAX_HISTORY 0
 
+#define RANGING_FREQUENCY 10 //Frequenz in Hz
 
 //Taskconfig
 #define AI_TASK_NAME "ai_task"
