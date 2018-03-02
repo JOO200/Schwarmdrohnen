@@ -228,26 +228,47 @@ e_message_type_t dwm1000_ReceiveData(st_message_t *data) {
 
 }
 
-void dwm1000_requestDistance(double nameOfOtherDWM) {
-	// Beschreibung für eine Drohne (gesammtes Vorgehen)
+/*
+Sendet Distanzrequest an spezifiziertes Target
+
+// Beschreibung des gesammten Ranginvorgangs:
 	//1. Nachrichten an Partner schicken (requester)
+		Flag setzen: requestTransmitTimestampPending
+
 	//2. Partner antwortet  direkt (target)
-	//3. Master empfägt target-Nachricht - berchnet Troud (Zeit die die Nachricht hin und zurück gebraucht hat)
+		Flag setzen: immediateAnswerTransmitTimestampPending
+
+	//3. Master empfägt target-Nachricht - berechnet T_round (Zeit die die Nachricht hin und zurück gebraucht hat)
+		Flag setzen: processingTimePending
+
 	//4. target berechnet seine Bearbeitungszeit (immediateAnswerTranceiveTimestamp - requestReceiveTimestamp)
+
 	//5. (Gestoppte Zeit - (Bearbeitungstimestamp))/2 * Lichtgeschw = Abstand
-	// Danach weiß der requester, Initiator den Abstand 
 
+	// Danach weiß der requester den Abstand 
+*/
+void dwm1000_requestDistance(char targetID) {
+	st_message_t requestMessage;
+	requestMessage.senderID = AI_NAME;
+	requestMessage.targedID = targetID;
+	requestMessage.messageType = DISTANCE_REQUEST;
 
+	dwm1000_SendData(&requestMessage);
 }
-
-void dwm1000_immediateDistanceAnswer(char id_requester) {
+/*
 	//1. Funktion aktiviert, nach Distance request Eingang
 	//2. Antworten, damit requester Zeit stopppen kann
 
-	//dwm1000_SendData(void * data, int lengthOfData, enum e_message_type_t message_type, char targetID /*Adressen?, ...*/);
-
 	//Zusatz: Zeit zwischen Receive Timestamp und Transmit Timestamp an requester schicken, damit von gestoppter Zeit abgezogen werden kann
 	//Receive Timestamp - Transmit Timestamp
+*/
+void dwm1000_immediateDistanceAnswer(char id_requester) {
+	st_message_t immediateAnswer;
+	immediateAnswer.senderID = AI_NAME;
+	immediateAnswer.targedID = id_requester;
+	immediateAnswer.messageType = IMMEDIATE_ANSWER;
+
+	dwm1000_SendData(&immediateAnswer);
 }
 
 void dwm1000_sendProcessingTime(char id_requester) {
@@ -270,7 +291,7 @@ void dwm1000_sendProcessingTime(char id_requester) {
 	//Placeholder mit 0 fuellen
 	fillMemZero(placeholder, txStampSize);
 
-	//Register auslesen
+	//txTmstpRegister auslesen
 	spiExchange(txStampSize, placeholder, txTimestamp);
 
 	//2. Timestamp RX lesen, Register 0x15 Timestamp von bit 0-39
@@ -286,8 +307,11 @@ void dwm1000_sendProcessingTime(char id_requester) {
 	//Placeholder mit 0 fuellen
 	fillMemZero(placeholder, rxStampSize);
 
-	//Register auslesen
+	//rxTmstpRegister auslesen
 	spiExchange(rxStampSize, placeholder, rxTimestamp);
+
+
+//------------------------------------------------------ hier nur einen Teil des Timestamps lesen (besteht aus 2 Zahlen wir sollten die in 15,65 pikosek nehmen)
 
 	//3. Differenz bestimmen, Rx-Tx, Ergebnis in 15,65 Pico sek
 
@@ -295,8 +319,7 @@ void dwm1000_sendProcessingTime(char id_requester) {
 
 	//4. an requester schicken
 
-	void * pups = pvPortMalloc((int)result);
-	//dwm1000_SendData(void * result, 5, enum e_message_type_t message_type, char targetID /*Adressen?, ...*/);
+
 
 	vPortFree(pups);
 	vPortFree(txTimestamp);
