@@ -50,12 +50,16 @@ typedef enum {
 	TX_DONE
 } e_interrupt_type_t;
 
+typedef long ai_time;	//time in picoseconds (10^-12s; Maximalwert ca. 9*10⁶s)
+
 typedef struct {
 	char senderID;						//Byte Name des Senders
 	char targetID;						//Byte Name des Ziels
 	e_message_type_t messageType;		//Art der Nachricht
-	double time;						//je nach Message time untersch. Bedeutung
+	ai_time time;						//je nach Message time untersch. Bedeutung
 	st_distances_t distanceTable;		//Tabelle mit Distanzen
 } st_message_t;
+
+
 
 #endif

@@ -181,7 +181,10 @@ bool dwm1000_SendData(st_message_t *message) {
 
 	instruction = WRITE_SYS_CTRL;			
 	spiExchange(1, &instruction, placeHolder);	//instruction: ich will syscontrol schreiben
-			debugHilfe = *(double*)sysctrl;
+
+		if (debugHilfe > -1)
+				debugHilfe = *(double*)sysctrl;
+
 	spiExchange(5, sysctrl, placeHolder);		//syscontrol schreiben
 
 	//4. Sendung ueberpruefen (Timestamp abholen?, ...)
@@ -253,7 +256,7 @@ Sendet Distanzrequest an spezifiziertes Target
 void dwm1000_requestDistance(char targetID) {
 	st_message_t requestMessage;
 	requestMessage.senderID = AI_NAME;
-	requestMessage.targedID = targetID;
+	requestMessage.targetID = targetID;
 	requestMessage.messageType = DISTANCE_REQUEST;
 
 	dwm1000_SendData(&requestMessage);
@@ -268,7 +271,7 @@ void dwm1000_requestDistance(char targetID) {
 void dwm1000_immediateDistanceAnswer(char id_requester) {
 	st_message_t immediateAnswer;
 	immediateAnswer.senderID = AI_NAME;
-	immediateAnswer.targedID = id_requester;
+	immediateAnswer.targetID = id_requester;
 	immediateAnswer.messageType = IMMEDIATE_ANSWER;
 
 	dwm1000_SendData(&immediateAnswer);
@@ -316,15 +319,25 @@ void dwm1000_sendProcessingTime(char id_requester) {
 
 //------------------------------------------------------ hier nur einen Teil des Timestamps lesen (besteht aus 2 Zahlen wir sollten die in 15,65 pikosek nehmen)
 
-	//3. Differenz bestimmen, Rx-Tx, Ergebnis in 15,65 Pico sek
+	//3. Differenz bestimmen, Rx-Tx, Ergebnis in 15,65 Pico sek (1ps = 10^⁻12s)
+		//hier Josy und Janik
+		//erst timestamp aufdröseln
 
-	double result = rxTimestamp - txTimestamp;
+	ai_time rxTime = /*nur die letzten paar bytes oder so vom Register*/ *15.65;
+	ai_time txTime = /*nur die letzten paar bytes oder so vom Register*/ *15.65;
+	ai_time processingTime = txTime - txTime;
 
 	//4. an requester schicken
 
 
+	st_message_t processingTimeMessage;
+	processingTimeMessage.targetID = id_requester;
+	processingTimeMessage.time = processingTime;
+	processingTimeMessage.messageType = PROCESSING_TIME;
 
-	vPortFree(pups);
+	dwm1000_SendData(&processingTimeMessage);
+
+
 	vPortFree(txTimestamp);
 	vPortFree(placeholder);
 	vPortFree(rxTimestamp);
@@ -332,12 +345,12 @@ void dwm1000_sendProcessingTime(char id_requester) {
 }
 
 //auslesen des rxTimestamps
-time_t getRxTimestamp(){
+ai_time getRxTimestamp(){
 
 }
 
 //auslesen des txTimestamps
-time_t getTxTimestamp(){
+ai_time getTxTimestamp(){
 
 }
 

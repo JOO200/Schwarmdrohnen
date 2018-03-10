@@ -25,11 +25,10 @@ time_t requestTxTimestamp[NR_OF_DRONES];
 time_t immediateAnswerRxTimestamp[NR_OF_DRONES];
 
 
-//distances
-float distances[NR_OF_DRONES];
-
 //Ranging Vars:
 time_t lastRanging[NR_OF_DRONES];
+float distances[NR_OF_DRONES];	//actual distances
+
 
 e_message_type_t lastMessageType;
 char lastMessageTarget;

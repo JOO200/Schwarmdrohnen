@@ -177,7 +177,7 @@ lengthOfData - Laenge der Daten die vom Receivebuffer gelesen werden sollen
 (return true, wenn geglueckt)
 */
 
-float dwm1000_requestDistance(double nameOfOtherDWM);
+void dwm1000_requestDistance(char nameOfOtherDWM);
 /*
 startet Rangingvorgang aus Sicht DWM1000
 
