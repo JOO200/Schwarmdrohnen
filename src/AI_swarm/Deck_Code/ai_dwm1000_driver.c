@@ -317,7 +317,7 @@ void dwm1000_sendProcessingTime(char id_requester) {
 	spiExchange(rxStampSize, placeholder, rxTimestamp);
 
 
-//------------------------------------------------------ hier nur einen Teil des Timestamps lesen (besteht aus 2 Zahlen wir sollten die in 15,65 pikosek nehmen)
+	//----------hier nur einen Teil des Timestamps lesen (besteht aus 2 Zahlen wir sollten die in 15,65 pikosek nehmen)
 
 	//3. Differenz bestimmen, Rx-Tx, Ergebnis in 15,65 Pico sek (1ps = 10^⁻12s)
 		//hier Josy und Janik
@@ -344,7 +344,7 @@ void dwm1000_sendProcessingTime(char id_requester) {
 	spiStop();
 }
 
-//auslesen des rxTimestamps
+/*//auslesen des rxTimestamps
 ai_time getRxTimestamp(){
 
 }
@@ -352,7 +352,7 @@ ai_time getRxTimestamp(){
 //auslesen des txTimestamps
 ai_time getTxTimestamp(){
 
-}
+}*/
 
 e_interrupt_type_t dwm1000_EvalInterrupt()
 {
