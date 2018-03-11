@@ -19,6 +19,10 @@ Sollten keine Funktionsaenderungen des DWM1000 gewuenscht sein, sollte dieser Dr
 
 //Hier wird deck_spi.h/deck_spi.c angewendet (in src/deck/api/...)
 
+
+static dwDevice_t dwm_device;
+static dwDevice_t *dwm = &dwm_device;
+
 //Helper Functions:
 void spiStart(){
 	spiBeginTransaction(BaudRate);
@@ -54,6 +58,56 @@ void setInitBits(void *target, double *origin, char size){
 		 }
 }
 
+//Functions und dwOps init from locodeck.c:
+static uint8_t spiTxBuffer[196];
+static uint8_t spiRxBuffer[196];
+static uint16_t spiSpeed = SPI_BAUDRATE_2MHZ;
+/************ Low level ops for libdw **********/
+static void spiRead(dwDevice_t* dev, const void *header, size_t headerLength,
+                                     void* data, size_t dataLength)
+{
+  spiBeginTransaction(spiSpeed);
+  digitalWrite(CS_PIN, LOW);
+  memcpy(spiTxBuffer, header, headerLength);
+  memset(spiTxBuffer+headerLength, 0, dataLength);
+  spiExchange(headerLength+dataLength, spiTxBuffer, spiRxBuffer);
+  memcpy(data, spiRxBuffer+headerLength, dataLength);
+  digitalWrite(CS_PIN, HIGH);
+  spiEndTransaction();
+}
+static void spiWrite(dwDevice_t* dev, const void *header, size_t headerLength,
+                                      const void* data, size_t dataLength)
+{
+  spiBeginTransaction(spiSpeed);
+  digitalWrite(CS_PIN, LOW);
+  memcpy(spiTxBuffer, header, headerLength);
+  memcpy(spiTxBuffer+headerLength, data, dataLength);
+  spiExchange(headerLength+dataLength, spiTxBuffer, spiRxBuffer);
+  digitalWrite(CS_PIN, HIGH);
+  spiEndTransaction();
+}
+static void spiSetSpeed(dwDevice_t* dev, dwSpiSpeed_t speed)
+{
+  if (speed == dwSpiSpeedLow)
+  {
+    spiSpeed = SPI_BAUDRATE_2MHZ;
+  }
+  else if (speed == dwSpiSpeedHigh)
+  {
+    spiSpeed = SPI_BAUDRATE_21MHZ;
+  }
+}
+static void delayms(dwDevice_t* dev, unsigned int delay)
+{
+  vTaskDelay(M2T(delay));
+}
+
+static dwOps_t dwOps = {
+  .spiRead = spiRead,
+  .spiWrite = spiWrite,
+  .spiSetSpeed = spiSetSpeed,
+  .delayms = delayms,
+};
 
 //Inhalt von locodec.c init (ab Z.312) inspiriert (und angepasst)
 bool setup_dwm1000_communication(){
@@ -116,118 +170,67 @@ bool setup_dwm1000_communication(){
 	GPIO_WriteBit(GPIO_PORT, GPIO_PIN_RESET, 1);
 	vTaskDelay(M2T(10));
 
+	// Initialize the driver
+	dwInit(dwm, &dwOps);       // Init libdw
+
+	int result = dwConfigure(dwm);
+	if (result != 0) {
+		DEBUG_PRINT("Failed to configure DW1000!\r\n");
+		return;
+	}
+
+	dwEnableAllLeds(dwm);
+
+	dwTime_t delay = {.full = 0};
+	dwSetAntenaDelay(dwm, delay);
+
+	dwAttachSentHandler(dwm, txCallback);
+	dwAttachReceivedHandler(dwm, rxCallback);
+	dwAttachReceiveTimeoutHandler(dwm, rxTimeoutCallback);
+
+	dwNewConfiguration(dwm);
+	dwSetDefaults(dwm);
+	dwEnableMode(dwm, MODE_SHORTDATA_FAST_ACCURACY);
+	dwSetChannel(dwm, CHANNEL_2);
+	dwUseSmartPower(dwm, true);
+	dwSetPreambleCode(dwm, PREAMBLE_CODE_64MHZ_9);
+
+	dwSetReceiveWaitTimeout(dwm, RX_TIMEOUT);
+
+	dwCommitConfiguration(dwm);
+
+
 	return 1;
 }
 
+
 bool dwm1000_SendData(st_message_t *message) {
-	spiStart();
+	dwNewTransmit(dwm);
+	dwSetDefaults(dwm);
+	dwSetData(dwm, (uint8_t*)message, MAC802154_HEADER_LENGTH+sizeof(st_message_t));
 
-	/*
-	//1. Aufbauen der Transmit Frame fuer den SPI Bus an den DWM1000
-	void *sendData;
-	int messageSize = lengthOfData + sizeof(char) + sizeof(e_message_type_t);
-	sendData = malloc(messageSize);	// zwei bytes Extra um Art der Nachricht und Name des Senders beizufügen
-	if (sendData == NULL) {
-		return false;		//kein Mem mehr verfügbar --> Funktion wird nicht Ausgeführt
-	}
-	char senderID = my_ai_name; 
-
-	*(char*)sendData = senderID;																//Sender ID ist erstes Byte der Nachricht
-	*(char*)((int*)sendData + sizeof(char)) = targetID;											//targedID ist ab zweites Byte der Nachricht
-	*(e_message_type_t*)((int*)sendData + 2*sizeof(char)) = message_type;						//message ytpe ist ab drittes Byte der Nachricht
-	for (int i = 0; i < lengthOfData; i++)														//jedes byte einzeln auf alloc Speicher schreiben
-	{
-		*((char*)sendData + 2*sizeof(char) + sizeof(e_message_type_t) + i) = *((char*)data + i);
-	}
-
-	//2. Data auf Transmit Data Buffer Register packen
-	unsigned char instruction = WRITE_TXBUFFER;
-	unsigned char receiveByte = 0x00;
-
-	void *placeHolder = malloc(lengthOfData);
-	
-	fillMemZero(placeHolder, lengthOfData);
-	*/
-	
-	//spiExchange(size_t length, const uint8_t * data_tx, uint8_t * data_rx)		
-	
-	//2. Data auf Transmit Data Buffer Register packen
-	unsigned char instruction = WRITE_TXBUFFER;
-	unsigned char receiveByte = 0x00;
-
-	unsigned int lengthOfMessage = sizeof(st_message_t);
-	void *placeHolder = pvPortMalloc(lengthOfMessage);
-	fillMemZero(placeHolder, lengthOfMessage);
-
-	spiExchange(1, &instruction, placeHolder);	//instruction Schicken - write txbuffer
-
-	spiExchange(lengthOfMessage, (void*)message, placeHolder);
-
-	//3. System Control aktualisieren
-	instruction = READ_SYS_CTRL;
-	spiExchange(1, &instruction, &receiveByte);	//instruction: ich will sysctrl lesen
-
-	void * sysctrl = pvPortMalloc(5);
-			double debugHilfe = *(double*)sysctrl;
-	fillMemZero(sysctrl, 5);
-			debugHilfe = *(double*)sysctrl;
-
-	spiExchange(5, placeHolder, sysctrl);		//syscontrol lesen
-			debugHilfe = *(double*)sysctrl;
-
-
-	double transmitBits = WRITE_TRANSMIT_BITs;
-	setInitBits(sysctrl, &transmitBits, 5);		//neuen Inhalt für syscontrol erstellen
-
-	instruction = WRITE_SYS_CTRL;			
-	spiExchange(1, &instruction, placeHolder);	//instruction: ich will syscontrol schreiben
-
-		if (debugHilfe > -1)
-				debugHilfe = *(double*)sysctrl;
-
-	spiExchange(5, sysctrl, placeHolder);		//syscontrol schreiben
-
-	//4. Sendung ueberpruefen (Timestamp abholen?, ...)
-		//.. noch keine Relevanten Dinge eingefallen
-
-	//5. Resourcen freigeben
-	vPortFree(placeHolder);
-	vPortFree(sysctrl);
-
-	spiStop();
+	dwStartTransmit(dwm);
 
 	return 1;
 }
 
 e_message_type_t dwm1000_ReceiveData(st_message_t *data) {
-	//1. Receive Buffer Auslesen
-	unsigned int lengthOfData = sizeof(st_message_t);
-	void *placeHolder = pvPortMalloc(lengthOfData);
-	fillMemZero(placeHolder, lengthOfData);
+	int dataLength = dwGetDataLength(dwm);
 
-	unsigned char instruction = READ_RXBUFFER;
+	if (dataLength == 0){
+		DEBUG_PRINT("[ai_swarm]Wrong Receive Message size! (size = 0)\r\n");
+		return 0;		//if Fall fuer leere Empfangsdaten
+	}
+	if (dataLength != sizeof(st_message_t)){
+		DEBUG_PRINT("[ai_swarm]Wrong Receive Message size! (size = 0)\r\n");
+	}
 
-	spiExchange(1, &instruction, placeHolder);		//Instruction: Eceive Buffer soll gelesen werden
-	spiExchange(lengthOfData, (void*)data, placeHolder);	//READ_RXBUFFER schreiben
-
-	//2. Receive Enable Setzten
+	st_message_t rxPacket;
+	memset(&rxPacket, 0, MAC802154_HEADER_LENGTH);  //packet mit Nullen ueberschreiben
 	
-	instruction = WRITE_SYS_CTRL;
+	dwGetData(dwm, (uint8_t*)&rxPacket, dataLength);	//get Packet und befuellen
 
-	spiExchange(1, &instruction, placeHolder);		//Instruction: Eceive Buffer soll gelesen werden
-	fillMemZero(placeHolder, lengthOfData);
-	spiExchange(lengthOfData, (void*)data, placeHolder);	//READ_RXBUFFER schreiben
-
-	//3. Art der Nachricht entschluesseln
-	//4. Auf Data schreiben
-	//5. Art der Nachricht zurueckgeben 
-	e_message_type_t retType;
-	retType = DISTANCE_REQUEST;
-
-
-	vPortFree(placeHolder);
-
-	return retType;
+	return rxPacket;
 
 }
 

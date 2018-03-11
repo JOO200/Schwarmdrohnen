@@ -13,6 +13,17 @@ Sollten keine Funktionsaenderungen des DWM1000 gewuenscht sein, sollte dieser Dr
 #include "ai_datatypes.h"
 #include <stdbool.h>
 #include "stm32f4xx_gpio.h"
+#include "stm32fxxx.h"
+#include "libdw1000Types.h"
+#include "libdw1000.h"
+#include "libdw1000Spi.h"
+#include "dw1000.h"
+#include "deck.h"
+#include "system.h"
+#include "debug.h"
+#include "log.h"
+#include "param.h"
+#include "nvicconf.h"
 
 #define BaudRate SPI_BAUDRATE_3MHZ		//hier auch 11.5, 5.25, 2.625, 1.3125 auswaehlbar -- 21MHZ --> (uint16_t)0x0008
 #define SPI_BAUDRATE_21MHZ  SPI_BaudRatePrescaler_4     // 21MHz
@@ -150,6 +161,9 @@ Gleiche Bits wie bei System Event Status Register setzen( Bit7 und Bit 13)
 //defines fuer NVIC (Nested Vectored Interrupt Controller, ARM Interrupt Handling)
 #define EXTI_IRQChannel EXTI15_10_IRQn
 #define NVIC_LOW_PRI 13;
+
+#define LOW 0x0
+#define HIGH 0x1
 
 
 //--------------------------------Functions:
