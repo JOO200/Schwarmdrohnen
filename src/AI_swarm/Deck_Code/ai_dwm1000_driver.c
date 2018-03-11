@@ -16,6 +16,7 @@ Sollten keine Funktionsaenderungen des DWM1000 gewuenscht sein, sollte dieser Dr
 #include "stm32f4xx.h"
 #include "../ai_task.h"
 #include <stdlib.h>
++include "mac.h"
 
 //Hier wird deck_spi.h/deck_spi.c angewendet (in src/deck/api/...)
 
@@ -176,7 +177,7 @@ bool setup_dwm1000_communication(){
 	int result = dwConfigure(dwm);
 	if (result != 0) {
 		DEBUG_PRINT("Failed to configure DW1000!\r\n");
-		return;
+		return 0;
 	}
 
 	dwEnableAllLeds(dwm);
@@ -184,9 +185,8 @@ bool setup_dwm1000_communication(){
 	dwTime_t delay = {.full = 0};
 	dwSetAntenaDelay(dwm, delay);
 
-	dwAttachSentHandler(dwm, txCallback);
-	dwAttachReceivedHandler(dwm, rxCallback);
-	dwAttachReceiveTimeoutHandler(dwm, rxTimeoutCallback);
+	dwAttachSentHandler(dwm, transmitDoneHandler);
+	dwAttachReceivedHandler(dwm, receiveHandler);
 
 	dwNewConfiguration(dwm);
 	dwSetDefaults(dwm);
@@ -226,11 +226,11 @@ e_message_type_t dwm1000_ReceiveData(st_message_t *data) {
 	}
 
 	st_message_t rxPacket;
-	memset(&rxPacket, 0, MAC802154_HEADER_LENGTH);  //packet mit Nullen ueberschreiben
+	memset(&data, 0, MAC802154_HEADER_LENGTH);  //packet mit Nullen ueberschreiben
 	
-	dwGetData(dwm, (uint8_t*)&rxPacket, dataLength);	//get Packet und befuellen
+	dwGetData(dwm, (uint8_t*)&data, dataLength);	//get Packet und befuellen
 
-	return rxPacket;
+	return data->messageType;
 
 }
 

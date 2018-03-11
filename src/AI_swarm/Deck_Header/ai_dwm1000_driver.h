@@ -160,7 +160,6 @@ Gleiche Bits wie bei System Event Status Register setzen( Bit7 und Bit 13)
 
 //defines fuer NVIC (Nested Vectored Interrupt Controller, ARM Interrupt Handling)
 #define EXTI_IRQChannel EXTI15_10_IRQn
-#define NVIC_LOW_PRI 13;
 
 #define LOW 0x0
 #define HIGH 0x1
