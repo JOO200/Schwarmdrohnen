@@ -282,42 +282,18 @@ void dwm1000_immediateDistanceAnswer(char id_requester) {
 
 void dwm1000_sendProcessingTime(char id_requester) {
 	
-	spiStart();
 	
 	//1. Timestamp TX lesen, Register 0x17 Timestamp von bit 0-39
-	void *txTimestamp;
-	int txStampSize = 5;			//5 Bytes für Timestaqmp reservieren
-	txTimestamp = pvPortMalloc(txStampSize);
 
-	void *placeholder;
-	placeholder = pvPortMalloc(txStampSize);
-
-	unsigned char instruction = READ_TX_TIMESTAMP;
-
-	//Instruction Transmitten	
-	spiExchange(1, &instruction, placeholder);
-
-	//Placeholder mit 0 fuellen
-	fillMemZero(placeholder, txStampSize);
-
-	//txTmstpRegister auslesen
-	spiExchange(txStampSize, placeholder, txTimestamp);
+	/*void dwGetTransmitTimestamp(dwDevice_t* dev, dwTime_t* time) {
+		dwSpiRead(dev, TX_TIME, TX_STAMP_SUB, time->raw, LEN_TX_STAMP);
+	}*/
+	dwTime_t txTimeStamp;
+	dwGetTransmitTimestamp(dwm, &txTimeStamp);
 
 	//2. Timestamp RX lesen, Register 0x15 Timestamp von bit 0-39
-	void *rxTimestamp;
-	int rxStampSize = 5;			//5 Bytes für Timestaqmp reservieren
-	rxTimestamp = pvPortMalloc(rxStampSize);
-
-	instruction = READ_RX_TIMESTAMP;
-
-	//Instruction Transmitten	
-	spiExchange(1, &instruction, placeholder);
-	
-	//Placeholder mit 0 fuellen
-	fillMemZero(placeholder, rxStampSize);
-
-	//rxTmstpRegister auslesen
-	spiExchange(rxStampSize, placeholder, rxTimestamp);
+	dwTime_t rxTimeStamp;
+	dwGetReceiveTimestamp(dwm, &rxTimeStamp);
 
 
 	//----------hier nur einen Teil des Timestamps lesen (besteht aus 2 Zahlen wir sollten die in 15,65 pikosek nehmen)
@@ -326,9 +302,7 @@ void dwm1000_sendProcessingTime(char id_requester) {
 		//hier Josy und Janik
 		//erst timestamp aufdröseln
 
-	ai_time rxTime = /*nur die letzten paar bytes oder so vom Register*/ *15.65;
-	ai_time txTime = /*nur die letzten paar bytes oder so vom Register*/ *15.65;
-	ai_time processingTime = txTime - txTime;
+	dwTime_t processingTime = rxTimeStamp - txTimeStamp;
 
 	//4. an requester schicken
 
@@ -339,12 +313,6 @@ void dwm1000_sendProcessingTime(char id_requester) {
 	processingTimeMessage.messageType = PROCESSING_TIME;
 
 	dwm1000_SendData(&processingTimeMessage);
-
-
-	vPortFree(txTimestamp);
-	vPortFree(placeholder);
-	vPortFree(rxTimestamp);
-	spiStop();
 }
 
 /*//auslesen des rxTimestamps
@@ -405,7 +373,7 @@ e_interrupt_type_t dwm1000_EvalInterrupt()
 	return retVal;
 }
 
-void dwm1000_init() {
+/*void dwm1000_init() {
 
 	spiStart();	//fuer Mutexinteraktion genutzt	
 	
@@ -471,7 +439,7 @@ void dwm1000_init() {
 
 	spiStop();	//fuer Mutexinteraktion genutzt
 	vPortFree(placeHolder);
-}
+}*/
 
 void __attribute__((used)) EXTI11_Callback(void)
 {
