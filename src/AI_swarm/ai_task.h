@@ -15,3 +15,5 @@ void calculatePosition(st_distances_t * data);
 void getDistances(st_distances_t * data);
 
 void receiveHandler();
+
+void transmitDoneHandler();

@@ -20,7 +20,6 @@ Sollten keine Funktionsaenderungen des DWM1000 gewuenscht sein, sollte dieser Dr
 
 //Hier wird deck_spi.h/deck_spi.c angewendet (in src/deck/api/...)
 
-
 static dwDevice_t dwm_device;
 static dwDevice_t *dwm = &dwm_device;
 
@@ -31,32 +30,6 @@ void spiStart(){
 
 void spiStop(){
 	spiEndTransaction();
-}
-
-//Beschreibt die angegebene Anzahl an Bytes mit "0"
-void fillMemZero(void * mem, char size){
-	//Placeholder mit 0 fuellen
-	char zero = 0;
-	for (int i = 0; i < size; i++)
-	{
-		*((char*)mem + i) = zero;
-	}
-}
-
-//Schreibt die angegeben Anzahl an Bytes von origin in Target
- void writeToMem(void *target, double *origin, char size){
-	 for (int i = 0; i < size; i++)
-	 {
-	 	*((char*)target + i) = *(char*)(origin + 1);
-	 }
- }
-
-//Setzt Bits, die im Beispiel gesetzt sind (für init) - behält bereits gesetzte Bits gesetzt
-void setInitBits(void *target, double *origin, char size){
-	for (int i = 0; i < size; i++)
-		 {
-		 	*((char*)target + i) = *(char*)(origin + 1) | *((char*)target + i);
-		 }
 }
 
 //Functions und dwOps init from locodeck.c:
@@ -109,6 +82,26 @@ static dwOps_t dwOps = {
   .spiSetSpeed = spiSetSpeed,
   .delayms = delayms,
 };
+
+
+//Functions for interrupt handling
+e_interrupt_type_t lastInterrupt;
+void dwm1000_transmitDoneHandler(){
+	lastInterrupt = TX_DONE;
+}
+
+void dwm1000_receiveHandler(){
+	lastInterrupt = RX_DONE;
+}
+
+void dwm1000_receiveFailedHandler(){
+	lastInterrupt = RX_FAILED;
+}
+
+void dwm1000_receiveTimeoutHandler(){
+	lastInterrupt = RX_INT_TIMEOUT;
+}
+
 
 //Inhalt von locodec.c init (ab Z.312) inspiriert (und angepasst)
 bool setup_dwm1000_communication(){
@@ -174,6 +167,7 @@ bool setup_dwm1000_communication(){
 	// Initialize the driver
 	dwInit(dwm, &dwOps);       // Init libdw
 
+
 	int result = dwConfigure(dwm);
 	if (result != 0) {
 		DEBUG_PRINT("Failed to configure DW1000!\r\n");
@@ -185,8 +179,10 @@ bool setup_dwm1000_communication(){
 	dwTime_t delay = {.full = 0};
 	dwSetAntenaDelay(dwm, delay);
 
-	dwAttachSentHandler(dwm, transmitDoneHandler);
-	dwAttachReceivedHandler(dwm, receiveHandler);
+	dwAttachSentHandler(dwm, dwm1000_transmitDoneHandler());
+	dwAttachReceivedHandler(dwm, dwm1000_receiveHandler());
+	dwAttachReceiveFailedHandler(dwm, dwm1000_receiveFailedHandler());
+	dwAttachReceiveTimeoutHandler(dwm, dwm1000_receiveTimeoutHandler());
 
 	dwNewConfiguration(dwm);
 	dwSetDefaults(dwm);
@@ -285,9 +281,6 @@ void dwm1000_sendProcessingTime(char id_requester) {
 	
 	//1. Timestamp TX lesen, Register 0x17 Timestamp von bit 0-39
 
-	/*void dwGetTransmitTimestamp(dwDevice_t* dev, dwTime_t* time) {
-		dwSpiRead(dev, TX_TIME, TX_STAMP_SUB, time->raw, LEN_TX_STAMP);
-	}*/
 	dwTime_t txTimeStamp;
 	dwGetTransmitTimestamp(dwm, &txTimeStamp);
 
@@ -295,12 +288,6 @@ void dwm1000_sendProcessingTime(char id_requester) {
 	dwTime_t rxTimeStamp;
 	dwGetReceiveTimestamp(dwm, &rxTimeStamp);
 
-
-	//----------hier nur einen Teil des Timestamps lesen (besteht aus 2 Zahlen wir sollten die in 15,65 pikosek nehmen)
-
-	//3. Differenz bestimmen, Rx-Tx, Ergebnis in 15,65 Pico sek (1ps = 10^⁻12s)
-		//hier Josy und Janik
-		//erst timestamp aufdröseln
 
 	dwTime_t processingTime = rxTimeStamp - txTimeStamp;
 
@@ -327,50 +314,14 @@ ai_time getTxTimestamp(){
 
 e_interrupt_type_t dwm1000_EvalInterrupt()
 {
-	//5 Bytes fuer System Event Status Register reservieren
-	void *sesrContents;
-	int registerSize = 5;			
-	sesrContents = pvPortMalloc(registerSize);
+	//zurücksetzen
+	lastInterrupt = FAILED_EVAL;
 
-	void *placeholder;
-	placeholder = pvPortMalloc(registerSize);
+	//funktionen callen, welche je nach statusregisterzustand entsprechende handler callt
+	dwHandleInterrupt(dwm);
 
-	unsigned char instruction = READ_SESR;
-
-	spiStart();
-	
-	//Instruction Transmitten (an Slave)	--> lesen von System Event Status Register
-	spiExchange(1, &instruction, placeholder);		
-
-	//Placeholder mit 0 fuellen
-	fillMemZero(placeholder, registerSize);
-
-	//Register auslesen
-	spiExchange(registerSize, placeholder, sesrContents);
-
-	//Gelesenes Register auswerten
-	e_interrupt_type_t retVal = FAILED_EVAL;
-	unsigned char TFSMask = MASK_TRANSMIT_FRAME_SENT;
-	short RFSMask = MASK_RECEIVE_DATA_FRAME_READY;
-
-	//ist Transmit Frame Sent gesetzt?
-	if ((*(char*)sesrContents & TFSMask) > 1)		//char, weil Mask 1 Byte lang
-	{
-		retVal = TX_DONE;
-	}
-
-	//ist Receive Data Frame Ready
-	else if ((*(short*)sesrContents & RFSMask) > 1)	//short, weil Mask 2 Byte lang
-	{
-		retVal = RX_DONE;
-	}
-
-	//Resourcen freigeben
-	vPortFree(placeholder);
-	vPortFree(sesrContents);
-	spiStop();
-
-	return retVal;
+	//von handlern gesetzte werte zurückgeben
+	return lastInterrupt;
 }
 
 /*void dwm1000_init() {

@@ -47,7 +47,9 @@ typedef enum {
 typedef enum {
 	FAILED_EVAL=0,
 	RX_DONE,
-	TX_DONE
+	TX_DONE,
+	RX_FAILED,
+	RX_INT_TIMEOUT,
 } e_interrupt_type_t;
 
 typedef long ai_time;	//time in picoseconds (10^-12s; Maximalwert ca. 9*10⁶s)

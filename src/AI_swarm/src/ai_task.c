@@ -21,12 +21,12 @@ bool immediateAnswerTransmitTimestampPending[NR_OF_DRONES];
 bool processingTimePending[NR_OF_DRONES];
 
 //requester timestamps
-time_t requestTxTimestamp[NR_OF_DRONES];
-time_t immediateAnswerRxTimestamp[NR_OF_DRONES];
+dwTime_t requestTxTimestamp[NR_OF_DRONES];
+dwTime_t immediateAnswerRxTimestamp[NR_OF_DRONES];
 
 
 //Ranging Vars:
-time_t lastRanging[NR_OF_DRONES];
+dwTime_t lastRanging[NR_OF_DRONES];
 float distances[NR_OF_DRONES];	//actual distances
 
 
@@ -53,7 +53,7 @@ void ai_Task(void * arg) {
 		dwm1000_SendData(&testMessage);
 	}
 
-	/*if (AI_ROLE == AI_SLAVE) {
+	if (AI_ROLE == AI_SLAVE) {
 		//slave inits
         // @ai_motors.c : Deaktiviere evtl den Task STABILIZER
 	}
@@ -63,21 +63,18 @@ void ai_Task(void * arg) {
 
 		if (DMW1000_IRQ_Flag){		//"ISR"
 			DMW1000_IRQ_Flag = false;
-			//1. Interrupt Register anschauen
-			//2. Evaluieren
-			e_interrupt_type_t interruptType = dwm1000_EvalInterrupt();
+			e_interrupt_type_t interruptType = dwm1000_handlInterrupt();
 
-			//3. Entsprechende Funktion aufrufen
-			switch (interruptType)
-			{
-			case RX_DONE:
-				receiveHandler();
-				break;
-			case TX_DONE:
-				transmitDoneHandler();
-				break;
-			default:
-				break;
+			switch (interruptType) {
+				case RX_DONE:
+					receiveHandler();
+					break;
+				case TX_DONE:
+					transmitDoneHandler();
+					break;
+				default:
+					//Unhandled messaging errors
+					break;
 			}
 		}
 
@@ -85,16 +82,17 @@ void ai_Task(void * arg) {
 			if (i = AI_NAME)	//nicht zu mir selbst rangen
 				continue;
 
-			time_t timeSinceRanging = time.now - lastRanging[i];		//Zeit bestimmen, seid der Entfernung zu dieser Drohne das letzte mal bestimmt wurde
+			if (distanceRequested[i])
+							dwm1000_immediateDistanceAnswer(i);
+
+			/*dwTime_t timeSinceRanging = time.now - lastRanging[i];		//Zeit bestimmen, seid der Entfernung zu dieser Drohne das letzte mal bestimmt wurde
 			if (timeSinceRanging >= 1/RANGING_FREQUENCY){
 				startRanging(i);											//falls diese über Schwellenwert --> neu Rangen
+			}*/
+			if (!distanceRequested[i] & !requestTransmitTimestampPending[i] & !processingTimePending[i] & !immediateAnswerTransmitTimestampPending[i]){
+				startRanging(i);
 			}
-
-			if (distanceRequested[i])
-				dwm1000_immediateDistanceAnswer(i);
 		}
-
-
 
 	}
 	vTaskDelete(0); //waere schlecht, wenn das hier aufgerufen wird...*/
@@ -121,6 +119,14 @@ void receiveHandler() {
 		//1. Immediate Answer raussenden
 		//2. danach Processing Time nachsenden
 		break;
+	case IMMEDIATE_ANSWER:
+		//Tround berechnen
+
+		break;
+	case PROCESSING_TIME:
+		//Distanz berechnen und eintragen
+		//Rangin-Strukt leeren
+		break
 	default:
 		break;
 	}

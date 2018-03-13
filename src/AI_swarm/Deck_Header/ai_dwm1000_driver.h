@@ -163,6 +163,7 @@ Gleiche Bits wie bei System Event Status Register setzen( Bit7 und Bit 13)
 
 #define LOW 0x0
 #define HIGH 0x1
+#define RX_TIMEOUT 1000
 
 
 //--------------------------------Functions:
