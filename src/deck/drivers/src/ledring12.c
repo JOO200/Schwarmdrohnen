@@ -24,8 +24,6 @@
  * ledring12.c: RGB Ring 12 Leds effects/driver
  */
 
-//#include "ledring12.h"
-
 #include <stdint.h>
 #include <math.h>
 #include <string.h>
@@ -142,24 +140,25 @@ static const uint8_t blueRing[][3] = {{64, 64, 255}, {32,32,64}, {8,8,16},
 /* Show Distance
 Zeigt Distanzveraenderungen anhand Helligkeit-/Farbwechsel des LED-Ring-Boards
 */
-static void ai_showDistance(uint8_t buffer[][3], bool reset)
+//static void ai_showDistance(uint8_t buffer[][3], bool reset, float AbstandInMeter)
+static void ai_showDistance(float AbstandInMeter)
 {
-	int i;
-	/*Aufbau:
-	Hier die variable für alle Leds reinpacken
-	static uint8_t ai_CurrentColor[][3] = {CurrentColor, CurrentColor, CurrentColor,
-	CurrentColor, CurrentColor, CurrentColor,
-	CurrentColor, CurrentColor, CurrentColor,
-	CurrentColor, CurrentColor, CurrentColor,
+	/*Aufbau:*/
+	float AbstandInCM = AbstandInMeter/100;
+	static uint8_t ai_CurrentColor[][3] = {BLACK, BLACK, BLACK,
+					BLACK, BLACK, BLACK,
+					BLACK, BLACK, BLACK,
+					BLACK, BLACK, BLACK,
 	};
-	
-	hier unsere logik:
 
-	CurrenColor = abstand der 2 drohnen
-	
+	for (int i = 0; i < NBR_LEDS; i++)			//alle LEDs durchgehen, muss man sie anschalten?
+	{
+		if (i*10 <= AbstandInCM)			//LEDs anschalten
+		{
+			ai_CurrentColor[i][3] = RED;
+		}
+	}
 	ws2812Send(ai_CurrentColor, NBR_LEDS);
-
-	*/
 }
 
 static void whiteSpinEffect(uint8_t buffer[][3], bool reset)
@@ -615,7 +614,7 @@ static xTimerHandle timer;
 
 void ledring12Worker(void * data)
 {
-  static int current_effect = 0;			//autostart -> unserer AIEffekt hat Nummer 14 , Standard = 0
+  static int current_effect = 14;			//autostart -> unserer AIEffekt hat Nummer 14 , Standard = 0
   static uint8_t buffer[NBR_LEDS][3];
   bool reset = true;
 
