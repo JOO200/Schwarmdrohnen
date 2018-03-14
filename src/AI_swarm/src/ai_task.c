@@ -4,6 +4,7 @@
 #include "task.h"
 #include "../Deck_Header/ai_dwm1000_driver.h"
 #include "../ai_config.h"
+#include "ledring12.h"
 
 #include "worker.h"
 
@@ -14,26 +15,11 @@ bool ai_init = 0;
 st_message_t testMessage;
 bool DMW1000_IRQ_Flag = 0;
 
-//Ranging Flags:
-bool requestTransmitTimestampPending[NR_OF_DRONES];
-bool distanceRequested[NR_OF_DRONES];
-bool immediateAnswerTransmitTimestampPending[NR_OF_DRONES];
-bool processingTimePending[NR_OF_DRONES];
-
-//requester timestamps
-dwTime_t requestTxTimestamp[NR_OF_DRONES];
-dwTime_t immediateAnswerRxTimestamp[NR_OF_DRONES];
-
-
-//Ranging Vars:
-dwTime_t lastRanging[NR_OF_DRONES];
-float distances[NR_OF_DRONES];	//actual distances
-
+//Ranging Flags, state and Distance:
+st_rangingState_t rangingState[NR_OF_DRONES];
 
 e_message_type_t lastMessageType;
 char lastMessageTarget;
-
-
 
 
 //hier unsere main
@@ -82,17 +68,23 @@ void ai_Task(void * arg) {
 			if (i = AI_NAME)	//nicht zu mir selbst rangen
 				continue;
 
+
+			ai_showDistance(rangingState[i].distance);
+
 			if (distanceRequested[i])
-							dwm1000_immediateDistanceAnswer(i);
+				dwm1000_immediateDistanceAnswer(i);
 
 			/*dwTime_t timeSinceRanging = time.now - lastRanging[i];		//Zeit bestimmen, seid der Entfernung zu dieser Drohne das letzte mal bestimmt wurde
 			if (timeSinceRanging >= 1/RANGING_FREQUENCY){
 				startRanging(i);											//falls diese über Schwellenwert --> neu Rangen
 			}*/
-			if (!distanceRequested[i] & !requestTransmitTimestampPending[i] & !processingTimePending[i] & !immediateAnswerTransmitTimestampPending[i]){
+			if (!PASSIVE_MODE && !rangingState[i].distanceRequested[i] & !rangingState[i].requestTransmitTimestampPending[i] & !rangingState[i].processingTimePending[i] & !rangingState[i].immediateAnswerTransmitTimestampPending[i]){
 				startRanging(i);
+				rangingState[i].requestTransmitTimestampPending = true;
+				rangingState[i].immediateAnswerPending = true;
 			}
 		}
+		vTaskDelay(5000);
 
 	}
 	vTaskDelete(0); //waere schlecht, wenn das hier aufgerufen wird...*/
@@ -115,17 +107,30 @@ void receiveHandler() {
 		//Status des Masters aktualisieren
 		break;
 	case DISTANCE_REQUEST:
-		distanceRequested[message.senderID] = 1;
+		rangingState[message.senderID].distanceRequested = 1;
 		//1. Immediate Answer raussenden
-		//2. danach Processing Time nachsenden
+		st_message_t immediateAnswer;
+		immediateAnswer.senderID = AI_NAME;
+		immediateAnswer.targetID = immediateAnswer.senderID
+		immediateAnswer.messageType = IMMEDIATE_ANSWER;
+		dwm1000_SendData(&immediateAnswer);
+		//2. danach Processing Time nachsenden (pending flag setzen)
+		rangingState[message.senderID].transmitProcessingTimePendingFlag = true;
 		break;
 	case IMMEDIATE_ANSWER:
 		//Tround berechnen
-
+		if (!rangingState[message.senderID].immediateAnswerPending)
+			break;
+		rangingState[message.senderID].immediateAnswerRxTimestamp = dwm1000_getRxTimestamp();
+		rangingState[message.senderID].tRound = rangingState[message.senderID].immediateAnswerRxTimestamp.full - rangingState[message.senderID].requestTxTimestamp.full
+		rangingState[message.senderID].immediateAnswerPending = false;
 		break;
 	case PROCESSING_TIME:
 		//Distanz berechnen und eintragen
-		//Rangin-Strukt leeren
+		//Rangin-Struct leeren
+
+
+		//Zeitberechnung in ai_lpsTwrTag Zeile 172-202
 		break
 	default:
 		break;
@@ -133,11 +138,11 @@ void receiveHandler() {
 }
 
 void transmitDoneHandler(){
-	if (transmitProcessingTimePendingFlag[lastMessageTarget]) {
+	if (rangingState[lastMessageTarget].transmitProcessingTimePendingFlag) {
 		dwm1000_sendProcessingTime(lastMessageTarget);
 	}
-	else if (requestTransmitTimestampPending[lastMessageTarget]){
-		requestTxTimestamp[lastMessageTarget] = dwm1000_getTxTimestamp();
+	else if (rangingState[lastMessageTarget].requestTransmitTimestampPending){
+		rangingState[lastMessageTarget].requestTxTimestamp = dwm1000_getTxTimestamp();
 	}
 	else
 		return;
@@ -157,12 +162,6 @@ void startRanging(char targetID) {
 }
 
 
-//eventuell muessen args als void *
-void calculatePosition(st_distances_t * data)
-{
-	//hier call der positionsberechnung
-}
-
 bool initAi_Swarm() {
 	//UWB_Deck fuer Josy und Janik (neuerdings auch Nico)
 	//hier euer/unser init-shizzle
@@ -175,7 +174,6 @@ bool initAi_Swarm() {
 	//...
 	return 1;
 }
-
 
 
 //wird in initphase von main in main.c aufgerufen, bevor scheduler gestartet wird

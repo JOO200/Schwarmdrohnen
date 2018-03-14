@@ -14,3 +14,4 @@
 #define AI_TASK_STACKSIZE 1024  //kp was genug/zu viel - MIST
 #define AI_TASK_PRIO 1			//hier einfaches aber evtl. schlechtes tuning m�glich - Maximum 6, je h�her desto wichtiger (idle hat 0), task der l�uft hat immer die h�chste prio der aktivierbaren tasks
  
+#define PASIIVE_MODE 0			//hier 1 falls drohne nur auf rangen antworten soll	

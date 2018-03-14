@@ -62,6 +62,29 @@ typedef struct {
 	st_distances_t distanceTable;		//Tabelle mit Distanzen
 } st_message_t;
 
+typedef struct {
+	//---requestee
+	bool requestTransmitTimestampPending;			//awaiting sent interrupt 
+	bool immediateAnswerPending;					//if immediate answer hasnt been received jet
+	bool receiveProcessingTimePending;				//awaiting processing time
+	
+	dwTime_t lastRanging;							//time of last ranging
+	float distance;									//distance measured in meters
 
+	//requestee times
+	dwTime_t requestTxTimestamp;
+	dwTime_t immediateAnswerRxTimestamp;
+	dwTime_t tRound;
+
+	//---target
+	bool distanceRequested;							//distance requested by requestee (this is target)
+	bool immediateAnswerTransmitTimestampPending;	//awaiting sent interrupt of immediate answer (target)
+	bool transmitProcessingTimePendingFlag;
+
+	//target timestamps
+	dwTime_t requestRxTimestamp;
+	dwTime_t immediateAnswerTxTimestamp;
+
+} st_rangingState_t;
 
 #endif

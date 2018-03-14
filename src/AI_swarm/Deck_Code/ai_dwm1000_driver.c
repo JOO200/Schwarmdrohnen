@@ -16,7 +16,7 @@ Sollten keine Funktionsaenderungen des DWM1000 gewuenscht sein, sollte dieser Dr
 #include "stm32f4xx.h"
 #include "../ai_task.h"
 #include <stdlib.h>
-+include "mac.h"
+#include "mac.h"
 
 //Hier wird deck_spi.h/deck_spi.c angewendet (in src/deck/api/...)
 
@@ -300,6 +300,20 @@ void dwm1000_sendProcessingTime(char id_requester) {
 	processingTimeMessage.messageType = PROCESSING_TIME;
 
 	dwm1000_SendData(&processingTimeMessage);
+}
+
+dwTime_t dwm1000_getTxTimestamp(){
+	dwTime_t ret;
+	dwGetTransmitTimestamp(dwm, &ret);
+
+	return ret;
+}
+
+dwTime_t dwm1000_getRxTimestamp(){
+	dwTime_t ret;
+	dwGetTransmitTimestamp(dwm, &ret);
+
+	return ret;
 }
 
 /*//auslesen des rxTimestamps
