@@ -77,7 +77,7 @@ typedef struct {
 
 	//---target
 	bool distanceRequested;//_/						//distance requested by requestee (this is target)
-	bool transmitProcessingTimePendingFlag;
+	bool transmitProcessingTimePendingFlag;//_/
 
 	//target timestamps
 	dwTime_t requestRxTimestamp;
