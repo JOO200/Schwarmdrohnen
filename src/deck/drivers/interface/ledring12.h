@@ -8,4 +8,6 @@
 
 extern uint8_t ledringmem[NBR_LEDS * 2];
 
+void ai_showDistance(float AbstandInMeter);
+
 #endif //__LEDRING12_H__

@@ -211,4 +211,10 @@ beschreibt alle Register mit den in "newConfig" f�r diese enthaltenen Werten
 newConfig - Konfigurationsstrukt, das die Werte der Register enthaelt
 return die Werte der aktuellen Konfiguration des DWM1000s um Pr�fen zu koennen ob init geglueckt
 */
+
+void dwm1000_immediateDistanceAnswer(char id_requester);
+
+dwTime_t dwm1000_getRxTimestamp();
+
+dwTime_t dwm1000_getTxTimestamp();
 #endif

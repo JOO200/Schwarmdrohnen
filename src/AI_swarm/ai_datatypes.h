@@ -3,6 +3,7 @@
 
 #include "ai_config.h"
 #include "stddef.h"	//f�r z.B. NULL muss dies includiert werden
+#include "libdw1000Types.h"
 
 
 //Rolle der Drohne
@@ -52,13 +53,11 @@ typedef enum {
 	RX_INT_TIMEOUT,
 } e_interrupt_type_t;
 
-typedef long ai_time;	//time in picoseconds (10^-12s; Maximalwert ca. 9*10⁶s)
-
 typedef struct {
-	char senderID;						//Byte Name des Senders
-	char targetID;						//Byte Name des Ziels
+	unsigned char senderID;						//Byte Name des Senders
+	unsigned char targetID;						//Byte Name des Ziels
 	e_message_type_t messageType;		//Art der Nachricht
-	ai_time time;						//je nach Message time untersch. Bedeutung
+	dwTime_t time;						//je nach Message time untersch. Bedeutung
 	st_distances_t distanceTable;		//Tabelle mit Distanzen
 } st_message_t;
 
@@ -66,7 +65,7 @@ typedef struct {
 	//---requestee
 	bool requestTransmitTimestampPending;			//awaiting sent interrupt 
 	bool immediateAnswerPending;					//if immediate answer hasnt been received jet
-	bool receiveProcessingTimePending;				//awaiting processing time
+	bool processingTimePending;				//awaiting processing time
 	
 	dwTime_t lastRanging;							//time of last ranging
 	float distance;									//distance measured in meters

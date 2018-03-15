@@ -19,8 +19,92 @@ bool DMW1000_IRQ_Flag = 0;
 st_rangingState_t rangingState[NR_OF_DRONES];
 
 e_message_type_t lastMessageType;
-char lastMessageTarget;
+unsigned char lastMessageTarget;
 
+
+
+
+void receiveHandler() {
+	
+	st_message_t message;
+	dwm1000_ReceiveData(&message);
+	if (message.targetID != AI_NAME)
+		return;
+
+	switch (message.messageType)
+	{
+	case DISTANCE_TABLE:
+		//1. aktuelle Distance Tabelle holen
+		//2. an Absender zurück schicken
+		break;
+	case MASTER_STATE:
+		//Status des Masters aktualisieren
+		break;
+	case DISTANCE_REQUEST:
+		rangingState[message.senderID].distanceRequested = true;
+		//1. Immediate Answer raussenden
+		st_message_t immediateAnswer;
+		immediateAnswer.senderID = AI_NAME;
+		immediateAnswer.targetID = immediateAnswer.senderID;
+		immediateAnswer.messageType = IMMEDIATE_ANSWER;
+		dwm1000_SendData(&immediateAnswer);
+		//2. danach Processing Time nachsenden (pending flag setzen)
+		rangingState[message.senderID].transmitProcessingTimePendingFlag = true;
+		break;
+	case IMMEDIATE_ANSWER:
+		//Tround berechnen
+		if (!rangingState[message.senderID].immediateAnswerPending)
+			break;
+		rangingState[message.senderID].immediateAnswerRxTimestamp = dwm1000_getRxTimestamp();
+		rangingState[message.senderID].tRound.full = rangingState[message.senderID].immediateAnswerRxTimestamp.full - rangingState[message.senderID].requestTxTimestamp.full;
+		rangingState[message.senderID].immediateAnswerPending = false;
+		break;
+	case PROCESSING_TIME:
+		//Distanz berechnen und eintragen
+		//Rangin-Struct leeren
+
+
+		//Zeitberechnung in ai_lpsTwrTag Zeile 172-202
+		break;
+	default:
+		break;
+	}
+}
+
+void transmitDoneHandler(){
+	if (rangingState[lastMessageTarget].transmitProcessingTimePendingFlag) {
+		dwm1000_sendProcessingTime(lastMessageTarget);
+	}
+	else if (rangingState[lastMessageTarget].requestTransmitTimestampPending){
+		rangingState[lastMessageTarget].requestTxTimestamp = dwm1000_getTxTimestamp();
+	}
+	else
+		return;
+}
+
+//eventuell muessen args als void *
+void startRanging(unsigned char targetID) {
+	//requestMessage senden
+	dwm1000_requestDistance(targetID);
+
+	//flags und vars für Momentanzustand setzen
+	rangingState[targetID].distanceRequested = 1;
+	rangingState[targetID].requestTransmitTimestampPending = 1;
+
+	lastMessageType = DISTANCE_REQUEST;
+	lastMessageTarget = targetID;
+}
+
+
+bool initAi_Swarm() {
+	//UWB_Deck fuer Josy und Janik ((((neuerdings))) auch Nico)
+	//hier euer/unser init-shizzlel
+	setup_dwm1000_communication();		//HW-Setup
+
+
+	//...
+	return 1;
+}
 
 //hier unsere main
 //wird ausgefuehrt von FreeRTOS-Scheduler sobald dieser das fuer sinnvoll haelt (und natuerlich,nachdem dieser in "main.c" gestartet wurde)
@@ -49,7 +133,7 @@ void ai_Task(void * arg) {
 
 		if (DMW1000_IRQ_Flag){		//"ISR"
 			DMW1000_IRQ_Flag = false;
-			e_interrupt_type_t interruptType = dwm1000_handlInterrupt();
+			e_interrupt_type_t interruptType = dwm1000_EvalInterrupt();
 
 			switch (interruptType) {
 				case RX_DONE:
@@ -64,21 +148,22 @@ void ai_Task(void * arg) {
 			}
 		}
 
-		for (char i = 0; i < NR_OF_DRONES; i++){
-			if (i = AI_NAME)	//nicht zu mir selbst rangen
+		for (unsigned char i = 0; i < NR_OF_DRONES; i++){
+			if (i == AI_NAME){	//nicht zu mir selbst rangen
 				continue;
+			}
 
 
-			ai_showDistance(rangingState[i].distance);
+			//ai_showDistance(rangingState[i].distance);
 
-			if (distanceRequested[i])
+			if (rangingState[i].distanceRequested == true)
 				dwm1000_immediateDistanceAnswer(i);
 
 			/*dwTime_t timeSinceRanging = time.now - lastRanging[i];		//Zeit bestimmen, seid der Entfernung zu dieser Drohne das letzte mal bestimmt wurde
 			if (timeSinceRanging >= 1/RANGING_FREQUENCY){
 				startRanging(i);											//falls diese über Schwellenwert --> neu Rangen
 			}*/
-			if (!PASSIVE_MODE && !rangingState[i].distanceRequested[i] & !rangingState[i].requestTransmitTimestampPending[i] & !rangingState[i].processingTimePending[i] & !rangingState[i].immediateAnswerTransmitTimestampPending[i]){
+			if (!PASSIVE_MODE && !rangingState[i].distanceRequested & !rangingState[i].requestTransmitTimestampPending & !rangingState[i].processingTimePending & !rangingState[i].immediateAnswerTransmitTimestampPending){
 				startRanging(i);
 				rangingState[i].requestTransmitTimestampPending = true;
 				rangingState[i].immediateAnswerPending = true;
@@ -88,91 +173,6 @@ void ai_Task(void * arg) {
 
 	}
 	vTaskDelete(0); //waere schlecht, wenn das hier aufgerufen wird...*/
-}
-
-void receiveHandler() {
-	
-	st_message_t message;
-	dwm1000_ReceiveData(&message);
-	if (message.targetID != AI_NAME)
-		return;
-
-	switch (message.messageType)
-	{
-	case DISTANCE_TABLE:
-		//1. aktuelle Distance Tabelle holen
-		//2. an Absender zurück schicken
-		break;
-	case MASTER_STATE:
-		//Status des Masters aktualisieren
-		break;
-	case DISTANCE_REQUEST:
-		rangingState[message.senderID].distanceRequested = 1;
-		//1. Immediate Answer raussenden
-		st_message_t immediateAnswer;
-		immediateAnswer.senderID = AI_NAME;
-		immediateAnswer.targetID = immediateAnswer.senderID
-		immediateAnswer.messageType = IMMEDIATE_ANSWER;
-		dwm1000_SendData(&immediateAnswer);
-		//2. danach Processing Time nachsenden (pending flag setzen)
-		rangingState[message.senderID].transmitProcessingTimePendingFlag = true;
-		break;
-	case IMMEDIATE_ANSWER:
-		//Tround berechnen
-		if (!rangingState[message.senderID].immediateAnswerPending)
-			break;
-		rangingState[message.senderID].immediateAnswerRxTimestamp = dwm1000_getRxTimestamp();
-		rangingState[message.senderID].tRound = rangingState[message.senderID].immediateAnswerRxTimestamp.full - rangingState[message.senderID].requestTxTimestamp.full
-		rangingState[message.senderID].immediateAnswerPending = false;
-		break;
-	case PROCESSING_TIME:
-		//Distanz berechnen und eintragen
-		//Rangin-Struct leeren
-
-
-		//Zeitberechnung in ai_lpsTwrTag Zeile 172-202
-		break
-	default:
-		break;
-	}
-}
-
-void transmitDoneHandler(){
-	if (rangingState[lastMessageTarget].transmitProcessingTimePendingFlag) {
-		dwm1000_sendProcessingTime(lastMessageTarget);
-	}
-	else if (rangingState[lastMessageTarget].requestTransmitTimestampPending){
-		rangingState[lastMessageTarget].requestTxTimestamp = dwm1000_getTxTimestamp();
-	}
-	else
-		return;
-}
-
-//eventuell muessen args als void *
-void startRanging(char targetID) {
-	//requestMessage senden
-	dwm1000_requestDistance(targetID);
-
-	//flags und vars für Momentanzustand setzen
-	distanceRequested[targetID] = 1;
-	requestTransmitTimestampPending[targetID] = 1;
-
-	lastMessageType = DISTANCE_REQUEST;
-	lastMessageTarget = targetID;
-}
-
-
-bool initAi_Swarm() {
-	//UWB_Deck fuer Josy und Janik (neuerdings auch Nico)
-	//hier euer/unser init-shizzle
-	setup_dwm1000_communication();		//HW-Setup
-
-	dwm1000_init();
-
-
-
-	//...
-	return 1;
 }
 
 

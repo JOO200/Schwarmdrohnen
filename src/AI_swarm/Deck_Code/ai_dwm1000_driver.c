@@ -86,19 +86,19 @@ static dwOps_t dwOps = {
 
 //Functions for interrupt handling
 e_interrupt_type_t lastInterrupt;
-void dwm1000_transmitDoneHandler(){
+static void dwm1000_transmitDoneHandler(){
 	lastInterrupt = TX_DONE;
 }
 
-void dwm1000_receiveHandler(){
+static void dwm1000_receiveHandler(){
 	lastInterrupt = RX_DONE;
 }
 
-void dwm1000_receiveFailedHandler(){
+static void dwm1000_receiveFailedHandler(){
 	lastInterrupt = RX_FAILED;
 }
 
-void dwm1000_receiveTimeoutHandler(){
+static void dwm1000_receiveTimeoutHandler(){
 	lastInterrupt = RX_INT_TIMEOUT;
 }
 
@@ -179,10 +179,10 @@ bool setup_dwm1000_communication(){
 	dwTime_t delay = {.full = 0};
 	dwSetAntenaDelay(dwm, delay);
 
-	dwAttachSentHandler(dwm, dwm1000_transmitDoneHandler());
-	dwAttachReceivedHandler(dwm, dwm1000_receiveHandler());
-	dwAttachReceiveFailedHandler(dwm, dwm1000_receiveFailedHandler());
-	dwAttachReceiveTimeoutHandler(dwm, dwm1000_receiveTimeoutHandler());
+	dwAttachSentHandler(dwm, dwm1000_transmitDoneHandler);
+	dwAttachReceivedHandler(dwm, dwm1000_receiveHandler);
+	dwAttachReceiveFailedHandler(dwm, dwm1000_receiveFailedHandler);
+	dwAttachReceiveTimeoutHandler(dwm, dwm1000_receiveTimeoutHandler);
 
 	dwNewConfiguration(dwm);
 	dwSetDefaults(dwm);
@@ -221,7 +221,6 @@ e_message_type_t dwm1000_ReceiveData(st_message_t *data) {
 		DEBUG_PRINT("[ai_swarm]Wrong Receive Message size! (size = 0)\r\n");
 	}
 
-	st_message_t rxPacket;
 	memset(&data, 0, MAC802154_HEADER_LENGTH);  //packet mit Nullen ueberschreiben
 	
 	dwGetData(dwm, (uint8_t*)&data, dataLength);	//get Packet und befuellen
@@ -289,7 +288,8 @@ void dwm1000_sendProcessingTime(char id_requester) {
 	dwGetReceiveTimestamp(dwm, &rxTimeStamp);
 
 
-	dwTime_t processingTime = rxTimeStamp - txTimeStamp;
+	dwTime_t processingTime;
+	processingTime.full = rxTimeStamp.full - txTimeStamp.full;
 
 	//4. an requester schicken
 

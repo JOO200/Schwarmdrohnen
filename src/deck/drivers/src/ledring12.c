@@ -141,7 +141,8 @@ static const uint8_t blueRing[][3] = {{64, 64, 255}, {32,32,64}, {8,8,16},
 Zeigt Distanzveraenderungen anhand Helligkeit-/Farbwechsel des LED-Ring-Boards
 */
 //static void ai_showDistance(uint8_t buffer[][3], bool reset, float AbstandInMeter)
-static void ai_showDistance(float AbstandInMeter)
+static void ai_showDistanceEffect(uint8_t buffer[][3], bool reset);
+void ai_showDistance(float AbstandInMeter)
 {
 	/*Aufbau:*/
 	float AbstandInCM = AbstandInMeter/100;
@@ -604,7 +605,7 @@ Ledring12Effect effectsFct[] =
   siren,
   gravityLight,
   virtualMemEffect,
-  ai_showDistance,		//Nr 14
+  ai_showDistanceEffect,		//Nr 14
 }; //TODO Add more
 
 /********** Ring init and switching **********/

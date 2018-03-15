@@ -142,11 +142,11 @@ static const uint8_t blueRing[][3] = {{64, 64, 255}, {32,32,64}, {8,8,16},
 /* Show Distance
 Zeigt Distanzveraenderungen anhand Helligkeit-/Farbwechsel des LED-Ring-Boards
 */
-static void ai_showDistance(uint8_t buffer[][3], bool reset)
+/*static void ai_showDistance(uint8_t buffer[][3], bool reset)
 {
 	int i;
 	/*Aufbau:
-	Hier die variable für alle Leds reinpacken
+	Hier die variable fï¿½r alle Leds reinpacken
 	static uint8_t ai_CurrentColor[][3] = {CurrentColor, CurrentColor, CurrentColor,
 	CurrentColor, CurrentColor, CurrentColor,
 	CurrentColor, CurrentColor, CurrentColor,
@@ -160,7 +160,7 @@ static void ai_showDistance(uint8_t buffer[][3], bool reset)
 	ws2812Send(ai_CurrentColor, NBR_LEDS);
 
 	*/
-}
+//}
 
 static void whiteSpinEffect(uint8_t buffer[][3], bool reset)
 {
@@ -605,7 +605,7 @@ Ledring12Effect effectsFct[] =
   siren,
   gravityLight,
   virtualMemEffect,
-  ai_showDistance,		//Nr 14
+  //ai_showDistance,		//Nr 14
 }; //TODO Add more
 
 /********** Ring init and switching **********/
