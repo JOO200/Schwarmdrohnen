@@ -41,7 +41,7 @@ void receiveHandler() {
 		//Status des Masters aktualisieren
 		break;
 	case DISTANCE_REQUEST:
-		rangingState[message.senderID].distanceRequested = true;
+		rangingState[message.senderID].distanceRequested = TRUE;
 		//1. Immediate Answer raussenden
 		st_message_t immediateAnswer;
 		immediateAnswer.senderID = AI_NAME;
@@ -49,7 +49,7 @@ void receiveHandler() {
 		immediateAnswer.messageType = IMMEDIATE_ANSWER;
 		dwm1000_SendData(&immediateAnswer);
 		//2. danach Processing Time nachsenden (pending flag setzen)
-		rangingState[message.senderID].transmitProcessingTimePendingFlag = true;
+		rangingState[message.senderID].transmitProcessingTimePendingFlag = TRUE;
 		break;
 	case IMMEDIATE_ANSWER:
 		//Tround berechnen
@@ -57,12 +57,14 @@ void receiveHandler() {
 			break;
 		rangingState[message.senderID].immediateAnswerRxTimestamp = dwm1000_getRxTimestamp();
 		rangingState[message.senderID].tRound.full = rangingState[message.senderID].immediateAnswerRxTimestamp.full - rangingState[message.senderID].requestTxTimestamp.full;
-		rangingState[message.senderID].immediateAnswerPending = false;
+		rangingState[message.senderID].immediateAnswerPending = FALSE;
+
+		rangingState[message.senderID].processingTimePending = TRUE;
 		break;
 	case PROCESSING_TIME:
+		rangingState[message.senderID].processingTimePending = FALSE;
 		//Distanz berechnen und eintragen
 		//Rangin-Struct leeren
-
 
 		//Zeitberechnung in ai_lpsTwrTag Zeile 172-202
 		break;
@@ -72,11 +74,13 @@ void receiveHandler() {
 }
 
 void transmitDoneHandler(){
-	if (rangingState[lastMessageTarget].transmitProcessingTimePendingFlag) {
+	if (rangingState[lastMessageTarget].transmitProcessingTimePendingFlag && lastMessageType == IMMEDIATE_ANSWER) {
 		dwm1000_sendProcessingTime(lastMessageTarget);
+		rangingState[lastMessageTarget].transmitProcessingTimePendingFlag = FALSE;
 	}
-	else if (rangingState[lastMessageTarget].requestTransmitTimestampPending){
+	else if (rangingState[lastMessageTarget].requestTransmitTimestampPending && lastMessageType == DISTANCE_REQUEST){
 		rangingState[lastMessageTarget].requestTxTimestamp = dwm1000_getTxTimestamp();
+		rangingState[lastMessageTarget].requestTransmitTimestampPending = FALSE;
 	}
 	else
 		return;
@@ -88,8 +92,8 @@ void startRanging(unsigned char targetID) {
 	dwm1000_requestDistance(targetID);
 
 	//flags und vars für Momentanzustand setzen
-	rangingState[targetID].distanceRequested = 1;
-	rangingState[targetID].requestTransmitTimestampPending = 1;
+	rangingState[targetID].requestTransmitTimestampPending = TRUE;
+	rangingState[targetID].immediateAnswerPending = TRUE;
 
 	lastMessageType = DISTANCE_REQUEST;
 	lastMessageTarget = targetID;
@@ -103,11 +107,11 @@ bool initAi_Swarm() {
 
 
 	//...
-	return 1;
+	return TRUE;
 }
 
 //hier unsere main
-//wird ausgefuehrt von FreeRTOS-Scheduler sobald dieser das fuer sinnvoll haelt (und natuerlich,nachdem dieser in "main.c" gestartet wurde)
+//wird ausgefuehrt von FreeRTOS-Scheduler sobald dieser das fuer sinnvoll haelt (und natuerlich, nachdem dieser in "main.c" gestartet wurde)
 void ai_Task(void * arg) {
 	//... lokale Vars, init
 	//bool transmitProcessingTimePendingFlag = 0;
@@ -132,7 +136,7 @@ void ai_Task(void * arg) {
 		//... repetetives
 
 		if (DMW1000_IRQ_Flag){		//"ISR"
-			DMW1000_IRQ_Flag = false;
+			DMW1000_IRQ_Flag = FALSE;
 			e_interrupt_type_t interruptType = dwm1000_EvalInterrupt();
 
 			switch (interruptType) {
@@ -156,17 +160,15 @@ void ai_Task(void * arg) {
 
 			//ai_showDistance(rangingState[i].distance);
 
-			if (rangingState[i].distanceRequested == true)
+			if (rangingState[i].distanceRequested == TRUE)
 				dwm1000_immediateDistanceAnswer(i);
 
 			/*dwTime_t timeSinceRanging = time.now - lastRanging[i];		//Zeit bestimmen, seid der Entfernung zu dieser Drohne das letzte mal bestimmt wurde
 			if (timeSinceRanging >= 1/RANGING_FREQUENCY){
 				startRanging(i);											//falls diese über Schwellenwert --> neu Rangen
 			}*/
-			if (!PASSIVE_MODE && !rangingState[i].distanceRequested & !rangingState[i].requestTransmitTimestampPending & !rangingState[i].processingTimePending & !rangingState[i].immediateAnswerTransmitTimestampPending){
+			if (!PASSIVE_MODE && !rangingState[i].distanceRequested & !rangingState[i].requestTransmitTimestampPending & !rangingState[i].processingTimePending){
 				startRanging(i);
-				rangingState[i].requestTransmitTimestampPending = true;
-				rangingState[i].immediateAnswerPending = true;
 			}
 		}
 		vTaskDelay(5000);

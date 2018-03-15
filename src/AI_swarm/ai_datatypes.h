@@ -63,9 +63,9 @@ typedef struct {
 
 typedef struct {
 	//---requestee
-	bool requestTransmitTimestampPending;			//awaiting sent interrupt 
-	bool immediateAnswerPending;					//if immediate answer hasnt been received jet
-	bool processingTimePending;				//awaiting processing time
+	bool requestTransmitTimestampPending;//_/			//awaiting sent interrupt
+	bool immediateAnswerPending;//_/					//if immediate answer hasnt been received jet
+	bool processingTimePending;//				//awaiting processing time
 	
 	dwTime_t lastRanging;							//time of last ranging
 	float distance;									//distance measured in meters
@@ -76,8 +76,7 @@ typedef struct {
 	dwTime_t tRound;
 
 	//---target
-	bool distanceRequested;							//distance requested by requestee (this is target)
-	bool immediateAnswerTransmitTimestampPending;	//awaiting sent interrupt of immediate answer (target)
+	bool distanceRequested;//_/						//distance requested by requestee (this is target)
 	bool transmitProcessingTimePendingFlag;
 
 	//target timestamps
