@@ -3,6 +3,9 @@
 #include <stdbool.h>
 #include "ai_datatypes.h"
 
+#define TRUE true
+#define FALSE false
+
 void ai_launch(void);
 void DWM1000_IRQ_ISR(void);
 

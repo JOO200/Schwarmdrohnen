@@ -149,7 +149,7 @@ static void ai_showDistanceEffect(uint8_t buffer[][3], bool reset)
 void ai_showDistance(float AbstandInMeter)
 {
 	/*Aufbau:*/
-	float AbstandInCM = AbstandInMeter/100;
+	float AbstandInCM = AbstandInMeter*100;
 	static uint8_t ai_CurrentColor[][3] = {BLACK, BLACK, BLACK,
 					BLACK, BLACK, BLACK,
 					BLACK, BLACK, BLACK,
@@ -160,10 +160,12 @@ void ai_showDistance(float AbstandInMeter)
 	{
 		if (i*10 <= AbstandInCM)			//LEDs anschalten
 		{
-			ai_CurrentColor[i][3] = RED;
+			ai_CurrentColor[i][0] = 0x10;
+			ai_CurrentColor[i][1] = 0x00;
+			ai_CurrentColor[i][2] = 0x00;
 		}
 	}
-	ai_showDistanceEffect(ai_CurrentColor, FALSE);
+	ai_showDistanceEffect(ai_CurrentColor, 0);
 }
 
 static void whiteSpinEffect(uint8_t buffer[][3], bool reset)

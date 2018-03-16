@@ -158,7 +158,7 @@ void ai_Task(void * arg) {
 			}
 
 
-			//ai_showDistance(rangingState[i].distance);
+			ai_showDistance(0.5);
 
 			if (rangingState[i].distanceRequested == TRUE)
 				dwm1000_immediateDistanceAnswer(i);
