@@ -133,8 +133,14 @@ void ai_Task(void * arg) {
 	}
 
 	while (1) {
+		float distance = 0;
+		for(unsigned int i = 0; i > 60000;i++){
+			distance = (float)distance + (float)10/(float)100;
+			ai_showDistance(distance);
+			vTaskDelay(5000);
+		}
 		//... repetetives
-
+		/*
 		if (DMW1000_IRQ_Flag){		//"ISR"
 			DMW1000_IRQ_Flag = FALSE;
 			e_interrupt_type_t interruptType = dwm1000_EvalInterrupt();
@@ -158,23 +164,20 @@ void ai_Task(void * arg) {
 			}
 
 
-			ai_showDistance(0.5);
-
 			if (rangingState[i].distanceRequested == TRUE)
 				dwm1000_immediateDistanceAnswer(i);
 
-			/*dwTime_t timeSinceRanging = time.now - lastRanging[i];		//Zeit bestimmen, seid der Entfernung zu dieser Drohne das letzte mal bestimmt wurde
-			if (timeSinceRanging >= 1/RANGING_FREQUENCY){
-				startRanging(i);											//falls diese über Schwellenwert --> neu Rangen
-			}*/
+			//dwTime_t timeSinceRanging = time.now - lastRanging[i];		//Zeit bestimmen, seid der Entfernung zu dieser Drohne das letzte mal bestimmt wurde
+			//if (timeSinceRanging >= 1/RANGING_FREQUENCY){
+			//	startRanging(i);											//falls diese über Schwellenwert --> neu Rangen
+			}
 			if (!PASSIVE_MODE && !rangingState[i].distanceRequested & !rangingState[i].requestTransmitTimestampPending & !rangingState[i].processingTimePending){
 				startRanging(i);
 			}
 		}
-		vTaskDelay(5000);
+		vTaskDelay(5000);*/
 
 	}
-	vTaskDelete(0); //waere schlecht, wenn das hier aufgerufen wird...*/
 }
 
 
