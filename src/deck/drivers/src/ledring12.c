@@ -635,7 +635,7 @@ void ledring12Worker(void * data)
   }
   current_effect = effect;
 
-  effectsFct[current_effect](buffer, reset);		//hier statt current effect unsere nummer eintragen?
+  effectsFct[14](buffer, reset);		//hier statt current effect unsere nummer eintragen?
   ws2812Send(buffer, NBR_LEDS);						
 }
 
