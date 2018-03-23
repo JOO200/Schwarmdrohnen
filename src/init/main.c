@@ -51,11 +51,13 @@ int main()
   platformInit();
 
   //Launch the system task that will initialize and start everything
-  systemLaunch();
+  systemLaunch();			//grad hier ai_swarm start
   ai_launch();					//startet ai_swarm Task
 
   //Start the FreeRTOS scheduler
   vTaskStartScheduler();
+
+
 
   //TODO: Move to platform launch failed
   ledInit();

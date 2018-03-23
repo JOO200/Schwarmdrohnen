@@ -6,6 +6,10 @@
 #define TRUE true
 #define FALSE false
 
+// Timestamp counter frequency
+#define LOCODECK_TS_FREQ (499.2e6 * 128)
+#define SPEED_OF_LIGHT 299792458.0
+
 void ai_launch(void);
 void DWM1000_IRQ_ISR(void);
 

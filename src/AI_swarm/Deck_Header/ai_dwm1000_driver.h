@@ -25,7 +25,7 @@ Sollten keine Funktionsaenderungen des DWM1000 gewuenscht sein, sollte dieser Dr
 #include "param.h"
 #include "nvicconf.h"
 
-#define BaudRate SPI_BAUDRATE_3MHZ		//hier auch 11.5, 5.25, 2.625, 1.3125 auswaehlbar -- 21MHZ --> (uint16_t)0x0008
+//#define BaudRate SPI_BAUDRATE_3MHZ		//hier auch 11.5, 5.25, 2.625, 1.3125 auswaehlbar -- 21MHZ --> (uint16_t)0x0008
 #define SPI_BAUDRATE_21MHZ  SPI_BaudRatePrescaler_4     // 21MHz
 #define SPI_BAUDRATE_12MHZ  SPI_BaudRatePrescaler_8     // 11.5MHz
 #define SPI_BAUDRATE_6MHZ   SPI_BaudRatePrescaler_16    // 5.25MHz

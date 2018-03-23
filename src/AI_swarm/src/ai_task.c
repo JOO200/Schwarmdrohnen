@@ -65,6 +65,16 @@ void receiveHandler() {
 		rangingState[message.senderID].processingTimePending = FALSE;
 		//Distanz berechnen und eintragen
 		//Rangin-Struct leeren
+		double tdistDWM, troundDWM, tprocessingDWM, tdist;
+		troundDWM = rangingState[message.senderID].immediateAnswerRxTimestamp.low32 - rangingState[message.senderID].requestTxTimestamp.low32;
+		tprocessingDWM = message.time.low32;		//da aktuelle message processing time schickt ist diese hier zu entnehmen
+
+		tdistDWM = 0.5*(troundDWM - tprocessingDWM);
+
+		tdist = tdistDWM / LOCODECK_TS_FREQ;		//kp was das hier ist - kopiert von lpsTwrTag.c
+
+
+		rangingState[message.senderID].distance = SPEED_OF_LIGHT * tdist;
 
 		//Zeitberechnung in ai_lpsTwrTag Zeile 172-202
 		break;
@@ -118,39 +128,33 @@ void ai_Task(void * arg) {
 	//unsigned char distanceRequesterID;
 	if (ai_init == 0){
 		initAi_Swarm();
-		testMessage.messageType = MASTER_STATE;
+		testMessage.messageType = DISTANCE_REQUEST;
+		//dwm1000_SendData(&testMessage);
 		ai_init = 1;
-	}
-	while(1){
-		//TickType_t delay = 3000000;//portTICK_PERIOD_MS;	//ermöglicht Eingabe der Zeit in ms - test ---> NOPE IST NET KONFIGURIERT...
-		//vTaskDelay(delay);	//Einheit: ca. 6 Nano Sekunden 3.000.000 --> ca. 18ms
-		dwm1000_SendData(&testMessage);
-	}
-
-	if (AI_ROLE == AI_SLAVE) {
-		//slave inits
-        // @ai_motors.c : Deaktiviere evtl den Task STABILIZER
 	}
 
 	while (1) {
-		float distance = 0;
-		for(unsigned int i = 0; i > 60000;i++){
-			distance = (float)distance + (float)10/(float)100;
-			ai_showDistance(distance);
-			vTaskDelay(5000);
-		}
+		/*while(1){
+			dwm1000_SendData(&testMessage);
+			vTaskDelay(M2T(500));
+		}*/
+
 		//... repetetives
-		/*
+
 		if (DMW1000_IRQ_Flag){		//"ISR"
-			DMW1000_IRQ_Flag = FALSE;
+			DMW1000_IRQ_Flag = 0;
 			e_interrupt_type_t interruptType = dwm1000_EvalInterrupt();
+			st_message_t receiveTest;
+			dwm1000_ReceiveData(&receiveTest);
 
 			switch (interruptType) {
 				case RX_DONE:
-					receiveHandler();
+					//receiveHandler();
 					break;
 				case TX_DONE:
-					transmitDoneHandler();
+					//transmitDoneHandler();
+					break;
+				case FAILED_EVAL:
 					break;
 				default:
 					//Unhandled messaging errors
@@ -158,7 +162,7 @@ void ai_Task(void * arg) {
 			}
 		}
 
-		for (unsigned char i = 0; i < NR_OF_DRONES; i++){
+		/*for (unsigned char i = 0; i < NR_OF_DRONES; i++){
 			if (i == AI_NAME){	//nicht zu mir selbst rangen
 				continue;
 			}
@@ -170,14 +174,16 @@ void ai_Task(void * arg) {
 			//dwTime_t timeSinceRanging = time.now - lastRanging[i];		//Zeit bestimmen, seid der Entfernung zu dieser Drohne das letzte mal bestimmt wurde
 			//if (timeSinceRanging >= 1/RANGING_FREQUENCY){
 			//	startRanging(i);											//falls diese über Schwellenwert --> neu Rangen
-			}
+			//}
+
 			if (!PASSIVE_MODE && !rangingState[i].distanceRequested & !rangingState[i].requestTransmitTimestampPending & !rangingState[i].processingTimePending){
 				startRanging(i);
 			}
-		}
-		vTaskDelay(5000);*/
+
+		vTaskDelay(M2T(1000/TASK_FREQUENCY));*/
 
 	}
+	vTaskDelete(0);
 }
 
 
@@ -185,6 +191,6 @@ void ai_Task(void * arg) {
 void ai_launch(void)
 {
 	xTaskCreate(ai_Task, AI_TASK_NAME,
-		AI_TASK_STACKSIZE, NULL,
-		AI_TASK_PRIO, NULL);
+		AI_TASK_STACKSIZE, 0,
+		AI_TASK_PRIO, 0);
 }

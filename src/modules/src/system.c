@@ -64,6 +64,8 @@
 #include "deck.h"
 #include "extrx.h"
 
+#include "../../AI_swarm/ai_task.h"
+
 /* Private variable */
 static bool selftestPassed;
 static bool canFly;
@@ -214,6 +216,9 @@ void systemTask(void *arg)
     }
   }
   DEBUG_PRINT("Free heap: %d bytes\n", xPortGetFreeHeapSize());
+
+  //------------------AI_SWARM Task Call-------------------
+  //ai_launch();					//startet ai_swarm Task
 
   workerLoop();
 

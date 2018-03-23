@@ -37,11 +37,11 @@ typedef struct { // struct für Koordinaten
 } st_coords_t;
 
 typedef enum {
-	DISTANCE_TABLE,
-	MASTER_STATE,
-	DISTANCE_REQUEST,
-	IMMEDIATE_ANSWER,
-	PROCESSING_TIME,
+	DISTANCE_TABLE = 5,
+	MASTER_STATE = 4,
+	DISTANCE_REQUEST = 3,
+	IMMEDIATE_ANSWER = 2,
+	PROCESSING_TIME = 1,
 	UNDEFINED = 0
 } e_message_type_t;
 

@@ -23,19 +23,11 @@ Sollten keine Funktionsaenderungen des DWM1000 gewuenscht sein, sollte dieser Dr
 static dwDevice_t dwm_device;
 static dwDevice_t *dwm = &dwm_device;
 
-//Helper Functions:
-void spiStart(){
-	spiBeginTransaction(BaudRate);
-}
-
-void spiStop(){
-	spiEndTransaction();
-}
 
 //Functions und dwOps init from locodeck.c:
 static uint8_t spiTxBuffer[196];
 static uint8_t spiRxBuffer[196];
-static uint16_t spiSpeed = SPI_BAUDRATE_2MHZ;
+static uint16_t spiSpeed = SPI_BAUDRATE_3MHZ;
 /************ Low level ops for libdw **********/
 static void spiRead(dwDevice_t* dev, const void *header, size_t headerLength,
                                      void* data, size_t dataLength)
@@ -64,7 +56,7 @@ static void spiSetSpeed(dwDevice_t* dev, dwSpiSpeed_t speed)
 {
   if (speed == dwSpiSpeedLow)
   {
-    spiSpeed = SPI_BAUDRATE_2MHZ;
+    spiSpeed = SPI_BAUDRATE_3MHZ;
   }
   else if (speed == dwSpiSpeedHigh)
   {
@@ -158,6 +150,9 @@ bool setup_dwm1000_communication(){
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
 	NVIC_Init(&NVIC_InitStructure);
 
+	// Init CS pin
+	pinMode(CS_PIN, OUTPUT);
+
 	// Reset the DW1000 chip
 	GPIO_WriteBit(GPIO_PORT, GPIO_PIN_RESET, 0);
 	vTaskDelay(M2T(10));
@@ -191,7 +186,8 @@ bool setup_dwm1000_communication(){
 	dwUseSmartPower(dwm, true);
 	dwSetPreambleCode(dwm, PREAMBLE_CODE_64MHZ_9);
 
-	dwSetReceiveWaitTimeout(dwm, RX_TIMEOUT);
+	dwReceivePermanently(dwm, true);
+	dwStartReceive(dwm);
 
 	dwCommitConfiguration(dwm);
 
@@ -201,29 +197,34 @@ bool setup_dwm1000_communication(){
 
 
 bool dwm1000_SendData(st_message_t *message) {
+	spiSetSpeed(dwm, dwSpiSpeedLow);
+
 	dwNewTransmit(dwm);
-	dwSetDefaults(dwm);
-	dwSetData(dwm, (uint8_t*)message, MAC802154_HEADER_LENGTH+sizeof(st_message_t));
+	dwSetData(dwm, (uint8_t*)message, sizeof(*message));
 
 	dwStartTransmit(dwm);
+
+	vTaskDelay(M2T(3));
+
+	dwStartReceive(dwm);
 
 	return 1;
 }
 
 e_message_type_t dwm1000_ReceiveData(st_message_t *data) {
-	int dataLength = dwGetDataLength(dwm);
+	unsigned int dataLength = dwGetDataLength(dwm);
 
-	if (dataLength == 0){
+	/*if (dataLength == 0){
 		DEBUG_PRINT("[ai_swarm]Wrong Receive Message size! (size = 0)\r\n");
 		return 0;		//if Fall fuer leere Empfangsdaten
 	}
-	if (dataLength != sizeof(st_message_t)){
+	if (dataLength != sizeof(*data)){
 		DEBUG_PRINT("[ai_swarm]Wrong Receive Message size! (size = 0)\r\n");
-	}
-
-	memset(&data, 0, MAC802154_HEADER_LENGTH);  //packet mit Nullen ueberschreiben
-	
+	}*/
 	dwGetData(dwm, (uint8_t*)&data, dataLength);	//get Packet und befuellen
+
+	dwStartReceive(dwm);
+
 
 	return data->messageType;
 
