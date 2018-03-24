@@ -50,10 +50,10 @@ static void spiRead(dwDevice_t* dev, const void *header, size_t headerLength,
 {
   spiBeginTransaction(spiSpeed);
   digitalWrite(CS_PIN, LOW);
-  nicoCpysMem(spiTxBuffer, header, headerLength);
-  nicoSetsMem(spiTxBuffer+headerLength, 0, dataLength);
+  memcpy(spiTxBuffer, header, headerLength);
+  memset(spiTxBuffer+headerLength, 0, dataLength);
   spiExchange(headerLength+dataLength, spiTxBuffer, spiRxBuffer);
-  nicoCpysMem(data, spiRxBuffer+headerLength, dataLength);
+  memcpy(data, spiRxBuffer+headerLength, dataLength);
   digitalWrite(CS_PIN, HIGH);
   spiEndTransaction();
 }
@@ -62,8 +62,8 @@ static void spiWrite(dwDevice_t* dev, const void *header, size_t headerLength,
 {
   spiBeginTransaction(spiSpeed);
   digitalWrite(CS_PIN, LOW);
-  nicoCpysMem(spiTxBuffer, header, headerLength);
-  nicoCpysMem(spiTxBuffer+headerLength, data, dataLength);
+  memcpy(spiTxBuffer, header, headerLength);
+  memcpy(spiTxBuffer+headerLength, data, dataLength);
   spiExchange(headerLength+dataLength, spiTxBuffer, spiRxBuffer);
   digitalWrite(CS_PIN, HIGH);
   spiEndTransaction();
@@ -139,8 +139,6 @@ bool setup_dwm1000_communication(){
 	bzero(&GPIO_InitStructure, sizeof(GPIO_InitStructure));
 	GPIO_InitStructure.GPIO_Pin = GPIO_PIN_IRQ; //GPIO_PIN_11
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;
-	//GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_DOWN;
-
 	GPIO_Init(GPIO_PORT, &GPIO_InitStructure);
 
 	// Init reset output
@@ -422,10 +420,14 @@ e_interrupt_type_t dwm1000_EvalInterrupt()
 	spiStop();	//fuer Mutexinteraktion genutzt
 	vPortFree(placeHolder);
 }*/
+void nop();
 
 void __attribute__((used)) EXTI11_Callback(void)
 {
 	DWM1000_IRQ_FLAG = TRUE;	//wird in while(1) in task main abgearbeitet
 	NVIC_ClearPendingIRQ(EXTI_IRQChannel);
 	EXTI_ClearITPendingBit(EXTI_LineN);
+	st_message_t testMessage;
+	dwm1000_ReceiveData(&testMessage);
+	nop();
 }

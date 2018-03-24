@@ -321,7 +321,7 @@ static void dwm1000Init(DeckInfo *info)
   bzero(&GPIO_InitStructure, sizeof(GPIO_InitStructure));
   GPIO_InitStructure.GPIO_Pin = GPIO_PIN_IRQ;
   GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;
-  //GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_DOWN;
+  GPIO_InitStructure.GPIO_PuPd = GPIO_PuPd_DOWN;
   GPIO_Init(GPIO_PORT, &GPIO_InitStructure);
 
   SYSCFG_EXTILineConfig(EXTI_PortSource, EXTI_PinSource);

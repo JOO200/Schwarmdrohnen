@@ -138,26 +138,31 @@ void ai_Task(void * arg) {
 	//unsigned char distanceRequesterID;
 	if (ai_init == 0){
 		initAi_Swarm();
-		testMessage.messageType = DISTANCE_REQUEST;
+		//testMessage.messageType = DISTANCE_REQUEST;
 		//dwm1000_SendData(&testMessage);
 		ai_init = 1;
 	}
 
 	while (1) {
 
-			//dwm1000_SendData(&testMessage);
-			//vTaskDelay(M2T(500));
+			testMessage.messageType = DISTANCE_REQUEST;
+			testMessage.senderID = 12;
+			testMessage.targetID = 5;
+			dwm1000_SendData(&testMessage);
+			vTaskDelay(M2T(500));
 
 		//vTaskDelay(M2T(200));
 		//... repetetives
-		if (DWM1000_IRQ_FLAG){
+		/*if (DWM1000_IRQ_FLAG){
 			nop();
 			DWM1000_IRQ_FLAG = 0;
+			e_interrupt_type_t intType = dwm1000_EvalInterrupt();
+			testMessage.messageType = UNDEFINED;
 			dwm1000_ReceiveData(&testMessage);
 			//irqCounterLog = DWM1000_IRQ_Counter;
 			//logMSGType = testMessage.messageType;
 			nop();
-		}
+		}*/
 
 		/*if (DMW1000_IRQ_Counter > 0){		//"ISR"
 			DMW1000_IRQ_Counter--;
