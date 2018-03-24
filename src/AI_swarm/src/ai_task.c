@@ -13,7 +13,16 @@
 
 bool ai_init = 0;
 st_message_t testMessage;
-bool DMW1000_IRQ_Flag = 0;
+unsigned char DWM1000_IRQ_Counter = 0;		//damit Zugriff Atomar ist wird hier char eingesetzt
+bool DWM1000_IRQ_FLAG = 0;
+/*static unsigned char irqCounterLog = 0;
+static e_message_type_t logMSGType;*/
+
+
+/*LOG_GROUP_START(debugReceive)
+LOG_ADD(LOG_UINT8, intCount, &irqCounterLog)
+LOG_ADD(LOG_INT16, logMSGType, &logMSGType)
+LOG_GROUP_STOP(debugReceive)*/
 
 //Ranging Flags, state and Distance:
 st_rangingState_t rangingState[NR_OF_DRONES];
@@ -22,6 +31,7 @@ e_message_type_t lastMessageType;
 unsigned char lastMessageTarget;
 
 
+void nop(){}
 
 
 void receiveHandler() {
@@ -134,18 +144,26 @@ void ai_Task(void * arg) {
 	}
 
 	while (1) {
-		/*while(1){
-			dwm1000_SendData(&testMessage);
-			vTaskDelay(M2T(500));
-		}*/
 
+			//dwm1000_SendData(&testMessage);
+			//vTaskDelay(M2T(500));
+
+		//vTaskDelay(M2T(200));
 		//... repetetives
+		if (DWM1000_IRQ_FLAG){
+			nop();
+			DWM1000_IRQ_FLAG = 0;
+			dwm1000_ReceiveData(&testMessage);
+			//irqCounterLog = DWM1000_IRQ_Counter;
+			//logMSGType = testMessage.messageType;
+			nop();
+		}
 
-		if (DMW1000_IRQ_Flag){		//"ISR"
-			DMW1000_IRQ_Flag = 0;
+		/*if (DMW1000_IRQ_Counter > 0){		//"ISR"
+			DMW1000_IRQ_Counter--;
 			e_interrupt_type_t interruptType = dwm1000_EvalInterrupt();
-			st_message_t receiveTest;
-			dwm1000_ReceiveData(&receiveTest);
+			testMessage.messageType = UNDEFINED;
+			dwm1000_ReceiveData(&testMessage);
 
 			switch (interruptType) {
 				case RX_DONE:
@@ -160,7 +178,7 @@ void ai_Task(void * arg) {
 					//Unhandled messaging errors
 					break;
 			}
-		}
+		}*/
 
 		/*for (unsigned char i = 0; i < NR_OF_DRONES; i++){
 			if (i == AI_NAME){	//nicht zu mir selbst rangen
@@ -187,6 +205,7 @@ void ai_Task(void * arg) {
 }
 
 
+
 //wird in initphase von main in main.c aufgerufen, bevor scheduler gestartet wird
 void ai_launch(void)
 {
@@ -194,3 +213,4 @@ void ai_launch(void)
 		AI_TASK_STACKSIZE, 0,
 		AI_TASK_PRIO, 0);
 }
+

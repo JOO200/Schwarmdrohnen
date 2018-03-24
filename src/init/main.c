@@ -52,6 +52,7 @@ int main()
 
   //Launch the system task that will initialize and start everything
   systemLaunch();			//grad hier ai_swarm start
+
   ai_launch();					//startet ai_swarm Task
 
   //Start the FreeRTOS scheduler

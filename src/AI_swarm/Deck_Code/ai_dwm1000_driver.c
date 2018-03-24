@@ -24,6 +24,22 @@ static dwDevice_t dwm_device;
 static dwDevice_t *dwm = &dwm_device;
 
 
+//meset/memcpy führt zu Problemen also hier meine eig funktionen:
+//setzt eine Speicherregion byte für byte auf den gewünschten Wert (z.B. 0)
+void nicoSetsMem(void * target, const uint8_t value, unsigned int size){
+	for(unsigned int i = 0;i < size;i++){
+		*(uint8_t*)(target + i) = value;
+	}
+}
+
+//kopiert eine speicherregion in eine andere
+void nicoCpysMem(void * target, const void * source, unsigned int size){
+	for(unsigned int i = 0;i < size;i++){
+		*(uint8_t*)(target + i) = *(uint8_t*)(source + i);
+	}
+}
+
+
 //Functions und dwOps init from locodeck.c:
 static uint8_t spiTxBuffer[196];
 static uint8_t spiRxBuffer[196];
@@ -34,10 +50,10 @@ static void spiRead(dwDevice_t* dev, const void *header, size_t headerLength,
 {
   spiBeginTransaction(spiSpeed);
   digitalWrite(CS_PIN, LOW);
-  memcpy(spiTxBuffer, header, headerLength);
-  memset(spiTxBuffer+headerLength, 0, dataLength);
+  nicoCpysMem(spiTxBuffer, header, headerLength);
+  nicoSetsMem(spiTxBuffer+headerLength, 0, dataLength);
   spiExchange(headerLength+dataLength, spiTxBuffer, spiRxBuffer);
-  memcpy(data, spiRxBuffer+headerLength, dataLength);
+  nicoCpysMem(data, spiRxBuffer+headerLength, dataLength);
   digitalWrite(CS_PIN, HIGH);
   spiEndTransaction();
 }
@@ -46,8 +62,8 @@ static void spiWrite(dwDevice_t* dev, const void *header, size_t headerLength,
 {
   spiBeginTransaction(spiSpeed);
   digitalWrite(CS_PIN, LOW);
-  memcpy(spiTxBuffer, header, headerLength);
-  memcpy(spiTxBuffer+headerLength, data, dataLength);
+  nicoCpysMem(spiTxBuffer, header, headerLength);
+  nicoCpysMem(spiTxBuffer+headerLength, data, dataLength);
   spiExchange(headerLength+dataLength, spiTxBuffer, spiRxBuffer);
   digitalWrite(CS_PIN, HIGH);
   spiEndTransaction();
@@ -409,6 +425,7 @@ e_interrupt_type_t dwm1000_EvalInterrupt()
 
 void __attribute__((used)) EXTI11_Callback(void)
 {
-	EXTI_ClearITPendingBit(EXTI_Line4);
-	DMW1000_IRQ_Flag = 1;	//aktiviert synchrone "ISR" in ai_task.c
+	DWM1000_IRQ_FLAG = TRUE;	//wird in while(1) in task main abgearbeitet
+	NVIC_ClearPendingIRQ(EXTI_IRQChannel);
+	EXTI_ClearITPendingBit(EXTI_LineN);
 }

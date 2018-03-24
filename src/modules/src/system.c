@@ -220,6 +220,8 @@ void systemTask(void *arg)
   //------------------AI_SWARM Task Call-------------------
   //ai_launch();					//startet ai_swarm Task
 
+
+
   workerLoop();
 
   //Should never reach this point!

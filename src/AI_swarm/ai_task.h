@@ -3,17 +3,16 @@
 #include <stdbool.h>
 #include "ai_datatypes.h"
 
-#define TRUE true
-#define FALSE false
-
 // Timestamp counter frequency
 #define LOCODECK_TS_FREQ (499.2e6 * 128)
 #define SPEED_OF_LIGHT 299792458.0
 
 void ai_launch(void);
+
 void DWM1000_IRQ_ISR(void);
 
-bool DMW1000_IRQ_Flag;
+unsigned char DMW1000_IRQ_Counter;
+bool DWM1000_IRQ_FLAG;
 
 bool initAi_Swarm();
 
