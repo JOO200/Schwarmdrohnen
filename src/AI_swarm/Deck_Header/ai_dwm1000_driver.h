@@ -157,6 +157,8 @@ Gleiche Bits wie bei System Event Status Register setzen( Bit7 und Bit 13)
 #define GPIO_PIN_IRQ GPIO_Pin_11
 #define GPIO_PIN_RESET GPIO_Pin_10
 #define GPIO_PORT GPIOC
+#define EXTI_PortSource EXTI_PortSourceGPIOC
+#define EXTI_PinSource 	EXTI_PinSource11
 
 //defines fuer NVIC (Nested Vectored Interrupt Controller, ARM Interrupt Handling)
 #define EXTI_IRQChannel EXTI15_10_IRQn
@@ -165,6 +167,9 @@ Gleiche Bits wie bei System Event Status Register setzen( Bit7 und Bit 13)
 #define HIGH 0x1
 #define RX_TIMEOUT 1000
 
+bool DWM1000_IRQ_FLAG;
+
+bool DWM1000_PollIRQPin();
 
 //--------------------------------Functions:
 bool setup_dwm1000_communication();
@@ -182,7 +187,7 @@ lengthOfData - Laenge der Daten in byte
 */
 
 
-e_message_type_t dwm1000_ReceiveData(st_message_t *data);
+void dwm1000_ReceiveData(st_message_t *data);
 /*
 liest Daten im dwm1000 Receivebuffer
 

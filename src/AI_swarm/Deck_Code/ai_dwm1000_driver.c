@@ -17,11 +17,15 @@ Sollten keine Funktionsaenderungen des DWM1000 gewuenscht sein, sollte dieser Dr
 #include "../ai_task.h"
 #include <stdlib.h>
 #include "mac.h"
+#include "ledring12.h"
+#include "stm32f4xx_gpio.h"
 
 //Hier wird deck_spi.h/deck_spi.c angewendet (in src/deck/api/...)
 
 static dwDevice_t dwm_device;
 static dwDevice_t *dwm = &dwm_device;
+bool DWM1000_IRQ_FLAG = 0;
+
 
 
 //meset/memcpy führt zu Problemen also hier meine eig funktionen:
@@ -76,7 +80,7 @@ static void spiSetSpeed(dwDevice_t* dev, dwSpiSpeed_t speed)
   }
   else if (speed == dwSpiSpeedHigh)
   {
-    spiSpeed = SPI_BAUDRATE_21MHZ;
+    spiSpeed = SPI_BAUDRATE_3MHZ;
   }
 }
 static void delayms(dwDevice_t* dev, unsigned int delay)
@@ -129,9 +133,9 @@ bool setup_dwm1000_communication(){
 		registers using RCC_APB2PeriphClockCmd(RCC_APB2Periph_SYSCFG, ENABLE);
 	*/
 
-	EXTI_InitTypeDef EXTI_InitStructure;
+	//EXTI_InitTypeDef EXTI_InitStructure;
 	GPIO_InitTypeDef GPIO_InitStructure;
-	NVIC_InitTypeDef NVIC_InitStructure;
+	//NVIC_InitTypeDef NVIC_InitStructure;
 
 	spiBegin();
 
@@ -141,6 +145,8 @@ bool setup_dwm1000_communication(){
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN;
 	GPIO_Init(GPIO_PORT, &GPIO_InitStructure);
 
+	SYSCFG_EXTILineConfig(EXTI_PortSource, EXTI_PinSource);
+
 	// Init reset output
 	GPIO_InitStructure.GPIO_Pin = GPIO_PIN_RESET; //GPIO_PIN_10
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_OUT;
@@ -149,7 +155,7 @@ bool setup_dwm1000_communication(){
 
 	GPIO_Init(GPIO_PORT, &GPIO_InitStructure);
 	
-	//Interrupt Initstruct vorbereiten
+	/*//Interrupt Initstruct vorbereiten
 	EXTI_InitStructure.EXTI_Line = EXTI_LineN;
 	EXTI_InitStructure.EXTI_Mode = EXTI_Mode_Interrupt;
 	EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Rising;
@@ -162,7 +168,7 @@ bool setup_dwm1000_communication(){
 	NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = NVIC_LOW_PRI;	//13
 	NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
 	NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-	NVIC_Init(&NVIC_InitStructure);
+	NVIC_Init(&NVIC_InitStructure);*/
 
 	// Init CS pin
 	pinMode(CS_PIN, OUTPUT);
@@ -209,6 +215,16 @@ bool setup_dwm1000_communication(){
 	return 1;
 }
 
+bool DWM1000_PollIRQPin(){
+	uint8_t irqStatus = GPIO_ReadInputDataBit(GPIO_PORT, GPIO_PIN_IRQ);
+	if (irqStatus == Bit_SET){
+		DWM1000_IRQ_FLAG = true;
+		return true;
+	}
+	DWM1000_IRQ_FLAG = false;
+	return false;
+}
+
 
 bool dwm1000_SendData(st_message_t *message) {
 	spiSetSpeed(dwm, dwSpiSpeedLow);
@@ -220,27 +236,28 @@ bool dwm1000_SendData(st_message_t *message) {
 
 	vTaskDelay(M2T(3));
 
+	dwNewReceive(dwm);
 	dwStartReceive(dwm);
 
 	return 1;
 }
 
-e_message_type_t dwm1000_ReceiveData(st_message_t *data) {
+void dwm1000_ReceiveData(st_message_t *data) {
+
+
 	unsigned int dataLength = dwGetDataLength(dwm);
 
-	/*if (dataLength == 0){
+	if (dataLength == 0){
 		DEBUG_PRINT("[ai_swarm]Wrong Receive Message size! (size = 0)\r\n");
-		return 0;		//if Fall fuer leere Empfangsdaten
+		return;		//if Fall fuer leere Empfangsdaten
 	}
-	if (dataLength != sizeof(*data)){
+	if (dataLength > sizeof(st_message_t)){
 		DEBUG_PRINT("[ai_swarm]Wrong Receive Message size! (size = 0)\r\n");
-	}*/
-	dwGetData(dwm, (uint8_t*)&data, dataLength);	//get Packet und befuellen
+		return;
+	}
+	dwGetData(dwm, (uint8_t*)data, dataLength);	//get Packet und befuellen
 
-	dwStartReceive(dwm);
-
-
-	return data->messageType;
+	//return data->messageType;
 
 }
 
@@ -427,7 +444,6 @@ void __attribute__((used)) EXTI11_Callback(void)
 	DWM1000_IRQ_FLAG = TRUE;	//wird in while(1) in task main abgearbeitet
 	NVIC_ClearPendingIRQ(EXTI_IRQChannel);
 	EXTI_ClearITPendingBit(EXTI_LineN);
-	st_message_t testMessage;
-	dwm1000_ReceiveData(&testMessage);
+	ai_showDistance(50.0f);
 	nop();
 }

@@ -14,7 +14,6 @@
 bool ai_init = 0;
 st_message_t testMessage;
 unsigned char DWM1000_IRQ_Counter = 0;		//damit Zugriff Atomar ist wird hier char eingesetzt
-bool DWM1000_IRQ_FLAG = 0;
 /*static unsigned char irqCounterLog = 0;
 static e_message_type_t logMSGType;*/
 
@@ -143,17 +142,18 @@ void ai_Task(void * arg) {
 		ai_init = 1;
 	}
 
+	//ai_showDistance(0.5f);
 	while (1) {
-
-			testMessage.messageType = DISTANCE_REQUEST;
+		DWM1000_PollIRQPin();
+			/*testMessage.messageType = DISTANCE_REQUEST;
 			testMessage.senderID = 12;
 			testMessage.targetID = 5;
 			dwm1000_SendData(&testMessage);
-			vTaskDelay(M2T(500));
-
-		//vTaskDelay(M2T(200));
+			vTaskDelay(M2T(500));*/
+		vTaskDelay(M2T(200));
 		//... repetetives
-		/*if (DWM1000_IRQ_FLAG){
+
+		if (DWM1000_IRQ_FLAG){
 			nop();
 			DWM1000_IRQ_FLAG = 0;
 			e_interrupt_type_t intType = dwm1000_EvalInterrupt();
@@ -162,7 +162,7 @@ void ai_Task(void * arg) {
 			//irqCounterLog = DWM1000_IRQ_Counter;
 			//logMSGType = testMessage.messageType;
 			nop();
-		}*/
+		}
 
 		/*if (DMW1000_IRQ_Counter > 0){		//"ISR"
 			DMW1000_IRQ_Counter--;
