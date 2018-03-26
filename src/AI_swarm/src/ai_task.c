@@ -11,6 +11,8 @@
 /* FreeRtos includes */
 #include "FreeRTOS.h"
 
+unsigned long ai_taskTicks;
+
 bool ai_init = 0;
 st_message_t testMessage;
 unsigned char DWM1000_IRQ_Counter = 0;		//damit Zugriff Atomar ist wird hier char eingesetzt
@@ -32,6 +34,26 @@ unsigned char lastMessageTarget;
 
 void nop(){}
 
+//alle requesteeflags resetten um neuen Rangingvorgang einzuleiten
+void resetRangingStateRequestee(unsigned char targetID){
+	rangingState[targetID].requestTransmitTimestampPending = false;//_/			//awaiting sent interrupt
+	rangingState[targetID].immediateAnswerPending = false;//_/					//if immediate answer hasnt been received jet
+	rangingState[targetID].processingTimePending = false;//				//awaiting processing time
+
+
+	//requestee times
+	rangingState[targetID].requestTxTimestamp.full = 0;
+	rangingState[targetID].immediateAnswerRxTimestamp.full = 0;
+	rangingState[targetID].tRound.full = 0;
+}
+
+//alle Targetflags resetten um neuen Rangingvorgang einzuleiten
+void resetRangingStateTarget(unsigned char requesteeID){
+	rangingState[requesteeID].immediateAnswerPending = FALSE;
+	rangingState[requesteeID].transmitProcessingTimePendingFlag = FALSE;
+	rangingState[requesteeID].requestRxTimestamp.full = 0;
+	rangingState[requesteeID].requestTxTimestamp.full = 0;
+}
 
 void receiveHandler() {
 	
@@ -50,6 +72,8 @@ void receiveHandler() {
 		//Status des Masters aktualisieren
 		break;
 	case DISTANCE_REQUEST:
+		resetRangingStateTarget(message.senderID);
+
 		rangingState[message.senderID].distanceRequested = TRUE;
 		//1. Immediate Answer raussenden
 		st_message_t immediateAnswer;
@@ -59,6 +83,7 @@ void receiveHandler() {
 		dwm1000_SendData(&immediateAnswer);
 		//2. danach Processing Time nachsenden (pending flag setzen)
 		rangingState[message.senderID].transmitProcessingTimePendingFlag = TRUE;
+		rangingState[message.senderID].distanceRequested = false;
 		break;
 	case IMMEDIATE_ANSWER:
 		//Tround berechnen
@@ -105,9 +130,15 @@ void transmitDoneHandler(){
 		return;
 }
 
+
+
 //eventuell muessen args als void *
 void startRanging(unsigned char targetID) {
 	//requestMessage senden
+	rangingState[targetID].lastRangingAi_Ticks = ai_taskTicks;//_/			//awaiting sent interrupt
+
+	resetRangingStateRequestee(targetID);
+
 	dwm1000_requestDistance(targetID);
 
 	//flags und vars für Momentanzustand setzen
@@ -150,10 +181,9 @@ void ai_Task(void * arg) {
 			testMessage.targetID = 5;
 			dwm1000_SendData(&testMessage);
 			vTaskDelay(M2T(500));*/
-		vTaskDelay(M2T(200));
 		//... repetetives
 
-		if (DWM1000_IRQ_FLAG){
+		/*if (DWM1000_IRQ_FLAG){
 			nop();
 			DWM1000_IRQ_FLAG = 0;
 			e_interrupt_type_t intType = dwm1000_EvalInterrupt();
@@ -162,20 +192,18 @@ void ai_Task(void * arg) {
 			//irqCounterLog = DWM1000_IRQ_Counter;
 			//logMSGType = testMessage.messageType;
 			nop();
-		}
+		}*/
 
-		/*if (DMW1000_IRQ_Counter > 0){		//"ISR"
-			DMW1000_IRQ_Counter--;
+		if (DWM1000_IRQ_FLAG){		//"ISR"
+			DWM1000_IRQ_FLAG = false;
 			e_interrupt_type_t interruptType = dwm1000_EvalInterrupt();
-			testMessage.messageType = UNDEFINED;
-			dwm1000_ReceiveData(&testMessage);
 
 			switch (interruptType) {
 				case RX_DONE:
-					//receiveHandler();
+					receiveHandler();
 					break;
 				case TX_DONE:
-					//transmitDoneHandler();
+					transmitDoneHandler();
 					break;
 				case FAILED_EVAL:
 					break;
@@ -183,9 +211,9 @@ void ai_Task(void * arg) {
 					//Unhandled messaging errors
 					break;
 			}
-		}*/
+		}
 
-		/*for (unsigned char i = 0; i < NR_OF_DRONES; i++){
+		for (unsigned char i = 0; i < NR_OF_DRONES; i++){
 			if (i == AI_NAME){	//nicht zu mir selbst rangen
 				continue;
 			}
@@ -198,12 +226,17 @@ void ai_Task(void * arg) {
 			//if (timeSinceRanging >= 1/RANGING_FREQUENCY){
 			//	startRanging(i);											//falls diese über Schwellenwert --> neu Rangen
 			//}
+			if (ai_taskTicks - rangingState[i].lastRangingAi_Ticks >= 10*TASK_FREQUENCY)		//10s seit letztem Rangingvorgang abgelaufen --> erneut Starten, da Fehler erwartet
+				resetRangingStateRequestee(i);
 
 			if (!PASSIVE_MODE && !rangingState[i].distanceRequested & !rangingState[i].requestTransmitTimestampPending & !rangingState[i].processingTimePending){
 				startRanging(i);
 			}
+		}
+		if (!PASSIVE_MODE)
+			ai_showDistance(rangingState[1].distance);
 
-		vTaskDelay(M2T(1000/TASK_FREQUENCY));*/
+		vTaskDelay(M2T(1000/TASK_FREQUENCY));
 
 	}
 	vTaskDelete(0);

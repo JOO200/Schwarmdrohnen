@@ -217,6 +217,10 @@ bool setup_dwm1000_communication(){
 
 bool DWM1000_PollIRQPin(){
 	uint8_t irqStatus = GPIO_ReadInputDataBit(GPIO_PORT, GPIO_PIN_IRQ);
+
+	if (DWM1000_IRQ_FLAG)
+		return true;
+
 	if (irqStatus == Bit_SET){
 		DWM1000_IRQ_FLAG = true;
 		return true;
@@ -230,7 +234,7 @@ bool dwm1000_SendData(st_message_t *message) {
 	spiSetSpeed(dwm, dwSpiSpeedLow);
 
 	dwNewTransmit(dwm);
-	dwSetData(dwm, (uint8_t*)message, sizeof(*message));
+	dwSetData(dwm, (uint8_t*)message, sizeof(st_message_t));
 
 	dwStartTransmit(dwm);
 

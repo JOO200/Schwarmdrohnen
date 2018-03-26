@@ -68,7 +68,8 @@ typedef struct {
 	bool processingTimePending;//				//awaiting processing time
 	
 	dwTime_t lastRanging;							//time of last ranging
-	float distance;									//distance measured in meters
+	float distance;								//distance measured in meters
+	unsigned long lastRangingAi_Ticks;
 
 	//requestee times
 	dwTime_t requestTxTimestamp;
