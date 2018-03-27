@@ -239,7 +239,7 @@ static dwTime_t transmitTimeForSlot(int slot)
   return transmitTime;
 }
 
-void initiateRanging(dwDevice_t *dev)
+void initiateAiRanging(dwDevice_t *dev)
 {
   if (!options->useTdma || tdmaSynchronized) {
     if (options->useTdma) {
@@ -276,7 +276,7 @@ void initiateRanging(dwDevice_t *dev)
   dwStartTransmit(dev);
 }
 
-void sendLppShort(dwDevice_t *dev, lpsLppShortPacket_t *packet)
+void sendAiLppShort(dwDevice_t *dev, lpsLppShortPacket_t *packet)
 {
   dwIdle(dev);
 
@@ -352,11 +352,11 @@ static uint32_t twrTagOnEvent(dwDevice_t *dev, uwbEvent_t event)
 
       if (lpsGetLppShort(&lppShortPacket)) {
         lpp_transaction = true;
-        sendLppShort(dev, &lppShortPacket);
+        sendAiLppShort(dev, &lppShortPacket);
       } else {
         lpp_transaction = false;
         ranging_complete = false;
-        initiateRanging(dev);
+        initiateAiRanging(dev);
       }
       return MAX_TIMEOUT;
       break;

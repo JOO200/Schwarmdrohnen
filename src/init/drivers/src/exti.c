@@ -191,7 +191,7 @@ void __attribute__((weak)) EXTI7_Callback(void) { }
 void __attribute__((weak)) EXTI8_Callback(void) { }
 void __attribute__((weak)) EXTI9_Callback(void) { }
 void __attribute__((weak)) EXTI10_Callback(void) { }
-void __attribute__((weak)) EXTI11_Callback(void) { }
+//void __attribute__((weak)) EXTI11_Callback(void) { }
 void __attribute__((weak)) EXTI12_Callback(void) { }
 void __attribute__((weak)) EXTI13_Callback(void) { }
 void __attribute__((weak)) EXTI14_Callback(void) { }

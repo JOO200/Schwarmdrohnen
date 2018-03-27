@@ -167,6 +167,8 @@ Gleiche Bits wie bei System Event Status Register setzen( Bit7 und Bit 13)
 #define HIGH 0x1
 #define RX_TIMEOUT 1000
 
+extern uwbAlgorithm_t aiuwbTdoaTagAlgorith;
+
 bool DWM1000_IRQ_FLAG;
 
 bool DWM1000_PollIRQPin();

@@ -31,7 +31,26 @@ st_rangingState_t rangingState[NR_OF_DRONES];
 e_message_type_t lastMessageType;
 unsigned char lastMessageTarget;
 
+uint8_t FiFo_availible(st_buffer* fifo) {
+	if(fifo->read != fifo->write) return 1;
+	return 0;
+}
 
+uint8_t FiFo_read(st_buffer* fifo, st_message_t * message) {
+	if(fifo->read == fifo->write) return 0;
+	fifo->read++;
+	if(fifo->read >= BUFFER_SIZE) fifo->read = 0;
+	message = &(fifo->messages[fifo->read]);
+	return 1;
+}
+
+uint8_t FiFo_write(st_buffer* fifo, st_message_t * message) {
+	fifo->write++;
+	if(fifo->write == BUFFER_SIZE) fifo->write = 0;
+	memcpy(message, &(fifo->messages[fifo->write]), sizeof(st_message_t));
+	return 1;
+}
+/*
 void nop(){}
 
 //alle requesteeflags resetten um neuen Rangingvorgang einzuleiten
@@ -58,7 +77,7 @@ void resetRangingStateTarget(unsigned char requesteeID){
 void receiveHandler() {
 	
 	st_message_t message;
-	dwm1000_ReceiveData(&message);
+	FiFo_read(&fifo, &message);
 	if (message.targetID != AI_NAME)
 		return;
 
@@ -115,7 +134,7 @@ void receiveHandler() {
 	default:
 		break;
 	}
-}
+}*/
 
 void transmitDoneHandler(){
 	if (rangingState[lastMessageTarget].transmitProcessingTimePendingFlag && lastMessageType == IMMEDIATE_ANSWER) {
@@ -131,13 +150,13 @@ void transmitDoneHandler(){
 }
 
 
-
+/*
 //eventuell muessen args als void *
 void startRanging(unsigned char targetID) {
 	//requestMessage senden
 	rangingState[targetID].lastRangingAi_Ticks = ai_taskTicks;//_/			//awaiting sent interrupt
 
-	resetRangingStateRequestee(targetID);
+	resetRangingStateRequest(targetID);
 
 	dwm1000_requestDistance(targetID);
 
@@ -147,13 +166,13 @@ void startRanging(unsigned char targetID) {
 
 	lastMessageType = DISTANCE_REQUEST;
 	lastMessageTarget = targetID;
-}
+}*/
 
 
 bool initAi_Swarm() {
 	//UWB_Deck fuer Josy und Janik ((((neuerdings))) auch Nico)
 	//hier euer/unser init-shizzlel
-	setup_dwm1000_communication();		//HW-Setup
+	//setup_dwm1000_communication();		//HW-Setup
 
 
 	//...
@@ -166,8 +185,13 @@ void ai_Task(void * arg) {
 	//... lokale Vars, init
 	//bool transmitProcessingTimePendingFlag = 0;
 	//unsigned char distanceRequesterID;
+	systemWaitStart();
+	//ai_dwm1000Init((DeckInfo*)0);
 	if (ai_init == 0){
 		initAi_Swarm();
+
+		/*const DeckDriver * uwbDriver = deckFindDriverByName("bcDWM1000");
+		uwbDriver->init((DeckInfo*)NULL);*/
 		//testMessage.messageType = DISTANCE_REQUEST;
 		//dwm1000_SendData(&testMessage);
 		ai_init = 1;
@@ -175,7 +199,6 @@ void ai_Task(void * arg) {
 
 	//ai_showDistance(0.5f);
 	while (1) {
-		DWM1000_PollIRQPin();
 			/*testMessage.messageType = DISTANCE_REQUEST;
 			testMessage.senderID = 12;
 			testMessage.targetID = 5;
@@ -194,13 +217,16 @@ void ai_Task(void * arg) {
 			nop();
 		}*/
 
+		if(FiFo_availible(&fifo) == 1) {
+			// receiveHandler();
+		}
 		if (DWM1000_IRQ_FLAG){		//"ISR"
+			/*
 			DWM1000_IRQ_FLAG = false;
 			e_interrupt_type_t interruptType = dwm1000_EvalInterrupt();
 
 			switch (interruptType) {
 				case RX_DONE:
-					receiveHandler();
 					break;
 				case TX_DONE:
 					transmitDoneHandler();
@@ -210,10 +236,9 @@ void ai_Task(void * arg) {
 				default:
 					//Unhandled messaging errors
 					break;
-			}
+			}*/
 		}
-
-		for (unsigned char i = 0; i < NR_OF_DRONES; i++){
+		/*; i < NR_OF_DRONES; i++){
 			if (i == AI_NAME){	//nicht zu mir selbst rangen
 				continue;
 			}
@@ -232,9 +257,10 @@ void ai_Task(void * arg) {
 			if (!PASSIVE_MODE && !rangingState[i].distanceRequested & !rangingState[i].requestTransmitTimestampPending & !rangingState[i].processingTimePending){
 				startRanging(i);
 			}
-		}
+		}*/
+		/*
 		if (!PASSIVE_MODE)
-			ai_showDistance(rangingState[1].distance);
+			ai_showDistance(rangingState[1].distance);*/
 
 		vTaskDelay(M2T(1000/TASK_FREQUENCY));
 

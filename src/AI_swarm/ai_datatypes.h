@@ -4,6 +4,7 @@
 #include "ai_config.h"
 #include "stddef.h"	//f�r z.B. NULL muss dies includiert werden
 #include "libdw1000Types.h"
+#include "locodeck.h"
 
 
 //Rolle der Drohne
@@ -53,13 +54,49 @@ typedef enum {
 	RX_INT_TIMEOUT,
 } e_interrupt_type_t;
 
+/*
 typedef struct {
 	unsigned char senderID;						//Byte Name des Senders
 	unsigned char targetID;						//Byte Name des Ziels
 	e_message_type_t messageType;		//Art der Nachricht
 	dwTime_t time;						//je nach Message time untersch. Bedeutung
+	//TODO: den Quatsch hier mit unions machen
 	st_distances_t distanceTable;		//Tabelle mit Distanzen
-} st_message_t;
+} st_message_t;*/
+
+typedef struct st_message_s {
+	locoAddress_t destAddress;						// Byte 0-8:		Dest Address
+	locoAddress_t sourceAddress;					// Byte 1-15:		Source Address
+	e_message_type_t messageType;					// Byte 16:			Message Type
+
+	uint8_t payload[64];
+	uint8_t sequence;
+	uint16_t pan;
+	union {
+		struct {
+			st_distances_t distanceTable;			// Byte 0-8:		Dest Address
+			dwTime_t timestamp;						// Byte 0-8:		Dest Address
+			uint8_t	unused[32];
+		} st_distance_broadcast_s;
+		struct {
+			union {
+				uint16_t fcf;
+				struct {
+					uint16_t type:3;
+					uint16_t security:1;
+					uint16_t framePending:1;
+					uint16_t ack:1;
+					uint16_t ipan:1;
+					uint16_t reserved:3;
+					uint16_t destAddrMode:2;
+					uint16_t version:2;
+					uint16_t srcAddrMode:2;
+				  } fcf_s;
+			};
+		} distance_measurement_s;
+
+	};
+} __attribute__((packed)) st_message_t;
 
 typedef struct {
 	//---requestee
@@ -85,5 +122,12 @@ typedef struct {
 	dwTime_t immediateAnswerTxTimestamp;
 
 } st_rangingState_t;
+
+#define BUFFER_SIZE 8
+typedef struct {
+	st_message_t messages[BUFFER_SIZE];
+	uint8_t read;
+	uint8_t write;
+} st_buffer;
 
 #endif
