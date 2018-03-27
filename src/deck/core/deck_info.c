@@ -187,7 +187,6 @@ static void enumerateDecks(void)
                 "no deck drivers will be initialised\n");
     nDecks = 0;
   }
-
   for (i = 0; i < nDecks; i++)
   {
     DECK_INFO_DBG_PRINT("Enumerating deck %i\n", i);
@@ -211,9 +210,11 @@ static void enumerateDecks(void)
     }
     else
     {
+
       DEBUG_PRINT("Reading deck nr:%d [FAILED]. "
                   "No driver will be initialized!\n", i);
       noError = false;
+
     }
   }
 

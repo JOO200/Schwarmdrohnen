@@ -40,7 +40,7 @@
 #include "stabilizer_types.h"
 
 #define SPEED_OF_LIGHT 299792458.0
-// Timestamp counter frequency
+// Timestamp counter frequencys
 #define LOCODECK_TS_FREQ (499.2e6 * 128)
 
 

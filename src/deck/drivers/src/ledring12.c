@@ -146,7 +146,7 @@ static void ai_showDistanceEffect(uint8_t buffer[][3], bool reset)
 		ws2812Send(buffer, NBR_LEDS);
 }
 
-void ai_showDistance(float AbstandInMeter)
+void ai_showDistance(float AbstandInMeter, uint8_t red, uint8_t yellow, uint8_t blue)
 {
 	/*Aufbau:*/
 	float AbstandInCM = AbstandInMeter*100;
@@ -160,9 +160,9 @@ void ai_showDistance(float AbstandInMeter)
 	{
 		if (i*10 <= AbstandInCM)			//LEDs anschalten
 		{
-			ai_CurrentColor[i][0] = 0x10;
-			ai_CurrentColor[i][1] = 0x00;
-			ai_CurrentColor[i][2] = 0x00;
+			ai_CurrentColor[i][0] = red;
+			ai_CurrentColor[i][1] = yellow;
+			ai_CurrentColor[i][2] = blue;
 		}
 	}
 	ai_showDistanceEffect(ai_CurrentColor, 0);

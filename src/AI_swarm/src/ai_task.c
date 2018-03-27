@@ -34,7 +34,26 @@ st_rangingState_t rangingState[NR_OF_DRONES];
 e_message_type_t lastMessageType;
 unsigned char lastMessageTarget;
 
+uint8_t FiFo_availible(st_buffer* fifo) {
+	if(fifo->read != fifo->write) return 1;
+	return 0;
+}
 
+uint8_t FiFo_read(st_buffer* fifo, st_message_t * message) {
+	if(fifo->read == fifo->write) return 0;
+	fifo->read++;
+	if(fifo->read >= BUFFER_SIZE) fifo->read = 0;
+	message = &(fifo->messages[fifo->read]);
+	return 1;
+}
+
+uint8_t FiFo_write(st_buffer* fifo, st_message_t * message) {
+	fifo->write++;
+	if(fifo->write == BUFFER_SIZE) fifo->write = 0;
+	memcpy(message, &(fifo->messages[fifo->write]), sizeof(st_message_t));
+	return 1;
+}
+/*
 void nop(){}
 
 //alle requesteeflags resetten um neuen Rangingvorgang einzuleiten
@@ -61,7 +80,7 @@ void resetRangingStateTarget(unsigned char requesteeID){
 void receiveHandler() {
 	
 	st_message_t message;
-	dwm1000_ReceiveData(&message);
+	FiFo_read(&fifo, &message);
 	if (message.targetID != AI_NAME)
 		return;
 
@@ -118,7 +137,7 @@ void receiveHandler() {
 	default:
 		break;
 	}
-}
+}*/
 
 void transmitDoneHandler(){
 	if (rangingState[lastMessageTarget].transmitProcessingTimePendingFlag && lastMessageType == IMMEDIATE_ANSWER) {
@@ -134,13 +153,13 @@ void transmitDoneHandler(){
 }
 
 
-
+/*
 //eventuell muessen args als void *
 void startRanging(unsigned char targetID) {
 	//requestMessage senden
 	rangingState[targetID].lastRanginInAITicks = ai_taskTicks;//_/			//awaiting sent interrupt
 
-	resetRangingStateRequestee(targetID);
+	resetRangingStateRequest(targetID);
 
 	dwm1000_requestDistance(targetID);
 
@@ -150,7 +169,7 @@ void startRanging(unsigned char targetID) {
 
 	lastMessageType = DISTANCE_REQUEST;
 	lastMessageTarget = targetID;
-}
+}*/
 
 void resetRequestee(unsigned char targetID){
 	rangingState[targetID].requestTxTimestamp.full = 0;
@@ -167,7 +186,7 @@ void resetTarget(unsigned char requesteeID){
 bool initAi_Swarm() {
 	//UWB_Deck fuer Josy und Janik ((((neuerdings))) auch Nico)
 	//hier euer/unser init-shizzlel
-	setup_dwm1000_communication();		//HW-Setup
+	//setup_dwm1000_communication();		//HW-Setup
 
 
 	//...
@@ -180,8 +199,13 @@ void ai_Task(void * arg) {
 	//... lokale Vars, init
 	//bool transmitProcessingTimePendingFlag = 0;
 	//unsigned char distanceRequesterID;
+	systemWaitStart();
+	//ai_dwm1000Init((DeckInfo*)0);
 	if (ai_init == 0){
 		initAi_Swarm();
+
+		const DeckDriver * uwbDriver = deckFindDriverByName("bcDWM1000");
+		uwbDriver->init((DeckInfo*)NULL);
 		//testMessage.messageType = DISTANCE_REQUEST;
 		//dwm1000_SendData(&testMessage);
 		ai_init = 1;
@@ -295,72 +319,6 @@ void ai_Task(void * arg) {
 	}
 	vTaskDelete(0);
 }
-
-/*
-DWM1000_PollIRQPin();
-			/*testMessage.messageType = DISTANCE_REQUEST;
-			testMessage.senderID = 12;
-			testMessage.targetID = 5;
-			dwm1000_SendData(&testMessage);
-			vTaskDelay(M2T(500));*/
-		//... repetetives
-
-		/*if (DWM1000_IRQ_FLAG){
-			nop();
-			DWM1000_IRQ_FLAG = 0;
-			e_interrupt_type_t intType = dwm1000_EvalInterrupt();
-			testMessage.messageType = UNDEFINED;
-			dwm1000_ReceiveData(&testMessage);
-			//irqCounterLog = DWM1000_IRQ_Counter;
-			//logMSGType = testMessage.messageType;
-			nop();
-		}*/
-
-		/*if (DWM1000_IRQ_FLAG){		//"ISR"
-			DWM1000_IRQ_FLAG = false;
-			e_interrupt_type_t interruptType = dwm1000_EvalInterrupt();
-
-			switch (interruptType) {
-				case RX_DONE:
-					receiveHandler();
-					break;
-				case TX_DONE:
-					transmitDoneHandler();
-					break;
-				case FAILED_EVAL:
-					break;
-				default:
-					//Unhandled messaging errors
-					break;
-			}
-		}
-
-		for (unsigned char i = 0; i < NR_OF_DRONES; i++){
-			if (i == AI_NAME){	//nicht zu mir selbst rangen
-				continue;
-			}
-
-
-			if (rangingState[i].distanceRequested == TRUE)
-				dwm1000_immediateDistanceAnswer(i);
-
-			//dwTime_t timeSinceRanging = time.now - lastRanging[i];		//Zeit bestimmen, seid der Entfernung zu dieser Drohne das letzte mal bestimmt wurde
-			//if (timeSinceRanging >= 1/RANGING_FREQUENCY){
-			//	startRanging(i);											//falls diese über Schwellenwert --> neu Rangen
-			//}
-			if (ai_taskTicks - rangingState[i].lastRangingAi_Ticks >= 10*TASK_FREQUENCY)		//10s seit letztem Rangingvorgang abgelaufen --> erneut Starten, da Fehler erwartet
-				resetRangingStateRequestee(i);
-
-			if (!PASSIVE_MODE && !rangingState[i].distanceRequested & !rangingState[i].requestTransmitTimestampPending & !rangingState[i].processingTimePending){
-				startRanging(i);
-			}
-		}
-		if (!PASSIVE_MODE)
-			ai_showDistance(rangingState[1].distance);
-
-		vTaskDelay(M2T(1000/TASK_FREQUENCY));
-
-*/
 
 
 

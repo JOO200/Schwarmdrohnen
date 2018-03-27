@@ -54,7 +54,9 @@
 #include "locodeck.h"
 #include "lpsTdma.h"
 
-#if LPS_TDOA_ENABLE
+#if 1
+#include "../../../AI_swarm/Deck_Header/ai_dwm1000_driver.h"
+#elif LPS_TDOA_ENABLE
   #include "lpsTdoaTag.h"
 #else
   #include "lpsTwrTag.h"
@@ -145,8 +147,9 @@ point_t* locodeckGetAnchorPosition(uint8_t anchor)
 {
   return &algoOptions.anchorPosition[anchor];
 }
-
-#if LPS_TDOA_ENABLE
+#if 1
+static uwbAlgorithm_t *algorithm = &aiuwbTdoaTagAlgorith;
+#elif LPS_TDOA_ENABLE
 static uwbAlgorithm_t *algorithm = &uwbTdoaTagAlgorithm;
 #else
 static uwbAlgorithm_t *algorithm = &uwbTwrTagAlgorithm;
@@ -175,9 +178,9 @@ static void rxTimeoutCallback(dwDevice_t * dev) {
   timeout = algorithm->onEvent(dev, eventReceiveTimeout);
 }
 
-// static void rxfailedcallback(dwDevice_t *dev) {
-//   timeout = algorithm->onEvent(dev, eventReceiveFailed);
-// }
+static void rxfailedcallback(dwDevice_t *dev) {
+ 	 timeout = algorithm->onEvent(dev, eventReceiveFailed);
+}
 
 static void updateTagTdmaSlot(lpsAlgoOptions_t * options)
 {
@@ -264,12 +267,11 @@ static void spiRead(dwDevice_t* dev, const void *header, size_t headerLength,
   digitalWrite(CS_PIN, HIGH);
   spiEndTransaction();
 }
-//Für Schwarmdrohnen auskommentiert
-//#if LOCODECK_USE_ALT_PINS
+#if LOCODECK_USE_ALT_PINS
 	void __attribute__((used)) EXTI5_Callback(void)
-//#else
-//	void __attribute__((used)) EXTI11_Callback(void)
-//#endif
+#else
+	void __attribute__((used)) EXTI11_Callback(void)
+#endif
 	{
 	  portBASE_TYPE  xHigherPriorityTaskWoken = pdFALSE;
 
@@ -291,7 +293,7 @@ static void spiSetSpeed(dwDevice_t* dev, dwSpiSpeed_t speed)
   }
   else if (speed == dwSpiSpeedHigh)
   {
-    spiSpeed = SPI_BAUDRATE_21MHZ;
+    spiSpeed = SPI_BAUDRATE_2MHZ;
   }
 }
 
@@ -306,6 +308,8 @@ static dwOps_t dwOps = {
   .spiSetSpeed = spiSetSpeed,
   .delayms = delayms,
 };
+
+
 
 /*********** Deck driver initialization ***************/
 
@@ -366,6 +370,7 @@ static void dwm1000Init(DeckInfo *info)
   dwAttachSentHandler(dwm, txCallback);
   dwAttachReceivedHandler(dwm, rxCallback);
   dwAttachReceiveTimeoutHandler(dwm, rxTimeoutCallback);
+  dwAttachReceiveFailedHandler(dwm, rxfailedcallback);
 
   dwNewConfiguration(dwm);
   dwSetDefaults(dwm);
