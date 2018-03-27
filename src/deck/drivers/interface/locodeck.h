@@ -38,10 +38,9 @@
 
 #include "libdw1000.h"
 #include "stabilizer_types.h"
-#include "deck_core.h"
 
 #define SPEED_OF_LIGHT 299792458.0
-// Timestamp counter frequency
+// Timestamp counter frequencys
 #define LOCODECK_TS_FREQ (499.2e6 * 128)
 
 
@@ -120,9 +119,6 @@ bool lpsGetLppShort(lpsLppShortPacket_t* shortPacket);
 
 // Handle incoming short LPP packets from the UWB system
 void lpsHandleLppShortPacket(uint8_t srcId, uint8_t *data, int length);
-
-// Init
-void ai_dwm1000Init(DeckInfo *info);
 
 // LPP Packet types and format
 #define LPP_HEADER_SHORT_PACKET 0xF0

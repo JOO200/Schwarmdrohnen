@@ -190,8 +190,8 @@ void ai_Task(void * arg) {
 	if (ai_init == 0){
 		initAi_Swarm();
 
-		/*const DeckDriver * uwbDriver = deckFindDriverByName("bcDWM1000");
-		uwbDriver->init((DeckInfo*)NULL);*/
+		const DeckDriver * uwbDriver = deckFindDriverByName("bcDWM1000");
+		uwbDriver->init((DeckInfo*)NULL);
 		//testMessage.messageType = DISTANCE_REQUEST;
 		//dwm1000_SendData(&testMessage);
 		ai_init = 1;
@@ -262,7 +262,7 @@ void ai_Task(void * arg) {
 		if (!PASSIVE_MODE)
 			ai_showDistance(rangingState[1].distance);*/
 
-		vTaskDelay(M2T(1000/TASK_FREQUENCY));
+		vTaskDelay(M2T(100));
 
 	}
 	vTaskDelete(0);

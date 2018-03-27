@@ -68,31 +68,14 @@ typedef struct st_message_s {
 	locoAddress_t destAddress;						// Byte 0-8:		Dest Address
 	locoAddress_t sourceAddress;					// Byte 1-15:		Source Address
 	e_message_type_t messageType;					// Byte 16:			Message Type
-
-	uint8_t payload[64];
-	uint8_t sequence;
-	uint16_t pan;
-	union {
+	union {/*
 		struct {
 			st_distances_t distanceTable;			// Byte 0-8:		Dest Address
 			dwTime_t timestamp;						// Byte 0-8:		Dest Address
-			uint8_t	unused[32];
-		} st_distance_broadcast_s;
+		} st_distance_broadcast_s;*/
 		struct {
-			union {
-				uint16_t fcf;
-				struct {
-					uint16_t type:3;
-					uint16_t security:1;
-					uint16_t framePending:1;
-					uint16_t ack:1;
-					uint16_t ipan:1;
-					uint16_t reserved:3;
-					uint16_t destAddrMode:2;
-					uint16_t version:2;
-					uint16_t srcAddrMode:2;
-				  } fcf_s;
-			};
+			dwTime_t receiveTimestamp;
+			dwTime_t sendTimestamp;
 		} distance_measurement_s;
 
 	};

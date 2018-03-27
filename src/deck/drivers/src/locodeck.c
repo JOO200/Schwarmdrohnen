@@ -178,9 +178,9 @@ static void rxTimeoutCallback(dwDevice_t * dev) {
   timeout = algorithm->onEvent(dev, eventReceiveTimeout);
 }
 
-// static void rxfailedcallback(dwDevice_t *dev) {
-//   timeout = algorithm->onEvent(dev, eventReceiveFailed);
-// }
+static void rxfailedcallback(dwDevice_t *dev) {
+ 	 timeout = algorithm->onEvent(dev, eventReceiveFailed);
+}
 
 static void updateTagTdmaSlot(lpsAlgoOptions_t * options)
 {
@@ -293,7 +293,7 @@ static void spiSetSpeed(dwDevice_t* dev, dwSpiSpeed_t speed)
   }
   else if (speed == dwSpiSpeedHigh)
   {
-    spiSpeed = SPI_BAUDRATE_21MHZ;
+    spiSpeed = SPI_BAUDRATE_2MHZ;
   }
 }
 
@@ -370,6 +370,7 @@ static void dwm1000Init(DeckInfo *info)
   dwAttachSentHandler(dwm, txCallback);
   dwAttachReceivedHandler(dwm, rxCallback);
   dwAttachReceiveTimeoutHandler(dwm, rxTimeoutCallback);
+  dwAttachReceiveFailedHandler(dwm, rxfailedcallback);
 
   dwNewConfiguration(dwm);
   dwSetDefaults(dwm);
