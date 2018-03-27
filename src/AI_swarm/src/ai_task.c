@@ -5,13 +5,16 @@
 #include "../Deck_Header/ai_dwm1000_driver.h"
 #include "../ai_config.h"
 #include "ledring12.h"
+#include "ai_manageInterrupts.h"
 
 #include "worker.h"
 
 /* FreeRtos includes */
 #include "FreeRTOS.h"
 
-unsigned long ai_taskTicks;
+uint64_t ai_taskTicks;
+
+
 
 bool ai_init = 0;
 st_message_t testMessage;
@@ -135,7 +138,7 @@ void transmitDoneHandler(){
 //eventuell muessen args als void *
 void startRanging(unsigned char targetID) {
 	//requestMessage senden
-	rangingState[targetID].lastRangingAi_Ticks = ai_taskTicks;//_/			//awaiting sent interrupt
+	rangingState[targetID].lastRanginInAITicks = ai_taskTicks;//_/			//awaiting sent interrupt
 
 	resetRangingStateRequestee(targetID);
 
@@ -147,6 +150,17 @@ void startRanging(unsigned char targetID) {
 
 	lastMessageType = DISTANCE_REQUEST;
 	lastMessageTarget = targetID;
+}
+
+void resetRequestee(unsigned char targetID){
+	rangingState[targetID].requestTxTimestamp.full = 0;
+	rangingState[targetID].immediateAnswerRxTimestamp.full = 0;
+	rangingState[targetID].tRound.full = 0;
+	rangingState[targetID].rangingDuration = 0;
+}
+
+void resetTarget(unsigned char requesteeID){
+	rangingState[requesteeID].
 }
 
 
@@ -175,7 +189,115 @@ void ai_Task(void * arg) {
 
 	//ai_showDistance(0.5f);
 	while (1) {
-		DWM1000_PollIRQPin();
+		for (unsigned char i = 0; i < NR_OF_DRONES; i++){
+			if (i == AI_NAME)
+				continue;
+
+			//Statemachine für jeden anderen Teilnehmer durchgehen
+			//Statemachine, bei der diese Drohne aktiv/requestee ist
+			if (rangingState[i].rangingDuration > AI_TASKTICKS_TO_NEW_RANGING)
+			switch (rangingState[i].requesteeState) {
+				case REQ_STATE_IDLE:				//kein raging Prozess als requestee mit i im Gang
+					if ((ai_taskTicks - rangingState[i].lastRanginInAITicks) >= AI_TASKTICKS_TO_NEW_RANGING){
+						resetRequestee(i);
+						startRanging(i);
+						rangingState[i].requesteeState = REQ_STATE_REQUESTED;
+					}
+					rangingState[i].rangingDuration++;
+					break;
+
+				case REQ_STATE_REQUESTED:			//TxTimestamp von DistanceRequest lesen und abspeichern
+					bool distReqTxTimeDone;
+					bool immediateAnswerDone;
+					if (lookForRequestTxTs(i)){
+						dwTime_t reqTx = getReqTxTs(i);
+						rangingState[i].requestTxTimestamp = reqTx;
+						distReqTxTimeDone = true;
+						rangingState[i].requesteeState = REQ_STATE_IMMANSWERRECEIVE;
+					}
+					rangingState[i].rangingDuration++;
+					break;
+
+				case REQ_STATE_IMMANSWERRECEIVE:	// Immediate Answer RxTimestamp speichern
+					if (lookForImmedatateAnswerRxTs(i)){
+						dwTime_t ImAnRx = getImmediateAnswerRxTs(i);
+						rangingState[i].immediateAnswerTxTimestamp = ImAnRx;
+						immediateAnswerDone = true;
+						rangingState[i].requesteeState = REQ_STATE_CALCTROUND;
+					}
+					rangingState[i].rangingDuration++;
+					break;
+
+				case REQ_STATE_CALCTROUND:			//Tround berechnen und in rangingState eintragen
+					rangingState[i].tRound.full = rangingState[i].immediateAnswerRxTimestamp.full - rangingState[i].requestTxTimestamp.full;
+					rangingState[i].requesteeState = REQ_STATE_CALCDIST;
+					rangingState[i].rangingDuration++;
+					break;
+
+				case REQ_STATE_CALCDIST:			//Processing Time empfangen und Distanz berechnen --> dann Sprung auf IDLE
+					if (lookForProcessingTime(i)){
+						dwTime_t procTime = getProcessingTime(i);
+						double tdistDWM, troundDWM, tprocessingDWM, tdist;
+						troundDWM = rangingState[i].immediateAnswerRxTimestamp.low32 - rangingState[i].requestTxTimestamp.low32;
+						tprocessingDWM = procTime.low32;		//da aktuelle message processing time schickt ist diese hier zu entnehmen
+						tdistDWM = 0.5*(troundDWM - tprocessingDWM);
+						tdist = tdistDWM / LOCODECK_TS_FREQ;		//Umrechnung von DWM1000 Zeiteinheit in Sekunden
+						rangingState[i].distance = SPEED_OF_LIGHT * tdist;
+						rangingState[i].requesteeState = REQ_STATE_IDLE;
+
+						rangingState[i].lastRanginInAITicks = rangingState[i].rangingDuration;
+					}
+					rangingState[i].requesteeState = REQ_STATE_IDLE;
+					rangingState[i].rangingDuration++;
+					break;
+
+				default:
+					rangingState[i].requesteeState = REQ_STATE_IDLE;
+					break;
+			}
+
+			//Statemachine, bei der diese Drohne passiv/target ist
+			switch (rangingState[i].targetState) {
+				case TARGET_STATE_IDLE:				//von i kein Ranging angefordert
+					if (lookForImmedatateAnswerRxTs(i)){
+						resetTarget(i);
+						rangingState[i].targetState = TARGET_STATE_DISTREQUESTED;
+					}
+					break;
+
+				case TARGET_STATE_DISTREQUESTED:
+					st_message_t immediateAnswerMSG;
+					immediateAnswerMSG.messageType = IMMEDIATE_ANSWER;
+					immediateAnswerMSG.senderID = AI_NAME;
+					immediateAnswerMSG.targetID = i;
+					dwm1000_SendData(&immediateAnswerMSG);
+					rangingState[i].targetState = TARGET_STATE_TPROCESSING;
+					break;
+
+				case TARGET_STATE_TPROCESSING:
+					if (lookForImmediatateAnswerTxTs(i)){
+						st_message_t processingTime;
+						processingTime.messageType = PROCESSING_TIME;
+						processingTime.senderID = AI_NAME;
+						processingTime.targetID = i;
+						processingTime.time = getImmediateAnswerTxTs(i);
+						dwm1000_SendData(&processingTime);
+						rangingState[i].targetState = TARGET_STATE_IDLE;
+					}
+					break;
+
+				default:
+					rangingState[i].targetState = TARGET_STATE_IDLE;
+					break;
+			}
+		}
+		vTaskDelay(M2T(1000/TASK_FREQUENCY));
+	}
+	vTaskDelete(0);
+}
+
+/*
+DWM1000_PollIRQPin();
 			/*testMessage.messageType = DISTANCE_REQUEST;
 			testMessage.senderID = 12;
 			testMessage.targetID = 5;
@@ -194,7 +316,7 @@ void ai_Task(void * arg) {
 			nop();
 		}*/
 
-		if (DWM1000_IRQ_FLAG){		//"ISR"
+		/*if (DWM1000_IRQ_FLAG){		//"ISR"
 			DWM1000_IRQ_FLAG = false;
 			e_interrupt_type_t interruptType = dwm1000_EvalInterrupt();
 
@@ -238,9 +360,7 @@ void ai_Task(void * arg) {
 
 		vTaskDelay(M2T(1000/TASK_FREQUENCY));
 
-	}
-	vTaskDelete(0);
-}
+*/
 
 
 

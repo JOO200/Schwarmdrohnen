@@ -3,11 +3,11 @@
 #define NR_OF_DRONES 2
 
 //Name der Drohne bei jder Drohne unterschiedlich defined
-#define AI_NAME 0 // 0;1;2;3;...
+#define AI_NAME (uint8_t)0 // 0;1;2;3;...
 #define AI_ROLE AI_MASTER
 
 #define MAX_HISTORY 0
-
+#define AI_TASKTICKS_TO_NEW_RANGING (uint64_t)1000	//ai_Task muss diese Anzahl an Ticks durchlaufen um neuen Rangingvorgang zu starten
 #define TASK_FREQUENCY 100000000 //Frequenz in Hz
 
 

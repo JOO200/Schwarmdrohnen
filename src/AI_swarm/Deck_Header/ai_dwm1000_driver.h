@@ -206,9 +206,6 @@ nameOfOtherDWM - PAN (Personal Area Network) Identifier (8Byte) des anderen DWMs
 e_interrupt_type_t dwm1000_EvalInterrupt();
 /*Gibt zurueck aus welchem Grund der Interrupt (IRQ) ausgeloest wurde*/
 
-void dwm1000_sendProcessingTime(char id_requester);
-/*Sendet die Zeit die zwischen Eingang der Request-Distance und Immediate-Answer vergangen ist*/
-
 //void dwm1000_init();
 /*
 beschreibt alle Register mit den in "newConfig" f�r diese enthaltenen Werten

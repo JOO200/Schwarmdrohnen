@@ -61,28 +61,54 @@ typedef struct {
 	st_distances_t distanceTable;		//Tabelle mit Distanzen
 } st_message_t;
 
+typedef enum {
+	REQ_STATE_IDLE = 0,
+	REQ_STATE_REQUESTED,
+	REQ_STATE_IMMANSWERRECEIVE,
+	REQ_STATE_CALCTROUND,
+	REQ_STATE_CALCDIST,
+} e_requestee_state_t;
+
+typedef enum {
+	TARGET_STATE_IDLE = 0,
+	TARGET_STATE_DISTREQUESTED,
+	TARGET_STATE_TPROCESSING,
+} e_target_state_t;
+
 typedef struct {
-	//---requestee
-	bool requestTransmitTimestampPending;//_/			//awaiting sent interrupt
-	bool immediateAnswerPending;//_/					//if immediate answer hasnt been received jet
-	bool processingTimePending;//				//awaiting processing time
-	
-	dwTime_t lastRanging;							//time of last ranging
-	float distance;								//distance measured in meters
-	unsigned long lastRangingAi_Ticks;
+	float distance;							//distance measured in meters
+	uint64_t lastRanginInAITicks;
+	uint64_t rangingDuration;			//um zu prüfen, ob Ranging abgebrochen werden muss, da irgendetwas schief lief
 
 	//requestee times
 	dwTime_t requestTxTimestamp;
 	dwTime_t immediateAnswerRxTimestamp;
 	dwTime_t tRound;
 
+	//target times
+	dwTime_t processingTime;
+	dwTime_t requestRxTimestamp;
+	dwTime_t immediateAnswerTxTimestamp;
+
+
+	e_requestee_state_t requesteeState;		//state if this is requestee
+	e_target_state_t targetState;			//state if this is target
+
+
+
+
+	//---requestee
+	bool requestTransmitTimestampPending;//_/			//awaiting sent interrupt
+	bool immediateAnswerPending;//_/					//if immediate answer hasnt been received jet
+	bool processingTimePending;//				//awaiting processing time
+
+
+
 	//---target
 	bool distanceRequested;//_/						//distance requested by requestee (this is target)
 	bool transmitProcessingTimePendingFlag;//_/
 
-	//target timestamps
-	dwTime_t requestRxTimestamp;
-	dwTime_t immediateAnswerTxTimestamp;
+
 
 } st_rangingState_t;
 
