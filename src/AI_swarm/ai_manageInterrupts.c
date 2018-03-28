@@ -22,7 +22,7 @@ dwTime_t getReqRxTs(uint8_t ID){
 	return reqRxTs[ID];
 }
 
-dwTime_t setReqRxTs(uint8_t ID, dwTime_t reqRxTsInput){
+void setReqRxTs(uint8_t ID, dwTime_t reqRxTsInput){
 	reqRxTs[ID] = reqRxTsInput;
 	requestRxTsNew[ID] = true;
 }
@@ -42,8 +42,8 @@ dwTime_t getReqTxTs(uint8_t ID){
 	return reqTxTs[ID];
 }
 
-dwTime_t setReqTxTs(uint8_t ID, dwTime_t reqTxTsInput){
-	reqTxTs[ID] = reqTxTsInp;
+void setReqTxTs(uint8_t ID, dwTime_t reqTxTsInput){
+	reqTxTs[ID] = reqTxTsInput;
 	requestTxTsNew[ID] = true;
 }
 
@@ -60,12 +60,12 @@ bool lookForImmedatateAnswerRxTs(uint8_t ID){
 
 dwTime_t immediateAnswerRxTs[NR_OF_DRONES];
 dwTime_t getImmediateAnswerRxTs(uint8_t ID){
-	return immediateAnswerRxTs;
+	return immediateAnswerRxTs[ID];
 }
 
-dwTime_t setImmediateAnswerRxTs(uint8_t ID, dwTime_t immAnsRxTs){
+void setImmediateAnswerRxTs(uint8_t ID, dwTime_t immAnsRxTs){
 	immediateAnswerRxTs[ID] = immAnsRxTs;
-	immediateAnswerRxTs[ID] = true;
+	immediateAnswerRxTsNew[ID] = true;
 }
 
 
@@ -81,7 +81,7 @@ bool lookForImmediatateAnswerTxTs(uint8_t ID){
 
 dwTime_t immediateAnswerTxTs[NR_OF_DRONES];
 dwTime_t getImmediateAnswerTxTs(uint8_t ID){
-	return immediateAnswerTxTs;
+	return immediateAnswerTxTs[ID];
 }
 
 void setImmediateAnswerTxTs(uint8_t ID, dwTime_t immAnsTxTs){
@@ -89,6 +89,25 @@ void setImmediateAnswerTxTs(uint8_t ID, dwTime_t immAnsTxTs){
 	immediateAnswerTxTsNew[ID] = true;
 }
 
+//------ACK
+bool lookForAckAnswerTxTsNew[NR_OF_DRONES];
+dwTime_t ackAnswerTxTs[NR_OF_DRONES];
+bool lookForAckAnswerTxTs(uint8_t ID) {
+	if(lookForAckAnswerTxTsNew[ID]) {
+		lookForAckAnswerTxTsNew[ID] = false;
+		return true;
+	}
+	return false;
+}
+
+void setAckAnswerTxTs(uint8_t ID, dwTime_t time)  {
+	ackAnswerTxTs[ID] = time;
+	lookForAckAnswerTxTsNew[ID] = true;
+}
+
+dwTime_t getAckAnswerTxTs(uint8_t ID) {
+	return ackAnswerTxTs[ID];
+}
 
 //------Processing Time
 bool processingTimeNew[NR_OF_DRONES];
@@ -102,10 +121,10 @@ bool lookForProcessingTime(uint8_t ID){
 
 dwTime_t processingTime[NR_OF_DRONES];
 dwTime_t getProcessingTime(uint8_t ID){
-	return processingTime;
+	return processingTime[ID];
 }
 
-void setProessingTime(uint8_t ID, dwTime_t procTime){
+void setProcessingTime(uint8_t ID, dwTime_t procTime){
 	processingTime[ID] = procTime;
 	processingTimeNew[ID] = true;
 }

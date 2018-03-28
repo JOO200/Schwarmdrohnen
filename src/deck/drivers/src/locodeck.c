@@ -293,7 +293,7 @@ static void spiSetSpeed(dwDevice_t* dev, dwSpiSpeed_t speed)
   }
   else if (speed == dwSpiSpeedHigh)
   {
-    spiSpeed = SPI_BAUDRATE_2MHZ;
+    spiSpeed = SPI_BAUDRATE_21MHZ;
   }
 }
 
@@ -375,6 +375,7 @@ static void dwm1000Init(DeckInfo *info)
   dwNewConfiguration(dwm);
   dwSetDefaults(dwm);
   dwEnableMode(dwm, MODE_SHORTDATA_FAST_ACCURACY);
+  dwReceivePermanently(dwm, true);
   dwSetChannel(dwm, CHANNEL_2);
   dwUseSmartPower(dwm, true);
   dwSetPreambleCode(dwm, PREAMBLE_CODE_64MHZ_9);

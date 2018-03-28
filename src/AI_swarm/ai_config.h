@@ -8,7 +8,7 @@
 
 #define MAX_HISTORY 0
 #define AI_TASKTICKS_TO_NEW_RANGING (uint64_t)1000	//ai_Task muss diese Anzahl an Ticks durchlaufen um neuen Rangingvorgang zu starten
-#define TASK_FREQUENCY 100000000 //Frequenz in Hz
+#define TASK_FREQUENCY 100 //Frequenz in Hz
 
 
 //Taskconfig

@@ -24,6 +24,7 @@ Sollten keine Funktionsaenderungen des DWM1000 gewuenscht sein, sollte dieser Dr
 #include "log.h"
 #include "param.h"
 #include "nvicconf.h"
+#include "locodeck.h"
 
 //#define BaudRate SPI_BAUDRATE_3MHZ		//hier auch 11.5, 5.25, 2.625, 1.3125 auswaehlbar -- 21MHZ --> (uint16_t)0x0008
 #define SPI_BAUDRATE_21MHZ  SPI_BaudRatePrescaler_4     // 21MHz
@@ -221,4 +222,6 @@ void dwm1000_immediateDistanceAnswer(char id_requester);
 dwTime_t dwm1000_getRxTimestamp();
 
 dwTime_t dwm1000_getTxTimestamp();
+
+void initiateAiRanging(uint8_t target);
 #endif

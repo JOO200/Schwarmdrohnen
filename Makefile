@@ -103,7 +103,7 @@ CFLAGS += -DUSD_RUN_DISKIO_FUNCTION_TESTS
 endif
 
 # Crazyflie sources
-VPATH += src/init src/hal/src src/modules/src src/utils/src src/drivers/bosch/src src/drivers/src src/AI_swarm/src src/AI_swarm/Deck_Code src/AI_swarm/Deck_Header src/init/drivers/src src/init/drivers/bosch/src src/init/drivers/bosch/interface #die letzten 4 von uns beigefügt
+VPATH += src/init src/hal/src src/modules/src src/utils/src src/drivers/bosch/src src/drivers/src src/AI_swarm src/AI_swarm/src src/AI_swarm/Deck_Code src/AI_swarm/Deck_Header src/init/drivers/src src/init/drivers/bosch/src src/init/drivers/bosch/interface #die letzten 4 von uns beigefügt
 VPATH_CF2 += src/platform/cf2
 
 ifeq ($(PLATFORM), CF2)
@@ -118,7 +118,7 @@ PROJ_OBJ += main.o
 PROJ_OBJ_CF2 += platform_cf2.o
 
 # Drivers
-PROJ_OBJ += ai_dwm1000_driver.o ai_task.o	#von uns beigefügt
+PROJ_OBJ += ai_dwm1000_driver.o ai_task.o ai_manageInterrupts.o	#von uns beigefügt
 PROJ_OBJ += exti.o nvic.o motors.o
 PROJ_OBJ_CF2 += led_f405.o mpu6500.o i2cdev_f405.o ws2812_cf2.o lps25h.o i2c_drv.o
 PROJ_OBJ_CF2 += ak8963.o eeprom.o maxsonar.o piezo.o
