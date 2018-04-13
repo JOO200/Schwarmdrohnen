@@ -223,5 +223,5 @@ dwTime_t dwm1000_getRxTimestamp();
 
 dwTime_t dwm1000_getTxTimestamp();
 
-void initiateAiRanging(uint8_t target);
+//void initiateAiRanging(uint8_t target);
 #endif

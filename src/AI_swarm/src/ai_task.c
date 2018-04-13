@@ -193,7 +193,10 @@ void ai_Task(void * arg) {
 		//dwm1000_SendData(&testMessage);
 		ai_init = 1;
 	}
-
+	/*
+	vTaskDelay(M2T(100));
+	initiateAiRanging(1);
+	rangingState[1].requesteeState = REQ_STATE_REQUESTED;
 	//ai_showDistance(0.5f);
 	while (1) {
 		for (unsigned char i = 0; i < NR_OF_DRONES; i++){
@@ -257,6 +260,7 @@ void ai_Task(void * arg) {
 						tdistDWM = 0.5*(troundDWM - tprocessingDWM);
 						tdist = tdistDWM / LOCODECK_TS_FREQ;		//Umrechnung von DWM1000 Zeiteinheit in Sekunden
 						rangingState[i].distance = SPEED_OF_LIGHT * tdist;
+						ai_showDistance(rangingState[i].distance, 0x10, 0x0, 0x0);
 						rangingState[i].requesteeState = REQ_STATE_IDLE;
 
 						rangingState[i].lastRanginInAITicks = rangingState[i].rangingDuration;
@@ -312,7 +316,8 @@ void ai_Task(void * arg) {
 					rangingState[i].targetState = TARGET_STATE_IDLE;
 					break;
 			}
-		}
+		}*/
+	while(1) {
 		vTaskDelay(M2T(1000/TASK_FREQUENCY));
 	}
 	vTaskDelete(0);

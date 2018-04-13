@@ -206,7 +206,7 @@ static void uwbTask(void* parameters)
   algorithm->init(dwm, &algoOptions);
 
   while(1) {
-    if (xSemaphoreTake(irqSemaphore, timeout/portTICK_PERIOD_MS)) {
+    if (xSemaphoreTake(irqSemaphore, M2T(1000))) {
       do{
           dwHandleInterrupt(dwm);
       } while(digitalRead(GPIO_PIN_IRQ) != 0);
@@ -293,7 +293,7 @@ static void spiSetSpeed(dwDevice_t* dev, dwSpiSpeed_t speed)
   }
   else if (speed == dwSpiSpeedHigh)
   {
-    spiSpeed = SPI_BAUDRATE_21MHZ;
+    spiSpeed = SPI_BAUDRATE_2MHZ;
   }
 }
 
@@ -375,12 +375,14 @@ static void dwm1000Init(DeckInfo *info)
   dwNewConfiguration(dwm);
   dwSetDefaults(dwm);
   dwEnableMode(dwm, MODE_SHORTDATA_FAST_ACCURACY);
-  dwReceivePermanently(dwm, true);
+  //dwReceivePermanently(dwm, true);
   dwSetChannel(dwm, CHANNEL_2);
   dwUseSmartPower(dwm, true);
   dwSetPreambleCode(dwm, PREAMBLE_CODE_64MHZ_9);
 
-  dwSetReceiveWaitTimeout(dwm, RX_TIMEOUT);
+  dwReceivePermanently(dwm, true);
+  dwStartReceive(dwm);
+  //dwSetReceiveWaitTimeout(dwm, RX_TIMEOUT);
 
   dwCommitConfiguration(dwm);
 

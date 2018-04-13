@@ -31,6 +31,14 @@ static dwDevice_t dwm_device;
 static dwDevice_t *dwm = &dwm_device;
 bool DWM1000_IRQ_FLAG = 0;
 
+// Timestamps for ranging
+static dwTime_t poll_tx;
+static dwTime_t poll_rx;
+static dwTime_t answer_tx;
+static dwTime_t answer_rx;
+static dwTime_t final_tx;
+static dwTime_t final_rx;
+
 static st_message_t txPacket;
 
 #define RANGING_HISTORY_LENGTH 32
@@ -39,22 +47,30 @@ static st_message_t txPacket;
 //static uint8_t rangingPerSec[LOCODECK_NR_OF_ANCHORS];
 //static uint8_t rangingSuccessRate[LOCODECK_NR_OF_ANCHORS];
 // Used to calculate above values
-void initiateAiRanging(uint8_t target) {
-	dwDevice_t *dev = dwm;
-	dwIdle(dev);
+
+void sendData(dwDevice_t * dev, st_message_t * message) {
+	//spiSetSpeed(dev, dwSpiSpeedLow);
+	vTaskDelay(M2T(10));
+	dwNewTransmit(dev);
+	dwSetData(dwm, (uint8_t*)message, sizeof(*message));
+	dwWaitForResponse(dwm, true);
+	dwStartTransmit(dwm);
+	vTaskDelay(M2T(3)); //TO
+	dwNewReceive(dwm);
+	dwStartReceive(dwm);
+
+}
+
+void initiateAiRanging(dwDevice_t * dev) {
+	//dwIdle(dev);
 
 	txPacket.messageType = DISTANCE_REQUEST;
-	txPacket.senderID = AI_NAME;
-	txPacket.targetID = target;
-	txPacket.time.full = 0;
+	txPacket.sourceAddress = 2;
+	txPacket.destAddress = 1;
+	txPacket.distance_measurement_s.receiveTimestamp.full = 0;
+	txPacket.distance_measurement_s.sendTimestamp.full = 0;
 
-	//dwm1000_SendData(&txPacket);
-	dwNewTransmit(dev);
-	dwSetDefaults(dev);
-	dwSetData(dev, (uint8_t*) &txPacket, sizeof(st_message_t));
-
-	dwWaitForResponse(dev, true);
-	dwStartTransmit(dev);
+	sendData(dev, &txPacket);
 }
 
 static void ai_txCallback(dwDevice_t * dev) {
@@ -62,9 +78,9 @@ static void ai_txCallback(dwDevice_t * dev) {
 	dwGetTransmitTimestamp(dev, &departure);
 
 	if (txPacket.messageType == IMMEDIATE_ANSWER) {
-		setImmediateAnswerTxTs(txPacket.targetID, departure);
+		answer_rx = departure;
 	} else if (txPacket.messageType == DISTANCE_REQUEST) {
-		setReqTxTs(txPacket.targetID, departure);
+		poll_tx = departure;
 	}
 }
 
@@ -72,7 +88,10 @@ static uint32_t ai_rxCallback(dwDevice_t * dev) {
 	dwTime_t arival = { .full = 0 };
 	int dataLength = dwGetDataLength(dev);
 
-	if (dataLength == 0)
+	ai_showDistance(100, 0x10, 0, 0x10);
+	sendData(dev, &txPacket);
+
+	//if (dataLength == 0)
 		return MAX_TIMEOUT ;
 
 	st_message_t message;
@@ -87,20 +106,38 @@ static uint32_t ai_rxCallback(dwDevice_t * dev) {
 	switch (message.messageType) {
 	case IMMEDIATE_ANSWER:
 		dwGetReceiveTimestamp(dev, &arival);
-		setImmediateAnswerRxTs(message.senderID, arival);
+		memcpy(&txPacket, &message, sizeof(st_message_t));
+		answer_rx = arival;
+		txPacket.messageType = IMMEDIATE_ANSWER_ACK;
+		sendData(dev, &txPacket);
 		break;
 	case DISTANCE_REQUEST:
 		dwGetReceiveTimestamp(dev, &arival);
-		setReqRxTs(message.senderID, arival);
+		memcpy(&txPacket, &message, sizeof(st_message_t));
+		txPacket.messageType = IMMEDIATE_ANSWER;
+		txPacket.distance_measurement_s.receiveTimestamp = arival;
+		sendData(dev, &txPacket);
 		break;
 	case PROCESSING_TIME:
 		dwGetReceiveTimestamp(dev, &arival);
-		setProcessingTime(message.senderID, message.time);
+		/*dwTime_t sendingTime = (arival-frameStart) -
+		 (message->distance_measurement_s.sendTimestamp - message->distance_measurement_s.ReceiveTimestamp);*/
+		double tround1 = message.distance_measurement_s.sendTimestamp.low32
+				- message.distance_measurement_s.receiveTimestamp.low32;
+		double tround2 = answer_rx.low32 - poll_tx.low32;
 
+		double tdiff = (tround2 - tround1) / 2;
+		double distance = SPEED_OF_LIGHT * tdiff; // Umrechnung in m
+		ai_showDistance(distance, 0x00, 0x00, 0x10);
+		initiateAiRanging(dev);
 		break;
 	case IMMEDIATE_ANSWER_ACK:
 		dwGetReceiveTimestamp(dev, &arival);
-		setAckAnswerTxTs(message.senderID, arival);
+		memcpy(&txPacket, &message, sizeof(st_message_t));
+		txPacket.messageType = PROCESSING_TIME;
+		txPacket.distance_measurement_s.sendTimestamp = answer_rx;
+		sendData(dev, &txPacket);
+		//setAckAnswerTxTs(message.senderID, arival);
 		break;
 	default:
 		break;
@@ -110,6 +147,17 @@ static uint32_t ai_rxCallback(dwDevice_t * dev) {
 
 static void Initialize(dwDevice_t *dev, lpsAlgoOptions_t* algoOptions) {
 	memset(&txPacket, 0, sizeof(txPacket));
+	dwm = dev;
+	// MAC80215_PACKET_INIT(txPacket, MAC802154_TYPE_DATA);
+
+	memset(&poll_tx, 0, sizeof(poll_tx));
+	memset(&poll_rx, 0, sizeof(poll_rx));
+	memset(&answer_tx, 0, sizeof(answer_tx));
+	memset(&answer_rx, 0, sizeof(answer_rx));
+	memset(&final_tx, 0, sizeof(final_tx));
+	memset(&final_rx, 0, sizeof(final_rx));
+
+	initiateAiRanging(dev);
 }
 
 static uint32_t onEvent(dwDevice_t *dev, uwbEvent_t event) {
@@ -118,28 +166,23 @@ static uint32_t onEvent(dwDevice_t *dev, uwbEvent_t event) {
 	switch (event) {
 	case eventPacketReceived:
 		ai_rxCallback(dev);
-		dwNewReceive(dev);
-		dwStartReceive(dev);
 		break;
 	case eventPacketSent:
 		ai_txCallback(dev);
-		return MAX_TIMEOUT ;
+		break;
 	case eventTimeout:
 
 		//ai_showDistance(20, 0x10, 0x00, 0x00);
-		//initiateAiRanging(dev);
-		return MAX_TIMEOUT ;
+		initiateAiRanging(dev);
 		break;
 	case eventReceiveTimeout:
 		//ai_showDistance(20, 0x10, 0x00, 0x10);
-		//initiateAiRanging(dev);
-		dwNewReceive(dev);
-		dwStartReceive(dev);
+		initiateAiRanging(dev);
 		break;
 	default:
 		ASSERT_FAILED();
 	}
-	return MAX_TIMEOUT ;
+	return 500000 ;
 }
 
 uwbAlgorithm_t aiuwbTdoaTagAlgorith =
@@ -150,8 +193,6 @@ bool dwm1000_SendData(st_message_t *message) {
 
 	dwNewTransmit(dwm);
 	dwSetData(dwm, (uint8_t*) message, sizeof(st_message_t));
-
-	memcpy(message, &txPacket, sizeof(st_message_t));
 
 	dwStartTransmit(dwm);
 
